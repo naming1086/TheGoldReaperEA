@@ -3368,97 +3368,96 @@ void OnTick()
 
 // ProcessStrategy —— 单个策略的主处理函数（过滤器、挂单/持仓状态机），
 //                    arg_0_int 为策略索引（0..8）
- int ProcessStrategy( int arg_0_int)
+ int ProcessStrategy( int strategyIdx)
  {
-  bool      local_2_bool;
-  datetime  local_3_long;
-  int       local_5_int;
-  string    local_6_string;
-  datetime  local_7_datetime;
-  int       local_8_int;
-  int       local_9_int;
+  bool      managementActionPerformed;
+  datetime  nfpReleaseTime;
+  int       nfpGmtOffsetMin;
+  string    nfpDateString;
+  datetime  nfpFallbackReleaseTime;
+  int       randomEntryBars;
+  int       entrySlotIdx;
 //----- -----
- int        temp_int_1;
- int        temp_int_2;
- int        temp_int_3;
- int        temp_int_4;
- int        temp_int_5;
- int        temp_int_6;
- int        temp_int_7;
- int        temp_int_8;
- int        temp_int_9;
- int        temp_int_10;
- int        temp_int_11;
- int        temp_int_12;
- int        temp_int_13;
- int        temp_int_14;
- int        temp_int_17;
- int        temp_int_18;
- int        temp_int_19;
- int        temp_int_20;
- int        temp_int_21;
- int        temp_int_22;
- int        temp_int_23;
- int        temp_int_24;
- int        temp_int_25;
- int        temp_int_26;
- int        temp_int_44;
- int        temp_int_45;
- int        temp_int_46;
- int        temp_int_47;
- int        temp_int_48;
- int        temp_int_49;
- int        temp_int_50;
- int        temp_int_51;
- int        temp_int_52;
- int        temp_int_53;
- int        temp_int_71;
- int        temp_int_72;
- int        temp_int_73;
- int        temp_int_74;
- int        temp_int_75;
- int        temp_int_76;
- int        temp_int_77;
- int        temp_int_78;
- int        temp_int_79;
- int        temp_int_80;
- int        temp_int_81;
- int        temp_int_82;
- int        temp_int_83;
- int        temp_int_84;
- int        temp_int_85;
- int        temp_int_86;
- int        temp_int_87;
- int        temp_int_88;
- int        temp_int_89;
- double     temp_double_90;
- long       temp_long_91;
- int        temp_int_92;
- long       temp_long_93;
- int        temp_int_94;
- int        temp_int_95;
- int        temp_int_96;
- double     temp_double_97;
- long       temp_long_98;
- int        temp_int_99;
- long       temp_long_100;
- int        temp_int_101;
- int        temp_int_102;
- int        temp_int_103;
- int        temp_int_104;
- int        temp_int_105;
- bool       temp_bool_106;
- int        temp_int_107;
- int        temp_int_108;
- bool       temp_bool_109;
- int        temp_int_110;
- long       temp_long_111;
- int        temp_int_112;
- long       temp_long_113;
- string     temp_string_114;
+ int        vpoSlotClearIdx;
+ int        vpoFieldClearIdx;
+ int        vpoStoreIdx;
+ int        weekendStoreScanIdx;
+ int        buyStopDelMode;
+ int        buyStopDelScanIdx;
+ int        manualBuyStopDelScanIdx;
+ int        sellStopDelMode;
+ int        sellStopDelScanIdx;
+ int        manualSellStopDelScanIdx;
+ int        buyStopDelMode2;
+ int        manualBuyStopDelScanIdx2;
+ int        sellStopDelMode2;
+ int        manualSellStopDelScanIdx2;
+ int        nfpBuyStopDelMode;
+ int        nfpBuyStopDelScanIdx;
+ int        nfpManualBuyStopDelScanIdx;
+ int        nfpSellStopDelMode;
+ int        nfpSellStopDelScanIdx;
+ int        nfpManualSellStopDelScanIdx;
+ int        nfpBuyStopDelMode2;
+ int        nfpManualBuyStopDelScanIdx2;
+ int        nfpSellStopDelMode2;
+ int        nfpManualSellStopDelScanIdx2;
+ int        fbBuyStopDelMode;
+ int        fbBuyStopDelScanIdx;
+ int        fbManualBuyStopDelScanIdx;
+ int        fbSellStopDelMode;
+ int        fbSellStopDelScanIdx;
+ int        fbManualSellStopDelScanIdx;
+ int        fbBuyStopDelMode2;
+ int        fbManualBuyStopDelScanIdx2;
+ int        fbSellStopDelMode2;
+ int        fbManualSellStopDelScanIdx2;
+ int        fridayScanIdx;
+ int        fridayOrderMagic;
+ int        fridayMagicCmp1;
+ int        fridayMagicCmp2;
+ int        fridayMagicCmp3;
+ int        fridayMagicCmp4;
+ int        fridayMagicCmp5;
+ int        fridayMagicCmp6;
+ int        fridayMagicCmp7;
+ int        fridayMagicCmp8;
+ int        fridayMagicCmp9;
+ int        fridayMagicCmp10;
+ int        fridayMagicCmp11;
+ int        fridayMagicCmp12;
+ int        fridayMagicCmp13;
+ int        fridayMagicCmp14;
+ int        fridayMagicCmp15;
+ int        buyStopCount;
+ int        buyStopCountScanIdx;
+ double     highestBuyStopPrice;
+ long       highestBuyStopTicket;
+ int        highestBuyStopScanIdx;
+ long       clearedBuyStopTicket;
+ int        clearedBuyStopSlotIdx;
+ int        sellStopCount;
+ int        sellStopCountScanIdx;
+ double     lowestSellStopPrice;
+ long       lowestSellStopTicket;
+ int        lowestSellStopScanIdx;
+ long       clearedSellStopTicket;
+ int        clearedSellStopSlotIdx;
+ int        openBuyCount;
+ int        openBuyCountScanIdx;
+ int        openSellCount;
+ int        openSellCountScanIdx;
+ bool       cacheEntryLive;
+ int        virtSlCacheScanIdx;
+ int        virtSlCacheTicketScanIdx;
+ bool       soCacheEntryLive;
+ int        soCacheHourlyScanIdx;
+ long       soCacheStoredTicket;
+ int        soCacheTicketScanIdx;
+ long       soCacheScanTicket;
 
- g_currentStrategyIndex = arg_0_int ;
- local_2_bool = false ;
+ g_currentStrategyIndex = strategyIdx ;
+ managementActionPerformed = false ;
  
  if ( g_entryBreakoutPct>0.0 )
  {
@@ -3471,13 +3470,13 @@ void OnTick()
    {
      if ( ManageBuyPositions() )
      {
-       local_2_bool = true ;
+       managementActionPerformed = true ;
      }
      if ( ManageSellPositions() )
      {
-       local_2_bool = true ;
+       managementActionPerformed = true ;
      }
-     if ( local_2_bool )
+     if ( managementActionPerformed )
      {
        return(0); 
      }
@@ -3494,13 +3493,13 @@ void OnTick()
      g_lastEntryBarsCount[g_currentStrategyIndex] = iBars(g_chartSymbol,MT4Period(g_entryTfMinutes));
      if ( ManageBuyPositions() )
      {
-       local_2_bool = true ;
+       managementActionPerformed = true ;
      }
      if ( ManageSellPositions() )
      {
-       local_2_bool = true ;
+       managementActionPerformed = true ;
      }
-     if ( local_2_bool )
+     if ( managementActionPerformed )
      {
        return(0); 
      }
@@ -3526,60 +3525,60 @@ void OnTick()
      Print("Weekend starting! closing trades.."); 
      if ( g_closePendingsOnWeekend )
      {
-       for (temp_int_1 = 0 ; temp_int_1 < g_virtualOrderSlots ; temp_int_1=temp_int_1 + 1)
+       for (vpoSlotClearIdx = 0 ; vpoSlotClearIdx < g_virtualOrderSlots ; vpoSlotClearIdx=vpoSlotClearIdx + 1)
        {
-         for (temp_int_2 = 0 ; temp_int_2 < 2 ; temp_int_2=temp_int_2 + 1)
+         for (vpoFieldClearIdx = 0 ; vpoFieldClearIdx < 2 ; vpoFieldClearIdx=vpoFieldClearIdx + 1)
          {
-           g_virtualPendingOrders[temp_int_1][temp_int_2] = 0.0;
+           g_virtualPendingOrders[vpoSlotClearIdx][vpoFieldClearIdx] = 0.0;
          }
        }
-       temp_int_3 = 0;
-       for (temp_int_4 = MT4OrdersTotal() ; temp_int_4 >= 0 ; temp_int_4=temp_int_4 - 1)
+       vpoStoreIdx = 0;
+       for (weekendStoreScanIdx = MT4OrdersTotal() ; weekendStoreScanIdx >= 0 ; weekendStoreScanIdx=weekendStoreScanIdx - 1)
        {
-         if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
+         if ( OrderSelect(weekendStoreScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
          
          if ( ( OrderType() != 4 && OrderType() != 5 ) )   continue;
          Print("Storing pending order nr " + string(OrderTicket())); 
-         g_virtualPendingOrders[temp_int_3][1] = OrderType();
-         g_virtualPendingOrders[temp_int_3][0] = OrderOpenPrice();
-         g_virtualPendingOrders[temp_int_3][2] = OrderLots();
-         temp_int_3=temp_int_3 + 1;
+         g_virtualPendingOrders[vpoStoreIdx][1] = OrderType();
+         g_virtualPendingOrders[vpoStoreIdx][0] = OrderOpenPrice();
+         g_virtualPendingOrders[vpoStoreIdx][2] = OrderLots();
+         vpoStoreIdx=vpoStoreIdx + 1;
          
        }
      }
-     temp_int_5 = 1;
-     for (temp_int_6 = MT4OrdersTotal() ; temp_int_6 >= 0 ; temp_int_6=temp_int_6 - 1)
+     buyStopDelMode = 1;
+     for (buyStopDelScanIdx = MT4OrdersTotal() ; buyStopDelScanIdx >= 0 ; buyStopDelScanIdx=buyStopDelScanIdx - 1)
      {
-       if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+       if ( OrderSelect(buyStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
        OrderDelete(OrderTicket(),0xFFFFFFFF); 
        
      }
-     if ( temp_int_5 == 2 )
+     if ( buyStopDelMode == 2 )
      {
-       for (temp_int_7 = MT4OrdersTotal() ; temp_int_7 >= 0 ; temp_int_7=temp_int_7 - 1)
+       for (manualBuyStopDelScanIdx = MT4OrdersTotal() ; manualBuyStopDelScanIdx >= 0 ; manualBuyStopDelScanIdx=manualBuyStopDelScanIdx - 1)
        {
-         if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+         if ( OrderSelect(manualBuyStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
      }
-     temp_int_8 = 1;
-     for (temp_int_9 = MT4OrdersTotal() ; temp_int_9 >= 0 ; temp_int_9=temp_int_9 - 1)
+     sellStopDelMode = 1;
+     for (sellStopDelScanIdx = MT4OrdersTotal() ; sellStopDelScanIdx >= 0 ; sellStopDelScanIdx=sellStopDelScanIdx - 1)
      {
-       if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+       if ( OrderSelect(sellStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
        OrderDelete(OrderTicket(),0xFFFFFFFF); 
        
      }
-     if ( temp_int_8 == 2 )
+     if ( sellStopDelMode == 2 )
      {
-       for (temp_int_10 = MT4OrdersTotal() ; temp_int_10 >= 0 ; temp_int_10=temp_int_10 - 1)
+       for (manualSellStopDelScanIdx = MT4OrdersTotal() ; manualSellStopDelScanIdx >= 0 ; manualSellStopDelScanIdx=manualSellStopDelScanIdx - 1)
        {
-         if ( OrderSelect(temp_int_10,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+         if ( OrderSelect(manualSellStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
      }
-     temp_int_11 = 2;
+     buyStopDelMode2 = 2;
      if(1==0) //condition_not_met
      {
        do
@@ -3591,16 +3590,16 @@ void OnTick()
        while( - 1 >= 0);
        
      }
-     if ( temp_int_11 == 2 )
+     if ( buyStopDelMode2 == 2 )
      {
-       for (temp_int_12 = MT4OrdersTotal() ; temp_int_12 >= 0 ; temp_int_12=temp_int_12 - 1)
+       for (manualBuyStopDelScanIdx2 = MT4OrdersTotal() ; manualBuyStopDelScanIdx2 >= 0 ; manualBuyStopDelScanIdx2=manualBuyStopDelScanIdx2 - 1)
        {
-         if ( OrderSelect(temp_int_12,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+         if ( OrderSelect(manualBuyStopDelScanIdx2,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
      }
-     temp_int_13 = 2;
+     sellStopDelMode2 = 2;
      if(1==0) //condition_not_met
      {
        do
@@ -3612,11 +3611,11 @@ void OnTick()
        while( - 1 >= 0);
        
      }
-     if ( temp_int_13 == 2 )
+     if ( sellStopDelMode2 == 2 )
      {
-       for (temp_int_14 = MT4OrdersTotal() ; temp_int_14 >= 0 ; temp_int_14=temp_int_14 - 1)
+       for (manualSellStopDelScanIdx2 = MT4OrdersTotal() ; manualSellStopDelScanIdx2 >= 0 ; manualSellStopDelScanIdx2=manualSellStopDelScanIdx2 - 1)
        {
-         if ( OrderSelect(temp_int_14,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+         if ( OrderSelect(manualSellStopDelScanIdx2,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
@@ -3632,59 +3631,59 @@ void OnTick()
    // continue into the hardcoded table; after 2026 use the first-Friday fallback.
    if ( temp_nfpLiveCalendar || Year() <= 2026 )
    {
-     local_3_long = 0 ;
-     local_5_int = 0 ;
+     nfpReleaseTime = 0 ;
+     nfpGmtOffsetMin = 0 ;
      datetime temp_nfpCompareNow = TimeCurrent();
      if ( temp_nfpLiveCalendar )
      {
        // Calendar timestamps are already in trade-server time. No GMT conversion here.
-       local_3_long = g_nextNFPCalendar;
+       nfpReleaseTime = g_nextNFPCalendar;
       }
       else
       {
-        local_3_long = MT4HardcodedNFPForCurrentMonth();
+        nfpReleaseTime = MT4HardcodedNFPForCurrentMonth();
        // Hardcoded table is GMT-based: NFP is 13:30 GMT in US winter, 12:30 in DST.
-       local_5_int = 60 ;
-       if ( IsAmericanDst() )   local_5_int = 0 ;
+       nfpGmtOffsetMin = 60 ;
+       if ( IsAmericanDst() )   nfpGmtOffsetMin = 0 ;
        temp_nfpCompareNow = g_nfpAdjustedNow;
      }
-     if ( temp_nfpCompareNow >= local_3_long - NFP_MinutesBefore * 60 + local_5_int * 60 && temp_nfpCompareNow <= local_3_long + NFP_MinutesAfter * 60 + local_5_int * 60 )
+     if ( temp_nfpCompareNow >= nfpReleaseTime - NFP_MinutesBefore * 60 + nfpGmtOffsetMin * 60 && temp_nfpCompareNow <= nfpReleaseTime + NFP_MinutesAfter * 60 + nfpGmtOffsetMin * 60 )
      {
        if ( NFP_ClosePendingOrders )
        {
-         temp_int_17 = 1;
-         for (temp_int_18 = MT4OrdersTotal() ; temp_int_18 >= 0 ; temp_int_18=temp_int_18 - 1)
+         nfpBuyStopDelMode = 1;
+         for (nfpBuyStopDelScanIdx = MT4OrdersTotal() ; nfpBuyStopDelScanIdx >= 0 ; nfpBuyStopDelScanIdx=nfpBuyStopDelScanIdx - 1)
          {
-            if ( OrderSelect(temp_int_18,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
+            if ( OrderSelect(nfpBuyStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
            OrderDelete(OrderTicket(),0xFFFFFFFF); 
            
          }
-         if ( temp_int_17 == 2 )
+         if ( nfpBuyStopDelMode == 2 )
          {
-           for (temp_int_19 = MT4OrdersTotal() ; temp_int_19 >= 0 ; temp_int_19=temp_int_19 - 1)
+           for (nfpManualBuyStopDelScanIdx = MT4OrdersTotal() ; nfpManualBuyStopDelScanIdx >= 0 ; nfpManualBuyStopDelScanIdx=nfpManualBuyStopDelScanIdx - 1)
            {
-              if ( OrderSelect(temp_int_19,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
+              if ( OrderSelect(nfpManualBuyStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
          }
-         temp_int_20 = 1;
-         for (temp_int_21 = MT4OrdersTotal() ; temp_int_21 >= 0 ; temp_int_21=temp_int_21 - 1)
+         nfpSellStopDelMode = 1;
+         for (nfpSellStopDelScanIdx = MT4OrdersTotal() ; nfpSellStopDelScanIdx >= 0 ; nfpSellStopDelScanIdx=nfpSellStopDelScanIdx - 1)
          {
-            if ( OrderSelect(temp_int_21,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
+            if ( OrderSelect(nfpSellStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
            OrderDelete(OrderTicket(),0xFFFFFFFF); 
            
          }
-         if ( temp_int_20 == 2 )
+         if ( nfpSellStopDelMode == 2 )
          {
-           for (temp_int_22 = MT4OrdersTotal() ; temp_int_22 >= 0 ; temp_int_22=temp_int_22 - 1)
+           for (nfpManualSellStopDelScanIdx = MT4OrdersTotal() ; nfpManualSellStopDelScanIdx >= 0 ; nfpManualSellStopDelScanIdx=nfpManualSellStopDelScanIdx - 1)
            {
-              if ( OrderSelect(temp_int_22,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
+              if ( OrderSelect(nfpManualSellStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
          }
-         temp_int_23 = 2;
+         nfpBuyStopDelMode2 = 2;
          if(1==0) //condition_not_met
          {
            do
@@ -3696,16 +3695,16 @@ void OnTick()
            while( - 1 >= 0);
            
          }
-         if ( temp_int_23 == 2 )
+         if ( nfpBuyStopDelMode2 == 2 )
          {
-           for (temp_int_24 = MT4OrdersTotal() ; temp_int_24 >= 0 ; temp_int_24=temp_int_24 - 1)
+           for (nfpManualBuyStopDelScanIdx2 = MT4OrdersTotal() ; nfpManualBuyStopDelScanIdx2 >= 0 ; nfpManualBuyStopDelScanIdx2=nfpManualBuyStopDelScanIdx2 - 1)
            {
-              if ( OrderSelect(temp_int_24,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
+              if ( OrderSelect(nfpManualBuyStopDelScanIdx2,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
          }
-         temp_int_25 = 2;
+         nfpSellStopDelMode2 = 2;
          if(1==0) //condition_not_met
          {
            do
@@ -3717,11 +3716,11 @@ void OnTick()
            while( - 1 >= 0);
            
          }
-         if ( temp_int_25 == 2 )
+         if ( nfpSellStopDelMode2 == 2 )
          {
-           for (temp_int_26 = MT4OrdersTotal() ; temp_int_26 >= 0 ; temp_int_26=temp_int_26 - 1)
+           for (nfpManualSellStopDelScanIdx2 = MT4OrdersTotal() ; nfpManualSellStopDelScanIdx2 >= 0 ; nfpManualSellStopDelScanIdx2=nfpManualSellStopDelScanIdx2 - 1)
            {
-              if ( OrderSelect(temp_int_26,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
+              if ( OrderSelect(nfpManualSellStopDelScanIdx2,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3746,45 +3745,45 @@ void OnTick()
    {
      if ( Day() <= 7 && DayOfWeek() == 5 )
      {
-       local_6_string = IntegerToString(Year(),0,32) + IntegerToString(Month(),0,32) + IntegerToString(Day(),0,32) + " " + IntegerToString(0x4CE,0,32) ;
-       local_7_datetime = StringToTime(local_6_string) ;
-       if ( g_nfpAdjustedNow >= local_7_datetime - NFP_MinutesBefore * 60 && g_nfpAdjustedNow <= local_7_datetime + NFP_MinutesAfter * 60 )
+       nfpDateString = IntegerToString(Year(),0,32) + IntegerToString(Month(),0,32) + IntegerToString(Day(),0,32) + " " + IntegerToString(0x4CE,0,32) ;
+       nfpFallbackReleaseTime = StringToTime(nfpDateString) ;
+       if ( g_nfpAdjustedNow >= nfpFallbackReleaseTime - NFP_MinutesBefore * 60 && g_nfpAdjustedNow <= nfpFallbackReleaseTime + NFP_MinutesAfter * 60 )
        {
          if ( NFP_ClosePendingOrders )
          {
-           temp_int_44 = 1;
-           for (temp_int_45 = MT4OrdersTotal() ; temp_int_45 >= 0 ; temp_int_45=temp_int_45 - 1)
+           fbBuyStopDelMode = 1;
+           for (fbBuyStopDelScanIdx = MT4OrdersTotal() ; fbBuyStopDelScanIdx >= 0 ; fbBuyStopDelScanIdx=fbBuyStopDelScanIdx - 1)
            {
-              if ( OrderSelect(temp_int_45,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
+              if ( OrderSelect(fbBuyStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
-           if ( temp_int_44 == 2 )
+           if ( fbBuyStopDelMode == 2 )
            {
-             for (temp_int_46 = MT4OrdersTotal() ; temp_int_46 >= 0 ; temp_int_46=temp_int_46 - 1)
+             for (fbManualBuyStopDelScanIdx = MT4OrdersTotal() ; fbManualBuyStopDelScanIdx >= 0 ; fbManualBuyStopDelScanIdx=fbManualBuyStopDelScanIdx - 1)
              {
-                if ( OrderSelect(temp_int_46,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
+                if ( OrderSelect(fbManualBuyStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
            }
-           temp_int_47 = 1;
-           for (temp_int_48 = MT4OrdersTotal() ; temp_int_48 >= 0 ; temp_int_48=temp_int_48 - 1)
+           fbSellStopDelMode = 1;
+           for (fbSellStopDelScanIdx = MT4OrdersTotal() ; fbSellStopDelScanIdx >= 0 ; fbSellStopDelScanIdx=fbSellStopDelScanIdx - 1)
            {
-              if ( OrderSelect(temp_int_48,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
+              if ( OrderSelect(fbSellStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
-           if ( temp_int_47 == 2 )
+           if ( fbSellStopDelMode == 2 )
            {
-             for (temp_int_49 = MT4OrdersTotal() ; temp_int_49 >= 0 ; temp_int_49=temp_int_49 - 1)
+             for (fbManualSellStopDelScanIdx = MT4OrdersTotal() ; fbManualSellStopDelScanIdx >= 0 ; fbManualSellStopDelScanIdx=fbManualSellStopDelScanIdx - 1)
              {
-                if ( OrderSelect(temp_int_49,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
+                if ( OrderSelect(fbManualSellStopDelScanIdx,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
            }
-           temp_int_50 = 2;
+           fbBuyStopDelMode2 = 2;
            if(1==0) //condition_not_met
            {
              do
@@ -3796,16 +3795,16 @@ void OnTick()
              while( - 1 >= 0);
              
            }
-           if ( temp_int_50 == 2 )
+           if ( fbBuyStopDelMode2 == 2 )
            {
-             for (temp_int_51 = MT4OrdersTotal() ; temp_int_51 >= 0 ; temp_int_51=temp_int_51 - 1)
+             for (fbManualBuyStopDelScanIdx2 = MT4OrdersTotal() ; fbManualBuyStopDelScanIdx2 >= 0 ; fbManualBuyStopDelScanIdx2=fbManualBuyStopDelScanIdx2 - 1)
              {
-                if ( OrderSelect(temp_int_51,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
+                if ( OrderSelect(fbManualBuyStopDelScanIdx2,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
            }
-           temp_int_52 = 2;
+           fbSellStopDelMode2 = 2;
            if(1==0) //condition_not_met
            {
              do
@@ -3817,11 +3816,11 @@ void OnTick()
              while( - 1 >= 0);
              
            }
-           if ( temp_int_52 == 2 )
+           if ( fbSellStopDelMode2 == 2 )
            {
-             for (temp_int_53 = MT4OrdersTotal() ; temp_int_53 >= 0 ; temp_int_53=temp_int_53 - 1)
+             for (fbManualSellStopDelScanIdx2 = MT4OrdersTotal() ; fbManualSellStopDelScanIdx2 >= 0 ; fbManualSellStopDelScanIdx2=fbManualSellStopDelScanIdx2 - 1)
              {
-                if ( OrderSelect(temp_int_53,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
+                if ( OrderSelect(fbManualSellStopDelScanIdx2,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3884,68 +3883,68 @@ void OnTick()
          OrderClose(OrderTicket(),OrderLots(),friday_price,(int)g_slippagePts,Red);
        }
      }
-     for (temp_int_71 = MT4OrdersTotal() ; temp_int_71 >= 0 ; temp_int_71=temp_int_71 - 1)
+     for (fridayScanIdx = MT4OrdersTotal() ; fridayScanIdx >= 0 ; fridayScanIdx=fridayScanIdx - 1)
      {
-       if ( OrderSelect(temp_int_71,0,0) != true || OrderSymbol() != g_chartSymbol )   continue;
-       temp_int_72 = OrderMagicNumber();
-       temp_int_73=ST1_MagicNumber + 1;
-       if ( temp_int_72 != temp_int_73 )
+       if ( OrderSelect(fridayScanIdx,0,0) != true || OrderSymbol() != g_chartSymbol )   continue;
+       fridayOrderMagic = OrderMagicNumber();
+       fridayMagicCmp1=ST1_MagicNumber + 1;
+       if ( fridayOrderMagic != fridayMagicCmp1 )
        {
-         temp_int_73 = OrderMagicNumber();
-         temp_int_74=ST1_MagicNumber + 2;
-         if ( temp_int_73 != temp_int_74 )
+         fridayMagicCmp1 = OrderMagicNumber();
+         fridayMagicCmp2=ST1_MagicNumber + 2;
+         if ( fridayMagicCmp1 != fridayMagicCmp2 )
          {
-           temp_int_74 = OrderMagicNumber();
-           temp_int_75=ST1_MagicNumber + 3;
-           if ( temp_int_74 != temp_int_75 )
+           fridayMagicCmp2 = OrderMagicNumber();
+           fridayMagicCmp3=ST1_MagicNumber + 3;
+           if ( fridayMagicCmp2 != fridayMagicCmp3 )
            {
-             temp_int_75 = OrderMagicNumber();
-             temp_int_76=ST1_MagicNumber + 4;
-             if ( temp_int_75 != temp_int_76 )
+             fridayMagicCmp3 = OrderMagicNumber();
+             fridayMagicCmp4=ST1_MagicNumber + 4;
+             if ( fridayMagicCmp3 != fridayMagicCmp4 )
              {
-               temp_int_76 = OrderMagicNumber();
-               temp_int_77=ST1_MagicNumber + 5;
-               if ( temp_int_76 != temp_int_77 )
+               fridayMagicCmp4 = OrderMagicNumber();
+               fridayMagicCmp5=ST1_MagicNumber + 5;
+               if ( fridayMagicCmp4 != fridayMagicCmp5 )
                {
-                 temp_int_77 = OrderMagicNumber();
-                 temp_int_78=ST1_MagicNumber + 6;
-                 if ( temp_int_77 != temp_int_78 )
+                 fridayMagicCmp5 = OrderMagicNumber();
+                 fridayMagicCmp6=ST1_MagicNumber + 6;
+                 if ( fridayMagicCmp5 != fridayMagicCmp6 )
                  {
-                   temp_int_78 = OrderMagicNumber();
-                   temp_int_79=ST1_MagicNumber + 7;
-                   if ( temp_int_78 != temp_int_79 )
+                   fridayMagicCmp6 = OrderMagicNumber();
+                   fridayMagicCmp7=ST1_MagicNumber + 7;
+                   if ( fridayMagicCmp6 != fridayMagicCmp7 )
                    {
-                     temp_int_79 = OrderMagicNumber();
-                     temp_int_80=ST1_MagicNumber + 8;
-                     if ( temp_int_79 != temp_int_80 )
+                     fridayMagicCmp7 = OrderMagicNumber();
+                     fridayMagicCmp8=ST1_MagicNumber + 8;
+                     if ( fridayMagicCmp7 != fridayMagicCmp8 )
                      {
-                       temp_int_80 = OrderMagicNumber();
-                       temp_int_81=ST1_MagicNumber + 9;
-                       if ( temp_int_80 != temp_int_81 )
+                       fridayMagicCmp8 = OrderMagicNumber();
+                       fridayMagicCmp9=ST1_MagicNumber + 9;
+                       if ( fridayMagicCmp8 != fridayMagicCmp9 )
                        {
-                         temp_int_81 = OrderMagicNumber();
-                         temp_int_82=ST1_MagicNumber + 10;
-                         if ( temp_int_81 != temp_int_82 )
+                         fridayMagicCmp9 = OrderMagicNumber();
+                         fridayMagicCmp10=ST1_MagicNumber + 10;
+                         if ( fridayMagicCmp9 != fridayMagicCmp10 )
                          {
-                           temp_int_82 = OrderMagicNumber();
-                           temp_int_83=ST1_MagicNumber + 11;
-                           if ( temp_int_82 != temp_int_83 )
+                           fridayMagicCmp10 = OrderMagicNumber();
+                           fridayMagicCmp11=ST1_MagicNumber + 11;
+                           if ( fridayMagicCmp10 != fridayMagicCmp11 )
                            {
-                             temp_int_83 = OrderMagicNumber();
-                             temp_int_84=ST1_MagicNumber + 12;
-                             if ( temp_int_83 != temp_int_84 )
+                             fridayMagicCmp11 = OrderMagicNumber();
+                             fridayMagicCmp12=ST1_MagicNumber + 12;
+                             if ( fridayMagicCmp11 != fridayMagicCmp12 )
                              {
-                               temp_int_84 = OrderMagicNumber();
-                               temp_int_85=ST1_MagicNumber + 13;
-                               if ( temp_int_84 != temp_int_85 )
+                               fridayMagicCmp12 = OrderMagicNumber();
+                               fridayMagicCmp13=ST1_MagicNumber + 13;
+                               if ( fridayMagicCmp12 != fridayMagicCmp13 )
                                {
-                                 temp_int_85 = OrderMagicNumber();
-                                 temp_int_86=ST1_MagicNumber + 14;
-                                 if ( temp_int_85 != temp_int_86 )
+                                 fridayMagicCmp13 = OrderMagicNumber();
+                                 fridayMagicCmp14=ST1_MagicNumber + 14;
+                                 if ( fridayMagicCmp13 != fridayMagicCmp14 )
                                  {
-                                   temp_int_86 = OrderMagicNumber();
-                                   temp_int_87=ST1_MagicNumber + 15;
-                                 if ( temp_int_86 != temp_int_87 )   continue;
+                                   fridayMagicCmp14 = OrderMagicNumber();
+                                   fridayMagicCmp15=ST1_MagicNumber + 15;
+                                 if ( fridayMagicCmp14 != fridayMagicCmp15 )   continue;
                                  }
                                }
                              }
@@ -3993,66 +3992,66 @@ void OnTick()
  }
  if ( g_orderMgmtMode == 1 )
  {
-   temp_int_88 = 0;
-   for (temp_int_89 = MT4OrdersTotal() ; temp_int_89 >= 0 ; temp_int_89=temp_int_89 - 1)
+   buyStopCount = 0;
+   for (buyStopCountScanIdx = MT4OrdersTotal() ; buyStopCountScanIdx >= 0 ; buyStopCountScanIdx=buyStopCountScanIdx - 1)
    {
-     if ( OrderSelect(temp_int_89,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
-     temp_int_88=temp_int_88 + 1;
+     if ( OrderSelect(buyStopCountScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+     buyStopCount=buyStopCount + 1;
      
    }
-   if ( temp_int_88 >  g_maxPendingOrders )
+   if ( buyStopCount >  g_maxPendingOrders )
    {
-     temp_double_90 = 0.0;
-     temp_long_91 = 0;
-     for (temp_int_92 = MT4OrdersTotal() ; temp_int_92 >= 0 ; temp_int_92=temp_int_92 - 1)
+     highestBuyStopPrice = 0.0;
+     highestBuyStopTicket = 0;
+     for (highestBuyStopScanIdx = MT4OrdersTotal() ; highestBuyStopScanIdx >= 0 ; highestBuyStopScanIdx=highestBuyStopScanIdx - 1)
      {
-       if ( OrderSelect(temp_int_92,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(OrderOpenPrice()>temp_double_90) )   continue;
-       temp_long_91 = OrderTicket();
-       temp_double_90 = OrderOpenPrice();
+       if ( OrderSelect(highestBuyStopScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(OrderOpenPrice()>highestBuyStopPrice) )   continue;
+       highestBuyStopTicket = OrderTicket();
+       highestBuyStopPrice = OrderOpenPrice();
        
      }
-     if ( temp_long_91 != 0 )
+     if ( highestBuyStopTicket != 0 )
      {
-       OrderDelete(temp_long_91,Green); 
-       temp_long_93 = temp_long_91;
-       for (temp_int_94 = 0 ; temp_int_94 < 100 ; temp_int_94=temp_int_94 + 1)
+       OrderDelete(highestBuyStopTicket,Green); 
+       clearedBuyStopTicket = highestBuyStopTicket;
+       for (clearedBuyStopSlotIdx = 0 ; clearedBuyStopSlotIdx < 100 ; clearedBuyStopSlotIdx=clearedBuyStopSlotIdx + 1)
        {
-         if ( !(g_stopOrderTicketPrice[temp_int_94][0]==temp_long_93) )   continue;
-         g_stopOrderTicketPrice[temp_int_94][0] = 0.0;
-         g_stopOrderTicketPrice[temp_int_94][1] = 0.0;
+         if ( !(g_stopOrderTicketPrice[clearedBuyStopSlotIdx][0]==clearedBuyStopTicket) )   continue;
+         g_stopOrderTicketPrice[clearedBuyStopSlotIdx][0] = 0.0;
+         g_stopOrderTicketPrice[clearedBuyStopSlotIdx][1] = 0.0;
          break;
          
        }
        Print("Max number of pending buy orders reached... deleting highest buystop order!"); 
      }
    }
-   temp_int_95 = 0;
-   for (temp_int_96 = MT4OrdersTotal() ; temp_int_96 >= 0 ; temp_int_96=temp_int_96 - 1)
+   sellStopCount = 0;
+   for (sellStopCountScanIdx = MT4OrdersTotal() ; sellStopCountScanIdx >= 0 ; sellStopCountScanIdx=sellStopCountScanIdx - 1)
    {
-     if ( OrderSelect(temp_int_96,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
-     temp_int_95=temp_int_95 + 1;
+     if ( OrderSelect(sellStopCountScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+     sellStopCount=sellStopCount + 1;
      
    }
-   if ( temp_int_95 >  g_maxPendingOrders )
+   if ( sellStopCount >  g_maxPendingOrders )
    {
-     temp_double_97 = 9999.0;
-     temp_long_98 = 0;
-     for (temp_int_99 = MT4OrdersTotal() ; temp_int_99 >= 0 ; temp_int_99=temp_int_99 - 1)
+     lowestSellStopPrice = 9999.0;
+     lowestSellStopTicket = 0;
+     for (lowestSellStopScanIdx = MT4OrdersTotal() ; lowestSellStopScanIdx >= 0 ; lowestSellStopScanIdx=lowestSellStopScanIdx - 1)
      {
-       if ( OrderSelect(temp_int_99,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(OrderOpenPrice()<temp_double_97) )   continue;
-       temp_long_98 = OrderTicket();
-       temp_double_97 = OrderOpenPrice();
+       if ( OrderSelect(lowestSellStopScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(OrderOpenPrice()<lowestSellStopPrice) )   continue;
+       lowestSellStopTicket = OrderTicket();
+       lowestSellStopPrice = OrderOpenPrice();
        
      }
-     if ( temp_long_98 != 0 )
+     if ( lowestSellStopTicket != 0 )
      {
-       OrderDelete(temp_long_98,Green); 
-       temp_long_100 = temp_long_98;
-       for (temp_int_101 = 0 ; temp_int_101 < 100 ; temp_int_101=temp_int_101 + 1)
+       OrderDelete(lowestSellStopTicket,Green); 
+       clearedSellStopTicket = lowestSellStopTicket;
+       for (clearedSellStopSlotIdx = 0 ; clearedSellStopSlotIdx < 100 ; clearedSellStopSlotIdx=clearedSellStopSlotIdx + 1)
        {
-         if ( !(g_stopOrderTicketPrice[temp_int_101][0]==temp_long_100) )   continue;
-         g_stopOrderTicketPrice[temp_int_101][0] = 0.0;
-         g_stopOrderTicketPrice[temp_int_101][1] = 0.0;
+         if ( !(g_stopOrderTicketPrice[clearedSellStopSlotIdx][0]==clearedSellStopTicket) )   continue;
+         g_stopOrderTicketPrice[clearedSellStopSlotIdx][0] = 0.0;
+         g_stopOrderTicketPrice[clearedSellStopSlotIdx][1] = 0.0;
          break;
          
        }
@@ -4072,51 +4071,51 @@ void OnTick()
      }
      if ( g_randomEntryMaxBars >  0 )
      {
-       local_8_int=MathRand() * g_randomEntryMaxBars / 32768 + 1;
-       g_randomEntryOffsetPips = local_8_int ;
+       randomEntryBars=MathRand() * g_randomEntryMaxBars / 32768 + 1;
+       g_randomEntryOffsetPips = randomEntryBars ;
      }
      if ( g_profitCloseMode != 1 )
      {
-       temp_int_102 = 0;
-       for (temp_int_103 = MT4OrdersTotal() ; temp_int_103 >= 0 ; temp_int_103=temp_int_103 - 1)
+       openBuyCount = 0;
+       for (openBuyCountScanIdx = MT4OrdersTotal() ; openBuyCountScanIdx >= 0 ; openBuyCountScanIdx=openBuyCountScanIdx - 1)
        {
-         if ( OrderSelect(temp_int_103,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 0 )   continue;
-         temp_int_102=temp_int_102 + 1;
+         if ( OrderSelect(openBuyCountScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 0 )   continue;
+         openBuyCount=openBuyCount + 1;
          
        }
-       if ( temp_int_102 == 0 )
+       if ( openBuyCount == 0 )
        {
-         temp_int_104 = 0;
-         for (temp_int_105 = MT4OrdersTotal() ; temp_int_105 >= 0 ; temp_int_105=temp_int_105 - 1)
+         openSellCount = 0;
+         for (openSellCountScanIdx = MT4OrdersTotal() ; openSellCountScanIdx >= 0 ; openSellCountScanIdx=openSellCountScanIdx - 1)
          {
-           if ( OrderSelect(temp_int_105,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 1 )   continue;
-           temp_int_104=temp_int_104 + 1;
+           if ( OrderSelect(openSellCountScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 1 )   continue;
+           openSellCount=openSellCount + 1;
            
          }
-         if ( temp_int_104 == 0 )
+         if ( openSellCount == 0 )
          {
-           temp_bool_106 = false;
-           for (temp_int_107 = 0 ; temp_int_107 < g_virtSLCacheSize ; temp_int_107=temp_int_107 + 1)
+           cacheEntryLive = false;
+           for (virtSlCacheScanIdx = 0 ; virtSlCacheScanIdx < g_virtSLCacheSize ; virtSlCacheScanIdx=virtSlCacheScanIdx + 1)
            {
-             if ( !(g_virtSLCache[temp_int_107][0]>0.0) )   continue;
-             temp_bool_106 = false;
-             for (temp_int_108 = MT4OrdersTotal() ; temp_int_108 >= 0 ; temp_int_108=temp_int_108 - 1)
+             if ( !(g_virtSLCache[virtSlCacheScanIdx][0]>0.0) )   continue;
+             cacheEntryLive = false;
+             for (virtSlCacheTicketScanIdx = MT4OrdersTotal() ; virtSlCacheTicketScanIdx >= 0 ; virtSlCacheTicketScanIdx=virtSlCacheTicketScanIdx - 1)
              {
-               if ( OrderSelect(temp_int_108,0,0) != true )   continue;
+               if ( OrderSelect(virtSlCacheTicketScanIdx,0,0) != true )   continue;
                
-               if ( ( OrderType() != 0 && OrderType() != 1 ) || !(OrderTicket()==g_virtSLCache[temp_int_107][0]) )   continue;
-               temp_bool_106 = true;
+               if ( ( OrderType() != 0 && OrderType() != 1 ) || !(OrderTicket()==g_virtSLCache[virtSlCacheScanIdx][0]) )   continue;
+               cacheEntryLive = true;
                
              }
-             if ( temp_bool_106 )   continue;
-             g_virtSLCache[temp_int_107][0] = 0.0;
-             g_virtSLCache[temp_int_107][1] = 0.0;
+             if ( cacheEntryLive )   continue;
+             g_virtSLCache[virtSlCacheScanIdx][0] = 0.0;
+             g_virtSLCache[virtSlCacheScanIdx][1] = 0.0;
              
            }
          }
        }
      }
-     for (local_9_int = 0 ; local_9_int < g_maxPendingOrders ; local_9_int ++)
+     for (entrySlotIdx = 0 ; entrySlotIdx < g_maxPendingOrders ; entrySlotIdx ++)
      {
        ProcessStrategyEntries(); 
      }
@@ -4125,22 +4124,22 @@ void OnTick()
    if ( g_lastHour != Hour() )
    {
      g_lastHour = Hour() ;
-     temp_bool_109 = false;
-     for (temp_int_110 = 0 ; temp_int_110 < 100 ; temp_int_110=temp_int_110 + 1)
+     soCacheEntryLive = false;
+     for (soCacheHourlyScanIdx = 0 ; soCacheHourlyScanIdx < 100 ; soCacheHourlyScanIdx=soCacheHourlyScanIdx + 1)
      {
-       temp_long_111 = (long)g_stopOrderTicketPrice[temp_int_110][0];
-       temp_bool_109 = false;
-       for (temp_int_112 = MT4OrdersTotal() ; temp_int_112 >= 0 ; temp_int_112=temp_int_112 - 1)
+       soCacheStoredTicket = (long)g_stopOrderTicketPrice[soCacheHourlyScanIdx][0];
+       soCacheEntryLive = false;
+       for (soCacheTicketScanIdx = MT4OrdersTotal() ; soCacheTicketScanIdx >= 0 ; soCacheTicketScanIdx=soCacheTicketScanIdx - 1)
        {
-         if ( !(OrderSelect(temp_int_112,0,0)) )   continue;
-         temp_long_113 = OrderTicket();
-         if ( temp_long_111 != temp_long_113 )   continue;
-         temp_bool_109 = true;
+         if ( !(OrderSelect(soCacheTicketScanIdx,0,0)) )   continue;
+         soCacheScanTicket = OrderTicket();
+         if ( soCacheStoredTicket != soCacheScanTicket )   continue;
+         soCacheEntryLive = true;
          
        }
-       if ( temp_bool_109 )   continue;
-       g_stopOrderTicketPrice[temp_int_110][0] = 0.0;
-       g_stopOrderTicketPrice[temp_int_110][1] = 0.0;
+       if ( soCacheEntryLive )   continue;
+       g_stopOrderTicketPrice[soCacheHourlyScanIdx][0] = 0.0;
+       g_stopOrderTicketPrice[soCacheHourlyScanIdx][1] = 0.0;
        
      }
    }

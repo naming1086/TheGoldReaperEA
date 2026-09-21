@@ -1,16 +1,41 @@
 // ============================================================================
-// The Gold Reaper English MT5 v4.6 - full dump reconstruction
-// Dump: metatester64.DMP, restored from RAR part01 through part05
-// Verified JIT base: 0x0000019AA50B0000
-// Verified JIT size: 0x0004F000 (PAGE_EXECUTE_READ)
-// Adjacent EA data: 0x0000019AA50FF000, size 0x00181000
-// Fresh aligned scan found 68 native entry/prologue candidates.
-//
-// Baseline: V4.6 dump/JIT reconstruction, NOT the V4.5 reconstruction.
-// V4.6-specific recovered behavior is retained (including V4.6 panel/version,
-// BacktestSpeed runtime handling, HighestBalance/OnlyUp behavior, and NFP path).
-// Logic/data were checked against the recovered dump. Final compile and
-// differential Strategy Tester validation still require MetaTrader 5.
+//  The Gold Reaper English MT5  ·  v4.6  ·  单文件 MQL5 重建版
+// ----------------------------------------------------------------------------
+//  [来源]  metatester64.DMP 全量转储重建（RAR part01 ~ part05 还原）
+//          JIT base : 0x0000019AA50B0000, size 0x0004F000 (PAGE_EXECUTE_READ)
+//          EA  data : 0x0000019AA50FF000, size 0x00181000
+//          对齐扫描共找到 68 个原生函数入口/序言候选。
+//  [基准]  基于 V4.6 转储/JIT 重建（非 V4.5 版本）。保留全部 V4.6 特有行为：
+//          V4.6 面板/版本号、BacktestSpeed 运行时处理、HighestBalance/OnlyUp
+//          行为以及 NFP 路径。
+//  [状态]  逻辑与数据均已对照转储核验；最终编译与 Strategy Tester 差分
+//          验证仍需在 MetaTrader 5 中进行。
+// ----------------------------------------------------------------------------
+//  文件结构目录（按出现顺序，可搜索节号 "[§N]" 快速定位）：
+//    §1  属性声明与 ATR 缓存全局变量
+//    §2  MQL4Compat —— MQL4 -> MQL5 兼容层（原独立 .mqh 已并入本文件）
+//    §3  输入参数枚举定义
+//    §4  输入参数（input）
+//    §5  转储重建全局变量（global_N_type_XX 命名）
+//    §6  NFP 过滤辅助函数
+//    §7  EA 事件处理（OnInit / DumpBacktestSpeedAllowTick / OnTick / OnDeinit）
+//    §8  策略运行时设置装载（LoadStrategyRuntimeSettings）
+//    §9  策略核心处理（ProcessStrategy）
+//    §10 挂单管理（RestoreStoredPendingOrders / RemovePendingOrdersDuringHighSpread）
+//    §11 手数计算（CalculateStrategyLotSize）
+//    §12 入场价位探测（Find*EntryHigh/Low、Find*Fractal* 及 MT4 快速版）
+//    §13 入场执行（ProcessStrategyEntries / PlaceBuyStopEntry / PlaceSellStopEntry）
+//    §14 持仓管理（ManageBuyPositions / ManageSellPositions）
+//    §15 交易时段、错误描述、信息面板与绩效统计
+//    §16 各策略参数装载（LoadStrategy1~9Settings）
+//    §17 PropFirm 日内回撤与 GMT/夏令时检测（EnforcePropFirmDailyDrawdown、
+//        WTS_*、DetectBrokerGmtOffset、IsAmericanDst）
+// ============================================================================
+
+// ============================================================================
+// [§1] 属性声明与 ATR 缓存全局变量
+//      - 9 个策略各持有独立 iATR 句柄（周期/时间框架/缓存值分表记录）
+//      - 美国/欧洲夏令时判定结果按天缓存（配合 §17 的 DST 检测）
 // ============================================================================
 
 #property copyright  "Copyright 2026 - Pham Duy Linh"
@@ -33,6 +58,11 @@ datetime g_eu_dst_cache_day=0;
 bool g_eu_dst_cache_valid=false;
 bool g_eu_dst_cache_value=false;
 
+// ============================================================================
+// [§2] MQL4Compat —— MQL4 -> MQL5 兼容层
+//      原为独立 MQL4Compat.mqh，现已直接并入本文件，使 EA 保持
+//      单 .mq5 文件、无需额外拷贝 include。详细设计说明见下方原注释。
+// ============================================================================
 //==================================================================
 // MQL4Compat: lop tuong thich MQL4->MQL5 (truoc day la file include
 // rieng MQL4Compat.mqh) - da GOP truc tiep vao day de EA chi con 1
@@ -1131,6 +1161,10 @@ bool OrderSelect(long index_or_ticket,int select,int pool=MODE_TRADES)
 #endif // __MQL4COMPAT_MQH__
 
 
+// ============================================================================
+// [§3] 输入参数枚举定义（与 input 参数对应的可选项，取值与 V4.6 原版一致）
+// ============================================================================
+
   enum BacktestSpeedOptions      {speed_normal = 1,//normal
                    speed_fast = 2,//fast
                    speed_super = 3//ultra fast
@@ -1170,6 +1204,9 @@ bool OrderSelect(long index_or_ticket,int select,int pool=MODE_TRADES)
 
 
 //------------------
+// ============================================================================
+// [§4] 输入参数（input）—— 分组顺序与 V4.6 原版输入面板一致
+// ============================================================================
 input string lijntje="============================================================="  ;   //- - -
 input bool UseVariableValues=true  ;   
 input bool AdjustLotsizeToVariableValues=true  ;   
@@ -1237,6 +1274,12 @@ input bool RunStrat6=true  ;    //Run Strategy 6 (med risk)
 input bool RunStrat7=true  ;    //Run Strategy 7 (med risk)
 input bool RunStrat8=true  ;    //Run Strategy 8 (high risk)
 input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
+// ============================================================================
+// [§5] 转储重建全局变量（原 V4.6 JIT 数据段）
+//      保留 global_N_type_XX 原始命名，便于与转储地址逐一对照；
+//      其中字符串型变量同时充当 V4.6 输入面板的分组分隔标题。
+// ============================================================================
+
   double    global_1_double_0 = 0.0;
   double    global_2_double_8 = 0.0;
   int       global_3_int_10 = 30;
@@ -1657,6 +1700,16 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 //| "Nonfarm Payrolls" -> values in [server_now-1d, server_now+30d]|
 //| -> earliest value in that window.                               |
 //+------------------------------------------------------------------+
+// ============================================================================
+// [§6] NFP 过滤辅助函数
+//      GetNextNFPFromCalendar           —— 经 MT5 经济日历查询下一次 NFP 时间
+//      MT4HardcodedNFPForCurrentMonth   —— 日历不可用时的硬编码 NFP 回退
+//      IsNfpManagedMagic                —— 判断 magic 是否属于本 EA 管理的策略
+//      CloseManagedPositionsByType      —— 按订单类型平掉受管仓位
+//      CloseNfpOpenTradesInOriginalOrder / CloseDailyDDPositionsInOriginalOrder
+//                                      —— NFP/日内回撤时按开仓原顺序平仓
+// ============================================================================
+
  datetime GetNextNFPFromCalendar()
  {
   datetime temp_now = TimeTradeServer();
@@ -1767,6 +1820,12 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 
  // Original V4.6 dump has no withdrawal-reconciliation layer here.
 
+// ============================================================================
+// [§7] EA 事件处理
+// ============================================================================
+
+// OnInit —— 初始化：HighestBalance 终端全局变量维护、BacktestSpeed/Tester
+//           状态、策略装载与信息面板创建（关键顺序见函数内恢复注释）
  int OnInit()
  {
  trade.SetAsyncMode(false);
@@ -2500,6 +2559,8 @@ g_initialLegacyRiskLotPending=true;
  return(0); 
  }
 //init <<==--------   --------
+// DumpBacktestSpeedAllowTick —— 回测加速节流：fast=每秒最多 1 个 tick，
+//                               super=每根已收 M1 K 线最多处理一次
  bool DumpBacktestSpeedAllowTick()
  {
   if ( !(g_backtestSpeedEnabled) )   return(true);
@@ -2541,6 +2602,8 @@ g_initialLegacyRiskLotPending=true;
  }
 //DumpBacktestSpeedAllowTick <<==--------   --------
 
+// OnTick —— 主处理循环：各过滤器 -> 逐策略 LoadStrategyNSettings +
+//           ProcessStrategy -> 面板更新
  void OnTick()
  {
   bool      local_1_bool;
@@ -3148,6 +3211,7 @@ g_initialLegacyRiskLotPending=true;
  global_381_int_5D94 = 0 ;
  }
 //OnTick <<==--------   --------
+// OnDeinit —— 释放 9 个 iATR 指标句柄并删除信息面板
  void OnDeinit(const int reason)
  {
  for(int i=0;i<9;i++)
@@ -3159,6 +3223,12 @@ g_initialLegacyRiskLotPending=true;
  }
 //deinit <<==--------   --------
 
+// ============================================================================
+// [§8] 策略运行时设置装载
+// ============================================================================
+
+// LoadStrategyRuntimeSettings —— 每次激活策略时重建该策略的 iATR 就绪门并
+//                                刷新运行时参数（原 V4.6 每次激活都重建句柄）
 // Original V4.6 dump has no custom OnTradeTransaction withdrawal adjustment.
  void LoadStrategyRuntimeSettings( int arg_0_int)
  {
@@ -3362,6 +3432,12 @@ g_initialLegacyRiskLotPending=true;
  }
  }
 //LoadStrategyRuntimeSettings <<==--------   --------
+// ============================================================================
+// [§9] 策略核心处理
+// ============================================================================
+
+// ProcessStrategy —— 单个策略的主处理函数（过滤器、挂单/持仓状态机），
+//                    arg_0_int 为策略索引（0..8）
  int ProcessStrategy( int arg_0_int)
  {
   bool      local_2_bool;
@@ -4143,6 +4219,10 @@ g_initialLegacyRiskLotPending=true;
  return(0); 
  }
 //ProcessStrategy <<==--------   --------
+// ============================================================================
+// [§10] 挂单管理
+// ============================================================================
+// RestoreStoredPendingOrders —— 依据内部存储表恢复因价格远离而过期的挂单
  void RestoreStoredPendingOrders()
  {
   int       local_1_int;
@@ -4260,6 +4340,7 @@ g_initialLegacyRiskLotPending=true;
  }
  }
 //RestoreStoredPendingOrders <<==--------   --------
+// RemovePendingOrdersDuringHighSpread —— 点差超过 MaxSpread 时移除挂单
  bool RemovePendingOrdersDuringHighSpread()
  {
   int       local_2_int;
@@ -4373,6 +4454,13 @@ g_initialLegacyRiskLotPending=true;
  return(false); 
  }
 //RemovePendingOrdersDuringHighSpread <<==--------   --------
+// ============================================================================
+// [§11] 手数计算
+// ============================================================================
+
+// CalculateStrategyLotSize —— 按 Risk 模式（固定手数 / 最大总回撤 / 单策略
+//                             风险）并结合 OnlyUp/HighestBalance/ManualBalance
+//                             计算当前策略手数
  void CalculateStrategyLotSize( double arg_0_double,int arg_1_int)
  {
   double    local_1_double;
@@ -4560,6 +4648,14 @@ g_initialLegacyRiskLotPending=true;
  global_223_double_1AC4_si99[global_328_int_3100] = NormalizeDouble(MathFloor(local_2_double * 100.0) / 100.0,2);
  }
 //CalculateStrategyLotSize <<==--------   --------
+// ============================================================================
+// [§12] 入场价位探测
+//       FindBuyEntryHigh / FindSellEntryLow     —— 逐 bar 扫描版（慢速）
+//       MT4FastEntryHigh / MT4FastEntryLow     —— 直接读价格序列版（快速）
+//       FindFractalHigh / FindFractalLow       —— 分形高/低点扫描
+//       MT4FastFractalHigh / MT4FastFractalLow —— 分形快速版
+// ============================================================================
+
  double FindBuyEntryHigh( int arg_0_int)
  {
   bool      local_2_bool = false;
@@ -4972,6 +5068,12 @@ g_initialLegacyRiskLotPending=true;
   return 0.0;
  }
 
+// ============================================================================
+// [§13] 入场执行
+// ============================================================================
+
+// ProcessStrategyEntries —— 入场总控：均线过滤、手数上限、虚拟过期处理，
+//                           触发 Buy/Sell Stop 挂单
  void ProcessStrategyEntries()
  {
   int       local_1_int;
@@ -5076,6 +5178,7 @@ g_initialLegacyRiskLotPending=true;
  }
  }
 //ProcessStrategyEntries <<==--------   --------
+// PlaceBuyStopEntry —— 放置 Buy Stop 挂单（含假突破过滤与入场价修正）
  bool PlaceBuyStopEntry( int arg_0_int)
  {
   bool      local_2_bool;
@@ -5301,6 +5404,7 @@ g_initialLegacyRiskLotPending=true;
  return(false); 
  }
 //PlaceBuyStopEntry <<==--------   --------
+// PlaceSellStopEntry —— 放置 Sell Stop 挂单（PlaceBuyStopEntry 的对称实现）
  bool PlaceSellStopEntry( int arg_0_int)
  {
   bool      local_2_bool;
@@ -5525,6 +5629,12 @@ g_initialLegacyRiskLotPending=true;
  return(false); 
  }
 //PlaceSellStopEntry <<==--------   --------
+// ============================================================================
+// [§14] 持仓管理
+// ============================================================================
+
+// ManageBuyPositions —— 多头持仓全生命周期管理：止损/止盈、保本、
+//                       各类追踪止损（普通 / HIGH-LOW / MagicTrail / 时间恢复）
  bool ManageBuyPositions()
  {
   bool      local_2_bool = false;
@@ -6258,6 +6368,7 @@ g_initialLegacyRiskLotPending=true;
  return(local_3_bool); 
  }
 //ManageBuyPositions <<==--------   --------
+// ManageSellPositions —— 空头持仓管理（ManageBuyPositions 的对称实现）
  bool ManageSellPositions()
  {
   bool      local_2_bool = false;
@@ -6990,6 +7101,22 @@ g_initialLegacyRiskLotPending=true;
  return(local_3_bool); 
  }
 //ManageSellPositions <<==--------   --------
+// ============================================================================
+// [§15] 交易时段、错误描述、挂单手数刷新、信息面板与绩效统计
+//       IsTradingScheduleOpen        —— 交易时段过滤器（GMT/PC/服务器时间源）
+//       GetTradeErrorDescription    —— MT4 风格错误码 -> 文本
+//       RefreshPendingOrderLotSizes  —— 按最新手数刷新在市挂单
+//       CreateInfoPanel / CreateInfoPanelCell / DeleteInfoPanel
+//                                    —— 信息面板的创建与销毁
+//       GetNextNFPText / UpdateAccountPanel / UpdateStrategyPanelRows /
+//       UpdateHistoryPanel           —— 面板各区域的周期性刷新
+//       CountWinningTrades / CountLosingTrades —— 按策略统计胜负笔数
+//       CalculatePerformanceMetrics  —— 汇总各策略绩效指标
+//       RankStrategiesByClosedProfit / RankStrategiesByProfitPerTrade
+//                                    —— 策略排名（用于自动手数加权）
+//       ConvertUsdToAccountCurrency / ConvertAccountCurrencyToUsd —— 货币换算
+// ============================================================================
+
  bool IsTradingScheduleOpen()
  {
   bool      local_2_bool;
@@ -9202,6 +9329,13 @@ g_initialLegacyRiskLotPending=true;
  return(MathRound(local_2_double)); 
  }
 //ConvertAccountCurrencyToUsd <<==--------   --------
+// ============================================================================
+// [§16] 各策略参数装载（LoadStrategy1~9Settings）
+//       把 V4.6 内置的每策略参数写入 §5 的全局变量表；由 TradeFrequency
+//       （自动/手动 RunStratN）决定装载哪些策略并交给 ProcessStrategy 执行。
+//       函数体均直接恢复自 JIT 常量表，数值不可随意改动。
+// ============================================================================
+
  void LoadStrategy1Settings()
  {
  double     temp_double_1;
@@ -10637,6 +10771,15 @@ g_initialLegacyRiskLotPending=true;
  global_397_double_6768 = ConvertUsdToAccountCurrency(130.0) ;
  }
 //LoadStrategy8Settings <<==--------   --------
+// ============================================================================
+// [§17] PropFirm 日内回撤与 GMT/夏令时检测
+//       EnforcePropFirmDailyDrawdown —— PropFirmMaxDailyDD 触发时按原顺序平仓
+//       WTS_MonthToInt / WTS_BuildDateTime / WTS_ParseHttpDate /
+//       WTS_StripTags / WTS_ParseHtmlTime —— WorldTimeServer GMT 解析辅助
+//       DetectBrokerGmtOffset        —— AutoGMT=true 时检测服务器 GMT 偏移
+//       IsAmericanDst                —— 美国夏令时区间判定（结果按天缓存）
+// ============================================================================
+
  void EnforcePropFirmDailyDrawdown()
  {
   double    local_1_double;

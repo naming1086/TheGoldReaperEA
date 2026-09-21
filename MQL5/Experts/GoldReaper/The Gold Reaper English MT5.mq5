@@ -9223,20 +9223,16 @@ void OnTick()
 //       函数体均直接恢复自 JIT 常量表，数值不可随意改动。
 // ============================================================================
 
+// Uniform +/- Randomization jitter applied to preset baseline values.
+double RandomizedJitter()
+{
+   if(Randomization>0.0)
+      return Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
+   return 0.0;
+}
+
  void LoadStrategy1Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 16 ;
@@ -9248,118 +9244,23 @@ void OnTick()
  g_fractalMinLookback = 105 ;
  g_entryBreakoutPips = 45.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -275.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -160.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -275.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -160.0 + RandomizedJitter();
  g_maxPendingOrders = 5 ;
  g_pendingDupTolerancePips = 30.0 ;
  g_pendingExpiryHours = 35 ;
  g_entryTfMinutes = 1 ;
- temp_double_3 = AdjustSL + 6100.0;
- if ( Randomization>0.0 )
- {
-   temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_4 = 0.0;
- }
- g_stopLossPips = temp_double_3 + temp_double_4 ;
- temp_double_4 = AdjustTP + 1450.0;
- if ( Randomization>0.0 )
- {
-   temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_5 = 0.0;
- }
- g_takeProfitPips = temp_double_4 + temp_double_5 ;
- temp_double_5 = AdjustTrailSL + 1800.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_trailActivationPips = temp_double_7 + 1800.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_stopLossPips = AdjustSL + 6100.0 + RandomizedJitter();
+ g_takeProfitPips = AdjustTP + 1450.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 1800.0 + RandomizedJitter();
+ g_trailActivationPips = 1800.0 + RandomizedJitter();
+ g_profitTrailCapPips = 5000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTargetPips = temp_double_9 + 1600.0 ;
- temp_double_9 = AdjustTrailTP + 700.0;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_trailTpPips = temp_double_9 + temp_double_10 ;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_beTriggerPips = temp_double_11 + 930.0 ;
- temp_double_11 = AdjustBreakEven + 120.0;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beExtraPips = temp_double_11 + temp_double_12 ;
+ g_profitTargetPips = 1600.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 700.0 + RandomizedJitter();
+ g_beTriggerPips = 930.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + 120.0 + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 14 ;
@@ -9380,19 +9281,6 @@ void OnTick()
 //LoadStrategy1Settings <<==--------   --------
  void LoadStrategy4Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
- double     temp_double_13;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 16 ;
@@ -9404,134 +9292,30 @@ void OnTick()
  g_fractalMinLookback = 90 ;
  g_entryBreakoutPips = 1050.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -40.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -100.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -40.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -100.0 + RandomizedJitter();
  g_maxPendingOrders = 2 ;
  g_pendingDupTolerancePips = 130.0 ;
  g_pendingExpiryHours = 192 ;
  g_entryTfMinutes = 5 ;
  if ( !(UseHL_TrailingSL) )
  {
-   temp_double_3 = AdjustSL + 700.0;
-   if ( Randomization>0.0 )
-   {
-     temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
-   }
-   else
-   {
-     temp_double_4 = 0.0;
-   }
-   g_stopLossPips = temp_double_3 + temp_double_4 ;
+   g_stopLossPips = AdjustSL + 700.0 + RandomizedJitter();
  }
  else
  {
-   temp_double_4 = AdjustSL + 800.0;
-   if ( Randomization>0.0 )
-   {
-     temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
-   }
-   else
-   {
-     temp_double_5 = 0.0;
-   }
-   g_stopLossPips = temp_double_4 + temp_double_5 ;
+   g_stopLossPips = AdjustSL + 800.0 + RandomizedJitter();
  }
- temp_double_5 = AdjustTP + 4900.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_takeProfitPips = temp_double_5 + temp_double_6 ;
- temp_double_6 = AdjustTrailSL + 1300.0;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_6 + temp_double_7 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_trailActivationPips = temp_double_8 + 1450.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTrailCapPips = temp_double_9 + 2000.0 ;
+ g_takeProfitPips = AdjustTP + 4900.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 1300.0 + RandomizedJitter();
+ g_trailActivationPips = 1450.0 + RandomizedJitter();
+ g_profitTrailCapPips = 2000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_profitTargetPips = temp_double_10 + 1400.0 ;
- temp_double_10 = AdjustTrailTP + 200.0;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_trailTpPips = temp_double_10 + temp_double_11 ;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beTriggerPips = temp_double_12 + 500.0 ;
- temp_double_12 = AdjustBreakEven + 200.0;
- if ( Randomization>0.0 )
- {
-   temp_double_13 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_13 = 0.0;
- }
- g_beExtraPips = temp_double_12 + temp_double_13 ;
+ g_profitTargetPips = 1400.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 200.0 + RandomizedJitter();
+ g_beTriggerPips = 500.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + 200.0 + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 14 ;
@@ -9555,18 +9339,6 @@ void OnTick()
 //LoadStrategy4Settings <<==--------   --------
  void LoadStrategy2Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 41 ;
@@ -9578,118 +9350,23 @@ void OnTick()
  g_fractalMinLookback = 230 ;
  g_entryBreakoutPips = 550.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -170.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -70.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -170.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -70.0 + RandomizedJitter();
  g_maxPendingOrders = 1 ;
  g_pendingDupTolerancePips = 480.0 ;
  g_pendingExpiryHours = 480 ;
  g_entryTfMinutes = 1 ;
- temp_double_3 = AdjustSL + 1000.0;
- if ( Randomization>0.0 )
- {
-   temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_4 = 0.0;
- }
- g_stopLossPips = temp_double_3 + temp_double_4 ;
- temp_double_4 = AdjustTP + 4100.0;
- if ( Randomization>0.0 )
- {
-   temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_5 = 0.0;
- }
- g_takeProfitPips = temp_double_4 + temp_double_5 ;
- temp_double_5 = AdjustTrailSL + 450.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_trailActivationPips = temp_double_7 + 1400.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_stopLossPips = AdjustSL + 1000.0 + RandomizedJitter();
+ g_takeProfitPips = AdjustTP + 4100.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 450.0 + RandomizedJitter();
+ g_trailActivationPips = 1400.0 + RandomizedJitter();
+ g_profitTrailCapPips = 5000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTargetPips = temp_double_9 + 1600.0 ;
- temp_double_9 = AdjustTrailTP + 400.0;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_trailTpPips = temp_double_9 + temp_double_10 ;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_beTriggerPips = temp_double_11 + 500.0 ;
- temp_double_11 = AdjustBreakEven + 100.0;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beExtraPips = temp_double_11 + temp_double_12 ;
+ g_profitTargetPips = 1600.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 400.0 + RandomizedJitter();
+ g_beTriggerPips = 500.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + 100.0 + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 1 ;
@@ -9710,19 +9387,6 @@ void OnTick()
 //LoadStrategy2Settings <<==--------   --------
  void LoadStrategy3Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
- double     temp_double_13;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 5 ;
@@ -9734,134 +9398,30 @@ void OnTick()
  g_fractalMinLookback = 20 ;
  g_entryBreakoutPips = 250.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -130.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -120.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -130.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -120.0 + RandomizedJitter();
  g_maxPendingOrders = 1 ;
  g_pendingDupTolerancePips = 980.0 ;
  g_pendingExpiryHours = 432 ;
  g_entryTfMinutes = 1 ;
  if ( !(UseHL_TrailingSL) )
  {
-   temp_double_3 = AdjustSL + 600.0;
-   if ( Randomization>0.0 )
-   {
-     temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
-   }
-   else
-   {
-     temp_double_4 = 0.0;
-   }
-   g_stopLossPips = temp_double_3 + temp_double_4 ;
+   g_stopLossPips = AdjustSL + 600.0 + RandomizedJitter();
  }
  else
  {
-   temp_double_4 = AdjustSL + 700.0;
-   if ( Randomization>0.0 )
-   {
-     temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
-   }
-   else
-   {
-     temp_double_5 = 0.0;
-   }
-   g_stopLossPips = temp_double_4 + temp_double_5 ;
+   g_stopLossPips = AdjustSL + 700.0 + RandomizedJitter();
  }
- temp_double_5 = AdjustTP + 3300.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_takeProfitPips = temp_double_5 + temp_double_6 ;
- temp_double_6 = AdjustTrailSL + 500.0;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_6 + temp_double_7 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_trailActivationPips = temp_double_8 + 400.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTrailCapPips = temp_double_9 + 5000.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_profitTargetPips = temp_double_10 + 1000.0 ;
- temp_double_10 = AdjustTrailTP + 2000.0;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_trailTpPips = temp_double_10 + temp_double_11 ;
+ g_takeProfitPips = AdjustTP + 3300.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 500.0 + RandomizedJitter();
+ g_trailActivationPips = 400.0 + RandomizedJitter();
+ g_profitTrailCapPips = 5000.0 + RandomizedJitter();
+ g_profitTargetPips = 1000.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 2000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beTriggerPips = temp_double_12 + 400.0 ;
- temp_double_12 = AdjustBreakEven;
- if ( Randomization>0.0 )
- {
-   temp_double_13 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_13 = 0.0;
- }
- g_beExtraPips = temp_double_12 + temp_double_13 ;
+ g_beTriggerPips = 400.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 7 ;
@@ -9885,18 +9445,6 @@ void OnTick()
 //LoadStrategy3Settings <<==--------   --------
  void LoadStrategy6Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 20 ;
@@ -9908,118 +9456,23 @@ void OnTick()
  g_fractalMinLookback = 140 ;
  g_entryBreakoutPips = 120.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -115.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -145.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -115.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -145.0 + RandomizedJitter();
  g_maxPendingOrders = 5 ;
  g_pendingDupTolerancePips = 55.0 ;
  g_pendingExpiryHours = 20 ;
  g_entryTfMinutes = 1 ;
- temp_double_3 = AdjustSL + 10100.0;
- if ( Randomization>0.0 )
- {
-   temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_4 = 0.0;
- }
- g_stopLossPips = temp_double_3 + temp_double_4 ;
- temp_double_4 = AdjustTP + 800.0;
- if ( Randomization>0.0 )
- {
-   temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_5 = 0.0;
- }
- g_takeProfitPips = temp_double_4 + temp_double_5 ;
- temp_double_5 = AdjustTrailSL + 500.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_trailActivationPips = temp_double_7 + 1200.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_stopLossPips = AdjustSL + 10100.0 + RandomizedJitter();
+ g_takeProfitPips = AdjustTP + 800.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 500.0 + RandomizedJitter();
+ g_trailActivationPips = 1200.0 + RandomizedJitter();
+ g_profitTrailCapPips = 5000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTargetPips = temp_double_9 + 1950.0 ;
- temp_double_9 = AdjustTrailTP + 350.0;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_trailTpPips = temp_double_9 + temp_double_10 ;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_beTriggerPips = temp_double_11 + 330.0 ;
- temp_double_11 = AdjustBreakEven + 80.0;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beExtraPips = temp_double_11 + temp_double_12 ;
+ g_profitTargetPips = 1950.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 350.0 + RandomizedJitter();
+ g_beTriggerPips = 330.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + 80.0 + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 0 ;
@@ -10040,18 +9493,6 @@ void OnTick()
 //LoadStrategy6Settings <<==--------   --------
  void LoadStrategy5Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 24 ;
@@ -10063,118 +9504,23 @@ void OnTick()
  g_fractalMinLookback = 110 ;
  g_entryBreakoutPips = 160.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -120.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -110.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -120.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -110.0 + RandomizedJitter();
  g_maxPendingOrders = 3 ;
  g_pendingDupTolerancePips = 55.0 ;
  g_pendingExpiryHours = 30 ;
  g_entryTfMinutes = 1 ;
- temp_double_3 = AdjustSL + 5300.0;
- if ( Randomization>0.0 )
- {
-   temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_4 = 0.0;
- }
- g_stopLossPips = temp_double_3 + temp_double_4 ;
- temp_double_4 = AdjustTP + 900.0;
- if ( Randomization>0.0 )
- {
-   temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_5 = 0.0;
- }
- g_takeProfitPips = temp_double_4 + temp_double_5 ;
- temp_double_5 = AdjustTrailSL + 495.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_trailActivationPips = temp_double_7 + 400.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_stopLossPips = AdjustSL + 5300.0 + RandomizedJitter();
+ g_takeProfitPips = AdjustTP + 900.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 495.0 + RandomizedJitter();
+ g_trailActivationPips = 400.0 + RandomizedJitter();
+ g_profitTrailCapPips = 5000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTargetPips = temp_double_9 + 1900.0 ;
- temp_double_9 = AdjustTrailTP + 250.0;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_trailTpPips = temp_double_9 + temp_double_10 ;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_beTriggerPips = temp_double_11 + 260.0 ;
- temp_double_11 = AdjustBreakEven + 80.0;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beExtraPips = temp_double_11 + temp_double_12 ;
+ g_profitTargetPips = 1900.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 250.0 + RandomizedJitter();
+ g_beTriggerPips = 260.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + 80.0 + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 0 ;
@@ -10195,18 +9541,6 @@ void OnTick()
 //LoadStrategy5Settings <<==--------   --------
  void LoadStrategy9Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 12 ;
@@ -10218,118 +9552,23 @@ void OnTick()
  g_fractalMinLookback = 200 ;
  g_entryBreakoutPips = 40.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -150.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -145.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -150.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -145.0 + RandomizedJitter();
  g_maxPendingOrders = 3 ;
  g_pendingDupTolerancePips = 5.0 ;
  g_pendingExpiryHours = 15 ;
  g_entryTfMinutes = 1 ;
- temp_double_3 = AdjustSL + 3900.0;
- if ( Randomization>0.0 )
- {
-   temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_4 = 0.0;
- }
- g_stopLossPips = temp_double_3 + temp_double_4 ;
- temp_double_4 = AdjustTP + 1350.0;
- if ( Randomization>0.0 )
- {
-   temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_5 = 0.0;
- }
- g_takeProfitPips = temp_double_4 + temp_double_5 ;
- temp_double_5 = AdjustTrailSL + 445.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_trailActivationPips = temp_double_7 + 355.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_stopLossPips = AdjustSL + 3900.0 + RandomizedJitter();
+ g_takeProfitPips = AdjustTP + 1350.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 445.0 + RandomizedJitter();
+ g_trailActivationPips = 355.0 + RandomizedJitter();
+ g_profitTrailCapPips = 5000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTargetPips = temp_double_9 + 1850.0 ;
- temp_double_9 = AdjustTrailTP + 250.0;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_trailTpPips = temp_double_9 + temp_double_10 ;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_beTriggerPips = temp_double_11 + 160.0 ;
- temp_double_11 = AdjustBreakEven + 50.0;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beExtraPips = temp_double_11 + temp_double_12 ;
+ g_profitTargetPips = 1850.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 250.0 + RandomizedJitter();
+ g_beTriggerPips = 160.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + 50.0 + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 1 ;
@@ -10350,18 +9589,6 @@ void OnTick()
 //LoadStrategy9Settings <<==--------   --------
  void LoadStrategy7Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 28 ;
@@ -10373,118 +9600,23 @@ void OnTick()
  g_fractalMinLookback = 145 ;
  g_entryBreakoutPips = 10.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -10.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -145.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -10.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -145.0 + RandomizedJitter();
  g_maxPendingOrders = 5 ;
  g_pendingDupTolerancePips = 90.0 ;
  g_pendingExpiryHours = 60 ;
  g_entryTfMinutes = 1 ;
- temp_double_3 = AdjustSL + 2250.0;
- if ( Randomization>0.0 )
- {
-   temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_4 = 0.0;
- }
- g_stopLossPips = temp_double_3 + temp_double_4 ;
- temp_double_4 = AdjustTP + 1450.0;
- if ( Randomization>0.0 )
- {
-   temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_5 = 0.0;
- }
- g_takeProfitPips = temp_double_4 + temp_double_5 ;
- temp_double_5 = AdjustTrailSL + 450.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_trailActivationPips = temp_double_7 + 900.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_stopLossPips = AdjustSL + 2250.0 + RandomizedJitter();
+ g_takeProfitPips = AdjustTP + 1450.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 450.0 + RandomizedJitter();
+ g_trailActivationPips = 900.0 + RandomizedJitter();
+ g_profitTrailCapPips = 5000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTargetPips = temp_double_9 + 2800.0 ;
- temp_double_9 = AdjustTrailTP + 350.0;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_trailTpPips = temp_double_9 + temp_double_10 ;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_beTriggerPips = temp_double_11 + 340.0 ;
- temp_double_11 = AdjustBreakEven + 30.0;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beExtraPips = temp_double_11 + temp_double_12 ;
+ g_profitTargetPips = 2800.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 350.0 + RandomizedJitter();
+ g_beTriggerPips = 340.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + 30.0 + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 12 ;
@@ -10505,18 +9637,6 @@ void OnTick()
 //LoadStrategy7Settings <<==--------   --------
  void LoadStrategy8Settings()
  {
- double     temp_double_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_4;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_7;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_10;
- double     temp_double_11;
- double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
  g_atrPeriod = 11 ;
@@ -10528,118 +9648,23 @@ void OnTick()
  g_fractalMinLookback = 235 ;
  g_entryBreakoutPips = 80.0 ;
  g_entryBreakoutPct = 0.0 ;
- temp_double_1 = AdjustEntry + -140.0;
- if ( Randomization>0.0 )
- {
-   temp_double_2 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_2 = 0.0;
- }
- g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
- temp_double_2 = AdjustEntry + -170.0;
- if ( Randomization>0.0 )
- {
-   temp_double_3 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_3 = 0.0;
- }
- g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_buyEntryOffsetPips = AdjustEntry + -140.0 + RandomizedJitter();
+ g_sellEntryOffsetPips = AdjustEntry + -170.0 + RandomizedJitter();
  g_maxPendingOrders = 5 ;
  g_pendingDupTolerancePips = 5.0 ;
  g_pendingExpiryHours = 55 ;
  g_entryTfMinutes = 1 ;
- temp_double_3 = AdjustSL + 1900.0;
- if ( Randomization>0.0 )
- {
-   temp_double_4 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_4 = 0.0;
- }
- g_stopLossPips = temp_double_3 + temp_double_4 ;
- temp_double_4 = AdjustTP + 1200.0;
- if ( Randomization>0.0 )
- {
-   temp_double_5 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_5 = 0.0;
- }
- g_takeProfitPips = temp_double_4 + temp_double_5 ;
- temp_double_5 = AdjustTrailSL + 1250.0;
- if ( Randomization>0.0 )
- {
-   temp_double_6 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_6 = 0.0;
- }
- g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
- if ( Randomization>0.0 )
- {
-   temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_7 = 0.0;
- }
- g_trailActivationPips = temp_double_7 + 650.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_8 = 0.0;
- }
- g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_stopLossPips = AdjustSL + 1900.0 + RandomizedJitter();
+ g_takeProfitPips = AdjustTP + 1200.0 + RandomizedJitter();
+ g_profitTrailDistancePips = AdjustTrailSL + 1250.0 + RandomizedJitter();
+ g_trailActivationPips = 650.0 + RandomizedJitter();
+ g_profitTrailCapPips = 5000.0 + RandomizedJitter();
  g_profitTrailBufferPips = 0.1 ;
  g_partialClosePct = 0.0 ;
- if ( Randomization>0.0 )
- {
-   temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_9 = 0.0;
- }
- g_profitTargetPips = temp_double_9 + 1950.0 ;
- temp_double_9 = AdjustTrailTP + 250.0;
- if ( Randomization>0.0 )
- {
-   temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_10 = 0.0;
- }
- g_trailTpPips = temp_double_9 + temp_double_10 ;
- if ( Randomization>0.0 )
- {
-   temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_11 = 0.0;
- }
- g_beTriggerPips = temp_double_11 + 270.0 ;
- temp_double_11 = AdjustBreakEven;
- if ( Randomization>0.0 )
- {
-   temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
- }
- else
- {
-   temp_double_12 = 0.0;
- }
- g_beExtraPips = temp_double_11 + temp_double_12 ;
+ g_profitTargetPips = 1950.0 + RandomizedJitter();
+ g_trailTpPips = AdjustTrailTP + 250.0 + RandomizedJitter();
+ g_beTriggerPips = 270.0 + RandomizedJitter();
+ g_beExtraPips = AdjustBreakEven + RandomizedJitter();
  g_hlFractalTfMinutes = 60 ;
  g_fractalMaxShift = 50 ;
  g_hlFractalRightBars = 15 ;

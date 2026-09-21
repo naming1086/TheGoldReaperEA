@@ -1462,6 +1462,13 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 //   global_10/11/12/13/14/18/21/22/24/25/29/30/47/48/49/62/66/76/78/79/82/90/91/94/98/102/112/115/124/127/136/137/138/142/143/144/147/150/156/157/167/203/204/205/206/207/208/211/212/219/220/222/224/225/226/227/228/232/233/235/236/237/243/244/245/246/248/249/259/276/277/282/283/284/285/286/287/288/291/292/293/294/295/296/308/316/317/327/330/331/332/333/335/338/341/348/351/352/353/355/357/365/366/367/368/369/370/371/373/374/375
 //   （编号含义同上；验证：git diff 纯删除 111 行、零新增行，删后复扫零死变量残留）
 //   清理后文件内保留 global_* 声明 149 个（其中多数已按批次1-3重命名为 g_* 语义名）
+//
+// ---- 批次5 OnTick 语义模块拆分（2026-09）----
+//   原 ~600 行平铺 OnTick 按原语句顺序 1:1 抽取为 12 个语义模块（见 OnTick 前注释清单），
+//   9 个仅常量不同的策略调度块去重为 RunStrategySlot(strategyIndex,newH1Bar)。
+//   验证：归一化 diff 集合包含检查——336/360 条归一化语句逐字保留，
+//   24 条未匹配行全部为预期等价变换（声明合并/case 前缀/包装行替代/条件反转）；
+//   括号平衡 1535/1535，无语句丢失。行为等价性最终以 Strategy Tester 差分回测为准。
 // ============================================================================
 
   double    g_curSpread = 0.0;
@@ -2675,208 +2682,214 @@ g_initialLegacyRiskLotPending=true;
  }
 //DumpBacktestSpeedAllowTick <<==--------   --------
 
-// OnTick —— 主处理循环：各过滤器 -> 逐策略 LoadStrategyNSettings +
-//           ProcessStrategy -> 面板更新
- void OnTick()
- {
-  bool      local_1_bool;
-  double    local_2_double;
-  double    local_3_double;
-  bool      local_4_bool;
-//----- -----
- bool       temp_bool_1;
- double     temp_double_2;
- double     temp_double_3;
- double     temp_double_5;
- double     temp_double_6;
- double     temp_double_8;
- double     temp_double_9;
- double     temp_double_11;
- double     temp_double_12;
- double     temp_double_14;
- double     temp_double_15;
- double     temp_double_17;
- double     temp_double_18;
- double     temp_double_20;
- double     temp_double_21;
- double     temp_double_23;
- double     temp_double_24;
- double     temp_double_26;
- double     temp_double_27;
+// =====================================================================
+// OnTick 璇箟妯″潡鎷嗗垎锛堟壒娆?锛?026-09锛?
+// 鍘熷弽缂栬瘧 OnTick 涓?~600 琛屽钩閾鸿繃绋嬨€備互涓嬫ā鍧楁寜鍘熻鍙ラ『搴?1:1 鎶藉彇锛?
+// 璇彞鏈綋淇濇寔鍘熸牱锛堟湭鏀瑰啓銆佹湭閲嶆帓锛夛紝浠呮秷闄?9 涓瓥鐣ヨ皟搴﹀潡鐨勫瓧闈㈤噸澶嶏細
+//   UpdateEffectiveBalanceTracking      鏈夋晥浣欓/OnlyUp 楂樻按浣?ManualBalance 瑕嗙洊
+//   ApplyFakeoutFilterMode              FakeOutFilter -> M1/M15/H1 浣胯兘鏄犲皠
+//   UpdateGmtDstDetection               US/EU 澶忎护鏃剁姸鎬佹満 + GMT 鍋忕Щ鎺㈡祴
+//   RefreshNfpCalendarCache             NFP 鏃ュ巻缂撳瓨锛?00 绉掑埛鏂帮紱鍥炴祴鐢ㄧ‖缂栫爜鏃ユ湡锛?
+//   EnforceManualHistoricalDDCompat     鍘熺増闈炴硶杈撳叆缁勫悎鍏煎锛堥浂闄よ涓哄鐜帮級
+//   ApplyTradeFrequencyTiers            浜ゆ槗棰戠巼妗ｄ綅 -> 绛栫暐寮€鍏?椋庨櫓绯绘暟
+//   CheckDailyRolloverAndPropFirmGate   D1 鎹㈡棩閲嶇疆 + PropFirm 鏃ュ唴鍥炴挙闂搁棬
+//   DetectNewH1Bar                      H1 鏀剁洏 K 绾垮彉鍖栨娴?
+//   RunAllStrategies / RunStrategySlot   9 绛栫暐妲戒綅璋冨害锛堥『搴忎繚鎸佸師鐗?1,4,2,3,6,5,9,7,8锛?
+//   UpdatePanelsOnNewM5Bar              M5 鏂?K 绾?-> 绛栫暐/鍘嗗彶闈㈡澘鍒锋柊
+//   FinishTickLotResizeThrottle         姣?2 tick 鐨勪綑棰濆揩鐓ф墜鏁板啀骞宠　
+// =====================================================================
 
- if(!(DumpBacktestSpeedAllowTick())) return;
- g_live_valid=false;
+// UpdateEffectiveBalanceTracking 鈥斺€?鏈夋晥浣欓锛圤nlyUp 楂樻按浣?+ ManualBalance 瑕嗙洊锛?
+void UpdateEffectiveBalanceTracking()
+{
+  global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_BALANCE) ;
+  if ( UseEquity )
+  {
+    global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_EQUITY) ;
+  }
+  if ( OnlyUp && g_highestBalance>global_401_double_6AD0 )
+  {
+    global_401_double_6AD0 = g_highestBalance ;
+  }
+  if ( global_401_double_6AD0>g_highestBalance )
+  {
+    g_highestBalance = global_401_double_6AD0 ;
+    GlobalVariableSet("HighestBalance",g_highestBalance) ;
+  }
+  if ( ManualBalance>0.0 )
+  {
+    global_401_double_6AD0 = ManualBalance ;
+  }
+}
 
- global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_BALANCE) ;
- if ( UseEquity )
- {
-   global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_EQUITY) ;
- }
- if ( OnlyUp && g_highestBalance>global_401_double_6AD0 )
- {
-   global_401_double_6AD0 = g_highestBalance ;
- }
- if ( global_401_double_6AD0>g_highestBalance )
- {
-   g_highestBalance = global_401_double_6AD0 ;
-   GlobalVariableSet("HighestBalance",g_highestBalance) ;
- }
- if ( ManualBalance>0.0 )
- {
-   global_401_double_6AD0 = ManualBalance ;
- }
- if ( FakeOutFilter == 0 )
- {
-   g_fakeoutEnableM1 = false ;
-   g_fakeoutEnableM15 = false ;
-   g_fakeoutEnableH1 = false ;
- }
- else
- {
-   if ( FakeOutFilter == 1 )
-   {
-     g_fakeoutEnableM1 = true ;
-     g_fakeoutEnableM15 = false ;
-     g_fakeoutEnableH1 = false ;
-   }
-   else
-   {
-     if ( FakeOutFilter == 2 )
-     {
-       g_fakeoutEnableM1 = true ;
-       g_fakeoutEnableM15 = true ;
-       g_fakeoutEnableH1 = false ;
-     }
-     else
-     {
-       if ( FakeOutFilter == 3 )
-       {
-         g_fakeoutEnableM1 = true ;
-         g_fakeoutEnableM15 = true ;
-         g_fakeoutEnableH1 = true ;
-       }
-     }
-   }
- }
- local_1_bool = false ;
- if ( IsAmericanDst() )
- {
-   global_395_int_6760 = Broker_GMT_OFFSET_Summer ;
-   if ( ( !(g_isSummerTime) || !(g_gmtDetectDone) ) && AutoGMT && !(local_1_bool) )
-   {
-     g_isSummerTime = true ;
-     global_393_bool_675D = true ;
-     g_detectedGmtOffset = DetectBrokerGmtOffset() ;
-     if ( g_detectedGmtOffset == 999 )
-     {
-       Print("GMT_Offset wrongly detected.  Trying againg!"); 
-       Sleep(2000); 
-       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
-     }
-     if ( g_detectedGmtOffset == 999 )
-     {
-       Print("GMT_Offset still wrong.  Using VPS time for GMT detection!"); 
-     }
-     g_gmtDetectDone = true ;
-     local_1_bool = true ;
-     Print("DST_US on"); 
-   }
- }
- else
- {
-   global_395_int_6760 = Broker_GMT_OFFSET_Winter ;
-   if ( ( g_isSummerTime || !(g_gmtDetectDone) ) && AutoGMT && !(local_1_bool) )
-   {
-     g_isSummerTime = false ;
-     global_393_bool_675D = false ;
-     g_detectedGmtOffset = DetectBrokerGmtOffset() ;
-     if ( g_detectedGmtOffset == 999 )
-     {
-       Print("GMT_Offset wrongly detected.  Trying againg!"); 
-       Sleep(2000); 
-       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
-     }
-     if ( g_detectedGmtOffset == 999 )
-     {
-       Print("GMT_Offset still wrong.  Using VPS time for GMT detection!"); 
-     }
-     g_gmtDetectDone = true ;
-     local_1_bool = true ;
-     Print("DST_US off"); 
-   }
- }
-  temp_bool_1 = MT4EuropeanDST();
- if ( temp_bool_1 )
- {
-   if ( ( !(global_393_bool_675D) || !(g_gmtDetectDone) ) && AutoGMT && !(local_1_bool) )
-   {
-     global_393_bool_675D = true ;
-     g_detectedGmtOffset = DetectBrokerGmtOffset() ;
-     if ( g_detectedGmtOffset == 999 )
-     {
-       Print("GMT_Offset wrongly detected.  Trying againg!"); 
-       Sleep(2000); 
-       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
-     }
-     if ( g_detectedGmtOffset == 999 )
-     {
-       Print("GMT_Offset still wrong.  Using VPS time for GMT detection!"); 
-     }
-     g_gmtDetectDone = true ;
-     local_1_bool = true ;
-     Print("DST_EU on"); 
-   }
- }
- else
- {
-   if ( ( global_393_bool_675D || !(g_gmtDetectDone) ) && AutoGMT && !(local_1_bool) )
-   {
-     global_393_bool_675D = false ;
-     g_detectedGmtOffset = DetectBrokerGmtOffset() ;
-     if ( g_detectedGmtOffset == 999 )
-     {
-       Print("GMT_Offset wrongly detected.  Trying againg!"); 
-       Sleep(2000); 
-       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
-     }
-     if ( g_detectedGmtOffset == 999 )
-     {
-       Print("GMT_Offset still wrong.  Using VPS time for GMT detection!"); 
-     }
-     g_gmtDetectDone = true ;
-     local_1_bool = true ;
-     Print("DST_EU off"); 
-   }
- }
- if ( AutoGMT && MQLInfoInteger(MQL_TESTER) != 1 )
- {
-   if ( g_detectedGmtOffset != 999 )
-   {
-     g_nfpAdjustedNow=TimeCurrent() - g_detectedGmtOffset * 3600;
-   }
-   else
-   {
-     g_nfpAdjustedNow = TimeGMT() ;
-   }
- }
- else
- {
-   g_nfpAdjustedNow=TimeCurrent() - global_395_int_6760 * 3600;
- }
- // Original V4.6 live-calendar cache: refresh after 900 seconds, or immediately
- // whenever no event is cached.  Tester bypasses this path and uses hardcoded dates.
+// ApplyFakeoutFilterMode 鈥斺€?FakeOutFilter 杈撳叆 -> M1/M15/H1 鍋囩獊鐮磋繃婊ゅ櫒浣胯兘
+void ApplyFakeoutFilterMode()
+{
+  if ( FakeOutFilter == 0 )
+  {
+    g_fakeoutEnableM1 = false ;
+    g_fakeoutEnableM15 = false ;
+    g_fakeoutEnableH1 = false ;
+  }
+  else
+  {
+    if ( FakeOutFilter == 1 )
+    {
+      g_fakeoutEnableM1 = true ;
+      g_fakeoutEnableM15 = false ;
+      g_fakeoutEnableH1 = false ;
+    }
+    else
+    {
+      if ( FakeOutFilter == 2 )
+      {
+        g_fakeoutEnableM1 = true ;
+        g_fakeoutEnableM15 = true ;
+        g_fakeoutEnableH1 = false ;
+      }
+      else
+      {
+        if ( FakeOutFilter == 3 )
+        {
+          g_fakeoutEnableM1 = true ;
+          g_fakeoutEnableM15 = true ;
+          g_fakeoutEnableH1 = true ;
+        }
+      }
+    }
+  }
+}
+
+// UpdateGmtDstDetection 鈥斺€?US/EU 澶忎护鏃剁姸鎬佹満锛氬亸绉诲垏鎹㈡椂閲嶆柊鎺㈡祴 GMT锛?
+//                         闈?AutoGMT锛堟垨鍥炴祴锛夌洿鎺ョ敤鍐?澶忛厤缃亸绉绘帹 NFP 鏃堕棿
+void UpdateGmtDstDetection()
+{
+  bool   temp_dstHandled = false ;   // 鍘?local_1_bool锛氭湰娆?tick 鏄惁宸插鐞嗚繃 DST 鍒囨崲
+  if ( IsAmericanDst() )
+  {
+    global_395_int_6760 = Broker_GMT_OFFSET_Summer ;
+    if ( ( !(g_isSummerTime) || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    {
+      g_isSummerTime = true ;
+      global_393_bool_675D = true ;
+      g_detectedGmtOffset = DetectBrokerGmtOffset() ;
+      if ( g_detectedGmtOffset == 999 )
+      {
+        Print("GMT_Offset wrongly detected.  Trying againg!");
+        Sleep(2000);
+        g_detectedGmtOffset = DetectBrokerGmtOffset() ;
+      }
+      if ( g_detectedGmtOffset == 999 )
+      {
+        Print("GMT_Offset still wrong.  Using VPS time for GMT detection!");
+      }
+      g_gmtDetectDone = true ;
+      temp_dstHandled = true ;
+      Print("DST_US on");
+    }
+  }
+  else
+  {
+    global_395_int_6760 = Broker_GMT_OFFSET_Winter ;
+    if ( ( g_isSummerTime || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    {
+      g_isSummerTime = false ;
+      global_393_bool_675D = false ;
+      g_detectedGmtOffset = DetectBrokerGmtOffset() ;
+      if ( g_detectedGmtOffset == 999 )
+      {
+        Print("GMT_Offset wrongly detected.  Trying againg!");
+        Sleep(2000);
+        g_detectedGmtOffset = DetectBrokerGmtOffset() ;
+      }
+      if ( g_detectedGmtOffset == 999 )
+      {
+        Print("GMT_Offset still wrong.  Using VPS time for GMT detection!");
+      }
+      g_gmtDetectDone = true ;
+      temp_dstHandled = true ;
+      Print("DST_US off");
+    }
+  }
+  bool temp_isEuDst = MT4EuropeanDST();
+  if ( temp_isEuDst )
+  {
+    if ( ( !(global_393_bool_675D) || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    {
+      global_393_bool_675D = true ;
+      g_detectedGmtOffset = DetectBrokerGmtOffset() ;
+      if ( g_detectedGmtOffset == 999 )
+      {
+        Print("GMT_Offset wrongly detected.  Trying againg!");
+        Sleep(2000);
+        g_detectedGmtOffset = DetectBrokerGmtOffset() ;
+      }
+      if ( g_detectedGmtOffset == 999 )
+      {
+        Print("GMT_Offset still wrong.  Using VPS time for GMT detection!");
+      }
+      g_gmtDetectDone = true ;
+      temp_dstHandled = true ;
+      Print("DST_EU on");
+    }
+  }
+  else
+  {
+    if ( ( global_393_bool_675D || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    {
+      global_393_bool_675D = false ;
+      g_detectedGmtOffset = DetectBrokerGmtOffset() ;
+      if ( g_detectedGmtOffset == 999 )
+      {
+        Print("GMT_Offset wrongly detected.  Trying againg!");
+        Sleep(2000);
+        g_detectedGmtOffset = DetectBrokerGmtOffset() ;
+      }
+      if ( g_detectedGmtOffset == 999 )
+      {
+        Print("GMT_Offset still wrong.  Using VPS time for GMT detection!");
+      }
+      g_gmtDetectDone = true ;
+      temp_dstHandled = true ;
+      Print("DST_EU off");
+    }
+  }
+  if ( AutoGMT && MQLInfoInteger(MQL_TESTER) != 1 )
+  {
+    if ( g_detectedGmtOffset != 999 )
+    {
+      g_nfpAdjustedNow=TimeCurrent() - g_detectedGmtOffset * 3600;
+    }
+    else
+    {
+      g_nfpAdjustedNow = TimeGMT() ;
+    }
+  }
+  else
+  {
+    g_nfpAdjustedNow=TimeCurrent() - global_395_int_6760 * 3600;
+  }
+}
+
+// RefreshNfpCalendarCache 鈥斺€?鍘熺増 V4.6 瀹炵洏鏃ュ巻缂撳瓨锛氳窛涓婃鍒锋柊 900 绉?
+// 鎴栧綋鍓嶆棤缂撳瓨浜嬩欢鏃剁珛鍗虫媺鍙栵紱鍥炴祴涓嶈蛋姝よ矾寰勶紙浣跨敤纭紪鐮?NFP 鏃ユ湡锛?
+void RefreshNfpCalendarCache()
+{
   if ( EnableNFP_Filter && UseMQL5Calendar && MQLInfoInteger(MQL_TESTER) != 1 )
- {
-   datetime temp_nfpRefreshNow = TimeTradeServer();
-   if ( temp_nfpRefreshNow > g_nfpCalendarLastRefresh + 900 || g_nextNFPCalendar == 0 )
-   {
-     g_nextNFPCalendar = GetNextNFPFromCalendar();
+  {
+    datetime temp_nfpRefreshNow = TimeTradeServer();
+    if ( temp_nfpRefreshNow > g_nfpCalendarLastRefresh + 900 || g_nextNFPCalendar == 0 )
+    {
+      g_nextNFPCalendar = GetNextNFPFromCalendar();
       g_nfpCalendarLastRefresh = TimeTradeServer();
     }
   }
-  // Original Market EX5 behavior for this incompatible input combination:
-  // manual frequency never initializes the historical-DD divisor, so the
-  // first tick terminates with a zero-divide critical error.
+}
+
+// EnforceManualHistoricalDDCompat 鈥斺€?鍘熺増 Market EX5 瀵硅涓嶅吋瀹硅緭鍏ョ粍鍚堢殑琛屼负锛?
+// 鎵嬪姩棰戠巼浠庝笉鍒濆鍖栧巻鍙?DD 闄ゆ暟锛岄涓?tick 浠ラ浂闄や弗閲嶉敊璇粓姝紱姝ゅ鎸夊師鏍峰鐜?
+void EnforceManualHistoricalDDCompat()
+{
   if ( TradeFrequency == Manual_Strategy_Selection && Risk == MaxHistoricalDD && UseWeightedLots &&
        (RunStrat1 || RunStrat2 || RunStrat3 || RunStrat4 || RunStrat5 ||
         RunStrat6 || RunStrat7 || RunStrat8 || RunStrat9) )
@@ -2886,403 +2899,293 @@ g_initialLegacyRiskLotPending=true;
     int original_manual_dd_result=(int)AccountInfoInteger(ACCOUNT_LOGIN)/original_manual_dd_divisor;
     Print("manual historical-DD compatibility result: ",original_manual_dd_result);
   }
+}
+
+// ApplyTradeFrequencyTiers 鈥斺€?浜ゆ槗棰戠巼妗ｄ綅閫夋嫨锛汻isk==1234 鏃舵寜璐︽埛 USD 鎶樼畻鐨?
+// MaxAllowedDD 鍒嗗眰鑷€傚簲妗ｄ綅锛涢殢鍚庡皢妗ｄ綅鏄犲皠涓虹瓥鐣ュ紑鍏充笌椋庨櫓绯绘暟
+void ApplyTradeFrequencyTiers()
+{
+  double   temp_usdBalance;
+  double   temp_maxDDUsd;
   if ( TradeFrequency == 5 && Risk == 1234 )
- {
-   local_2_double = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE)) ;
-   local_3_double = MaxAllowedDD / 100.0 * local_2_double ;
-   if ( local_3_double>global_388_int_5DB4 )
-   {
-     g_tradeFrequencyMode = 3 ;
-   }
-   else
-   {
-     if ( local_3_double>g_ddTierThreshold3 )
-     {
-       g_tradeFrequencyMode = 2 ;
-     }
-     else
-     {
-       if ( local_3_double>global_386_int_5DAC )
-       {
-         g_tradeFrequencyMode = 1 ;
-       }
-       else
-       {
-         g_tradeFrequencyMode = 0 ;
-       }
-     }
-   }
- }
- else
- {
-   g_tradeFrequencyMode = TradeFrequency ;
- }
- if ( g_tradeFrequencyMode == 0 )
- {
-   g_runStrategy4 = false ;
-   g_runStrategy5 = false ;
-   g_runStrategy6 = false ;
-   g_runStrategy7 = false ;
-   g_runStrategy8 = false ;
-   g_runStrategy9 = false ;
-   g_riskFactorByTier = 2.4 ;
-   if ( UseVariableValues )
-   {
-     g_riskFactorByTier = 3.0 ;
-   }
- }
- else
- {
-   if ( g_tradeFrequencyMode == 1 )
-   {
-     g_runStrategy4 = true ;
-     g_runStrategy5 = true ;
-     g_runStrategy6 = false ;
-     g_runStrategy7 = false ;
-     g_runStrategy8 = false ;
-     g_runStrategy9 = false ;
-     g_riskFactorByTier = 3.4 ;
-     if ( UseVariableValues )
-     {
-       g_riskFactorByTier = 4.0 ;
-     }
-   }
-   else
-   {
-     if ( g_tradeFrequencyMode == 2 )
-     {
-       g_runStrategy4 = true ;
-       g_runStrategy5 = true ;
-       g_runStrategy6 = true ;
-       g_runStrategy7 = true ;
-       g_runStrategy8 = false ;
-       g_runStrategy9 = false ;
-       g_riskFactorByTier = 4.1 ;
-       if ( UseVariableValues )
-       {
-         g_riskFactorByTier = 5.0 ;
-       }
-     }
-     else
-     {
-       if ( g_tradeFrequencyMode == 3 )
-       {
-         g_runStrategy4 = true ;
-         g_runStrategy5 = true ;
-         g_runStrategy6 = true ;
-         g_runStrategy7 = true ;
-         g_runStrategy8 = true ;
-         g_runStrategy9 = false ;
-         g_riskFactorByTier = 4.8 ;
-         if ( UseVariableValues )
-         {
-           g_riskFactorByTier = 5.6 ;
-         }
-       }
-       else
-       {
-         if ( g_tradeFrequencyMode == 4 )
-         {
-           g_runStrategy4 = true ;
-           g_runStrategy5 = true ;
-           g_runStrategy6 = true ;
-           g_runStrategy7 = true ;
-           g_runStrategy8 = true ;
-           g_runStrategy9 = true ;
-           g_riskFactorByTier = 5.1 ;
-           if ( UseVariableValues )
-           {
-             g_riskFactorByTier = 6.0 ;
-           }
-         }
-         else
-         {
-           if ( g_tradeFrequencyMode == 6 )
-           {
-             g_runStrategy1 = RunStrat1 ;
-             g_runStrategy2 = RunStrat2 ;
-             g_runStrategy3 = RunStrat3 ;
-             g_runStrategy4 = RunStrat4 ;
-             g_runStrategy5 = RunStrat5 ;
-             g_runStrategy6 = RunStrat6 ;
-             g_runStrategy7 = RunStrat7 ;
-             g_runStrategy8 = RunStrat8 ;
-             g_runStrategy9 = RunStrat9 ;
-           }
-         }
-       }
-     }
-   }
- }
- if ( iBars(g_chartSymbol,MT4Period(PERIOD_D1)) != g_lastD1BarsCount )
- {
-   g_lastD1BarsCount = iBars(g_chartSymbol,MT4Period(PERIOD_D1)) ;
-   global_382_bool_5D98 = false ;
-   global_384_double_5DA0 = 0.0 ;
- }
- if ( PropFirmMaxDailyDD>0.0 )
- {
-   EnforcePropFirmDailyDrawdown(); 
- }
- if ( global_382_bool_5D98 || !(g_propfirmDailyDDOn) )   return;
- local_4_bool = false ;
- if ( global_399_datetime_6778 != iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) )
- {
-   local_4_bool = true ;
-   global_399_datetime_6778 = iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) ;
- }
- if ( ( StringFind(Symbol(),"XAUUSD",0) >= 0 || StringFind(Symbol(),"xauusd",0) >= 0 || StringFind(Symbol(),"GOLD",0) >= 0 || StringFind(Symbol(),"GLD",0) >= 0 || StringFind(Symbol(),"gold",0) >= 0 || StringFind(Symbol(),"Gold",0) >= 0 ) )
- {
-   g_chartSymbol = Symbol() ;
-   if ( g_runStrategy1 )
-   {
-     LoadStrategy1Settings(); 
-     LoadStrategyRuntimeSettings(0); 
-     ProcessStrategy(0); 
-     if ( g_initialLegacyRiskLotPending )
-     {
-       for (int temp_initialLotOrder = MT4OrdersTotal(); temp_initialLotOrder >= 0; temp_initialLotOrder--)
-       {
-         if ( OrderSelect(temp_initialLotOrder,0,0) && OrderSymbol() == g_chartSymbol &&
-              OrderMagicNumber() == ST1_MagicNumber + 1 )
-         {
-           g_initialLegacyRiskLotPending=false;
-           break;
-         }
-       }
-     }
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_2 = 0.0;
-       }
-       else
-       {
-         temp_double_3 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_3);
-         temp_double_2 = temp_double_3;
-       }
-       g_histClosedPLbyStrategy[0] = temp_double_2;
-       if ( g_histClosedPLbyStrategy[0]!=0.0 && g_closedTradeCount[0] >  0 )
-       {
-         g_avgPLperTrade[0] = g_histClosedPLbyStrategy[0] / g_closedTradeCount[0];
-       }
-     }
-   }
-   if ( g_runStrategy4 )
-   {
-     LoadStrategy4Settings(); 
-     LoadStrategyRuntimeSettings(3); 
-     ProcessStrategy(3); 
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_5 = 0.0;
-       }
-       else
-       {
-         temp_double_6 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_6);
-         temp_double_5 = temp_double_6;
-       }
-       g_histClosedPLbyStrategy[3] = temp_double_5;
-       if ( g_histClosedPLbyStrategy[3]!=0.0 && g_closedTradeCount[3] >  0 )
-       {
-         g_avgPLperTrade[3] = g_histClosedPLbyStrategy[3] / g_closedTradeCount[3];
-       }
-     }
-   }
-   if ( g_runStrategy2 )
-   {
-     LoadStrategy2Settings(); 
-     LoadStrategyRuntimeSettings(1); 
-     ProcessStrategy(1); 
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_8 = 0.0;
-       }
-       else
-       {
-         temp_double_9 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_9);
-         temp_double_8 = temp_double_9;
-       }
-       g_histClosedPLbyStrategy[1] = temp_double_8;
-       if ( g_histClosedPLbyStrategy[1]!=0.0 && g_closedTradeCount[1] >  0 )
-       {
-         g_avgPLperTrade[1] = g_histClosedPLbyStrategy[1] / g_closedTradeCount[1];
-       }
-     }
-   }
-   if ( g_runStrategy3 )
-   {
-     LoadStrategy3Settings(); 
-     LoadStrategyRuntimeSettings(2); 
-     ProcessStrategy(2); 
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_11 = 0.0;
-       }
-       else
-       {
-         temp_double_12 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_12);
-         temp_double_11 = temp_double_12;
-       }
-       g_histClosedPLbyStrategy[2] = temp_double_11;
-       if ( g_histClosedPLbyStrategy[2]!=0.0 && g_closedTradeCount[2] >  0 )
-       {
-         g_avgPLperTrade[2] = g_histClosedPLbyStrategy[2] / g_closedTradeCount[2];
-       }
-     }
-   }
-   if ( g_runStrategy6 )
-   {
-     LoadStrategy6Settings(); 
-     LoadStrategyRuntimeSettings(5); 
-     ProcessStrategy(5); 
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_14 = 0.0;
-       }
-       else
-       {
-         temp_double_15 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_15);
-         temp_double_14 = temp_double_15;
-       }
-       g_histClosedPLbyStrategy[5] = temp_double_14;
-       if ( g_histClosedPLbyStrategy[5]!=0.0 && g_closedTradeCount[5] >  0 )
-       {
-         g_avgPLperTrade[5] = g_histClosedPLbyStrategy[5] / g_closedTradeCount[5];
-       }
-     }
-   }
-   if ( g_runStrategy5 )
-   {
-     LoadStrategy5Settings(); 
-     LoadStrategyRuntimeSettings(4); 
-     ProcessStrategy(4); 
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_17 = 0.0;
-       }
-       else
-       {
-         temp_double_18 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_18);
-         temp_double_17 = temp_double_18;
-       }
-       g_histClosedPLbyStrategy[4] = temp_double_17;
-       if ( g_histClosedPLbyStrategy[4]!=0.0 && g_closedTradeCount[4] >  0 )
-       {
-         g_avgPLperTrade[4] = g_histClosedPLbyStrategy[4] / g_closedTradeCount[4];
-       }
-     }
-   }
-   if ( g_runStrategy9 )
-   {
-     LoadStrategy9Settings(); 
-     LoadStrategyRuntimeSettings(8); 
-     ProcessStrategy(8); 
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_20 = 0.0;
-       }
-       else
-       {
-         temp_double_21 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_21);
-         temp_double_20 = temp_double_21;
-       }
-       g_histClosedPLbyStrategy[8] = temp_double_20;
-       if ( g_histClosedPLbyStrategy[8]!=0.0 && g_closedTradeCount[8] >  0 )
-       {
-         g_avgPLperTrade[8] = g_histClosedPLbyStrategy[8] / g_closedTradeCount[8];
-       }
-     }
-   }
-   if ( g_runStrategy7 )
-   {
-     LoadStrategy7Settings(); 
-     LoadStrategyRuntimeSettings(6); 
-     ProcessStrategy(6); 
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_23 = 0.0;
-       }
-       else
-       {
-         temp_double_24 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_24);
-         temp_double_23 = temp_double_24;
-       }
-       g_histClosedPLbyStrategy[6] = temp_double_23;
-       if ( g_histClosedPLbyStrategy[6]!=0.0 && g_closedTradeCount[6] >  0 )
-       {
-         g_avgPLperTrade[6] = g_histClosedPLbyStrategy[6] / g_closedTradeCount[6];
-       }
-     }
-   }
-   if ( g_runStrategy8 )
-   {
-     LoadStrategy8Settings(); 
-     LoadStrategyRuntimeSettings(7); 
-     ProcessStrategy(7); 
-     if ( local_4_bool )
-     {
-       if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
-       {
-         temp_double_26 = 0.0;
-       }
-       else
-       {
-         temp_double_27 = 0.0;
-         MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_double_27);
-         temp_double_26 = temp_double_27;
-       }
-       g_histClosedPLbyStrategy[7] = temp_double_26;
-       if ( g_histClosedPLbyStrategy[7]!=0.0 && g_closedTradeCount[7] >  0 )
-       {
-         g_avgPLperTrade[7] = g_histClosedPLbyStrategy[7] / g_closedTradeCount[7];
-       }
-     }
-   }
- }
- else
- {
-   g_chartSymbol = Symbol() ;
-   ProcessStrategy(0); 
- }
- UpdateAccountPanel(); 
- if ( iTime(Symbol(),PERIOD_M5,1) != global_379_datetime_5D88 )
- {
-   global_379_datetime_5D88 = iTime(Symbol(),PERIOD_M5,1) ;
-   UpdateStrategyPanelRows(); 
-   UpdateHistoryPanel(); 
- }
- global_381_int_5D94 ++;
- if ( global_381_int_5D94 < 2 )
- {
-   return;
- }
- g_lastLotResizeBalance = AccountBalance() ; // JIT sync: original LastLotResizeBalance snapshots ACCOUNT_BALANCE
- global_381_int_5D94 = 0 ;
- }
+  {
+    temp_usdBalance = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE)) ;
+    temp_maxDDUsd = MaxAllowedDD / 100.0 * temp_usdBalance ;
+    if ( temp_maxDDUsd>global_388_int_5DB4 )
+    {
+      g_tradeFrequencyMode = 3 ;
+    }
+    else
+    {
+      if ( temp_maxDDUsd>g_ddTierThreshold3 )
+      {
+        g_tradeFrequencyMode = 2 ;
+      }
+      else
+      {
+        if ( temp_maxDDUsd>global_386_int_5DAC )
+        {
+          g_tradeFrequencyMode = 1 ;
+        }
+        else
+        {
+          g_tradeFrequencyMode = 0 ;
+        }
+      }
+    }
+  }
+  else
+  {
+    g_tradeFrequencyMode = TradeFrequency ;
+  }
+  if ( g_tradeFrequencyMode == 0 )
+  {
+    g_runStrategy4 = false ;
+    g_runStrategy5 = false ;
+    g_runStrategy6 = false ;
+    g_runStrategy7 = false ;
+    g_runStrategy8 = false ;
+    g_runStrategy9 = false ;
+    g_riskFactorByTier = 2.4 ;
+    if ( UseVariableValues )
+    {
+      g_riskFactorByTier = 3.0 ;
+    }
+  }
+  else
+  {
+    if ( g_tradeFrequencyMode == 1 )
+    {
+      g_runStrategy4 = true ;
+      g_runStrategy5 = true ;
+      g_runStrategy6 = false ;
+      g_runStrategy7 = false ;
+      g_runStrategy8 = false ;
+      g_runStrategy9 = false ;
+      g_riskFactorByTier = 3.4 ;
+      if ( UseVariableValues )
+      {
+        g_riskFactorByTier = 4.0 ;
+      }
+    }
+    else
+    {
+      if ( g_tradeFrequencyMode == 2 )
+      {
+        g_runStrategy4 = true ;
+        g_runStrategy5 = true ;
+        g_runStrategy6 = true ;
+        g_runStrategy7 = true ;
+        g_runStrategy8 = false ;
+        g_runStrategy9 = false ;
+        g_riskFactorByTier = 4.1 ;
+        if ( UseVariableValues )
+        {
+          g_riskFactorByTier = 5.0 ;
+        }
+      }
+      else
+      {
+        if ( g_tradeFrequencyMode == 3 )
+        {
+          g_runStrategy4 = true ;
+          g_runStrategy5 = true ;
+          g_runStrategy6 = true ;
+          g_runStrategy7 = true ;
+          g_runStrategy8 = true ;
+          g_runStrategy9 = false ;
+          g_riskFactorByTier = 4.8 ;
+          if ( UseVariableValues )
+          {
+            g_riskFactorByTier = 5.6 ;
+          }
+        }
+        else
+        {
+          if ( g_tradeFrequencyMode == 4 )
+          {
+            g_runStrategy4 = true ;
+            g_runStrategy5 = true ;
+            g_runStrategy6 = true ;
+            g_runStrategy7 = true ;
+            g_runStrategy8 = true ;
+            g_runStrategy9 = true ;
+            g_riskFactorByTier = 5.1 ;
+            if ( UseVariableValues )
+            {
+              g_riskFactorByTier = 6.0 ;
+            }
+          }
+          else
+          {
+            if ( g_tradeFrequencyMode == 6 )
+            {
+              g_runStrategy1 = RunStrat1 ;
+              g_runStrategy2 = RunStrat2 ;
+              g_runStrategy3 = RunStrat3 ;
+              g_runStrategy4 = RunStrat4 ;
+              g_runStrategy5 = RunStrat5 ;
+              g_runStrategy6 = RunStrat6 ;
+              g_runStrategy7 = RunStrat7 ;
+              g_runStrategy8 = RunStrat8 ;
+              g_runStrategy9 = RunStrat9 ;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// CheckDailyRolloverAndPropFirmGate 鈥斺€?D1 鎹㈡棩鏃堕噸缃棩鍐呭洖鎾ゅ熀鍑嗭紱鎵ц PropFirm
+// 鏃ュ唴鍥炴挙寮哄钩锛涜繑鍥?false 琛ㄧず鏈?tick 搴旂珛鍗宠繑鍥烇紙鍘熺増鍐呰仈 return锛?
+bool CheckDailyRolloverAndPropFirmGate()
+{
+  if ( iBars(g_chartSymbol,MT4Period(PERIOD_D1)) != g_lastD1BarsCount )
+  {
+    g_lastD1BarsCount = iBars(g_chartSymbol,MT4Period(PERIOD_D1)) ;
+    global_382_bool_5D98 = false ;
+    global_384_double_5DA0 = 0.0 ;
+  }
+  if ( PropFirmMaxDailyDD>0.0 )
+  {
+    EnforcePropFirmDailyDrawdown();
+  }
+  if ( global_382_bool_5D98 || !(g_propfirmDailyDDOn) )   return(false);
+  return(true);
+}
+
+// DetectNewH1Bar 鈥斺€?H1 鏀剁洏 K 绾垮彉鍖栨娴嬶紙鍘?local_4_bool锛?
+bool DetectNewH1Bar()
+{
+  if ( global_399_datetime_6778 != iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) )
+  {
+    global_399_datetime_6778 = iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) ;
+    return(true);
+  }
+  return(false);
+}
+
+// RunStrategySlot 鈥斺€?鍗曠瓥鐣ユЫ浣嶏細鍔犺浇绛栫暐璁剧疆 -> 杩愯鏃惰缃?-> 澶勭悊锛?
+// 妲戒綅 0 棰濆妫€娴嬪垵濮嬫棫鐗堥闄╂墜鏁版寕鍗曪紱H1 鏂?K 绾挎椂鍒锋柊璇ョ瓥鐣ュ巻鍙插钩浠撶泩浜忕粺璁?
+// 锛堢粺璁¤鏁版部鐢ㄥ師鐗堬細浣跨敤 g_currentStrategyIndex 鑰岄潪妲戒綅鍙凤級
+void RunStrategySlot(const int strategyIndex,const bool newH1Bar)
+{
+  switch(strategyIndex)
+  {
+    case 0:  LoadStrategy1Settings(); break;
+    case 1:  LoadStrategy2Settings(); break;
+    case 2:  LoadStrategy3Settings(); break;
+    case 3:  LoadStrategy4Settings(); break;
+    case 4:  LoadStrategy5Settings(); break;
+    case 5:  LoadStrategy6Settings(); break;
+    case 6:  LoadStrategy7Settings(); break;
+    case 7:  LoadStrategy8Settings(); break;
+    case 8:  LoadStrategy9Settings(); break;
+  }
+  LoadStrategyRuntimeSettings(strategyIndex);
+  ProcessStrategy(strategyIndex);
+  if ( strategyIndex == 0 )
+  {
+    if ( g_initialLegacyRiskLotPending )
+    {
+      for (int temp_initialLotOrder = MT4OrdersTotal(); temp_initialLotOrder >= 0; temp_initialLotOrder--)
+      {
+        if ( OrderSelect(temp_initialLotOrder,0,0) && OrderSymbol() == g_chartSymbol &&
+             OrderMagicNumber() == ST1_MagicNumber + 1 )
+        {
+          g_initialLegacyRiskLotPending=false;
+          break;
+        }
+      }
+    }
+  }
+  if ( newH1Bar )
+  {
+    double temp_histPL = 0.0;
+    if ( !( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) ) )
+    {
+      double temp_statsPL = 0.0;
+      MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_statsPL);
+      temp_histPL = temp_statsPL;
+    }
+    g_histClosedPLbyStrategy[strategyIndex] = temp_histPL;
+    if ( g_histClosedPLbyStrategy[strategyIndex]!=0.0 && g_closedTradeCount[strategyIndex] >  0 )
+    {
+      g_avgPLperTrade[strategyIndex] = g_histClosedPLbyStrategy[strategyIndex] / g_closedTradeCount[strategyIndex];
+    }
+  }
+}
+
+// RunAllStrategies 鈥斺€?鍝佺涓洪粍閲戠被鏃舵寜鍘熺増鍥哄畾椤哄簭璋冨害绛栫暐妲戒綅锛?,4,2,3,6,5,9,7,8锛夛紱
+//                     闈為粍閲戝搧绉嶄粎浠ユЫ浣?0 杩愯锛堝師鐗堣涓猴級
+void RunAllStrategies(const bool newH1Bar)
+{
+  if ( ( StringFind(Symbol(),"XAUUSD",0) >= 0 || StringFind(Symbol(),"xauusd",0) >= 0 || StringFind(Symbol(),"GOLD",0) >= 0 || StringFind(Symbol(),"GLD",0) >= 0 || StringFind(Symbol(),"gold",0) >= 0 || StringFind(Symbol(),"Gold",0) >= 0 ) )
+  {
+    g_chartSymbol = Symbol() ;
+    if ( g_runStrategy1 )  RunStrategySlot(0,newH1Bar);
+    if ( g_runStrategy4 )  RunStrategySlot(3,newH1Bar);
+    if ( g_runStrategy2 )  RunStrategySlot(1,newH1Bar);
+    if ( g_runStrategy3 )  RunStrategySlot(2,newH1Bar);
+    if ( g_runStrategy6 )  RunStrategySlot(5,newH1Bar);
+    if ( g_runStrategy5 )  RunStrategySlot(4,newH1Bar);
+    if ( g_runStrategy9 )  RunStrategySlot(8,newH1Bar);
+    if ( g_runStrategy7 )  RunStrategySlot(6,newH1Bar);
+    if ( g_runStrategy8 )  RunStrategySlot(7,newH1Bar);
+  }
+  else
+  {
+    g_chartSymbol = Symbol() ;
+    ProcessStrategy(0);
+  }
+}
+
+// UpdatePanelsOnNewM5Bar 鈥斺€?M5 鏀剁洏 K 绾垮彉鍖栨椂鍒锋柊绛栫暐/鍘嗗彶闈㈡澘琛?
+void UpdatePanelsOnNewM5Bar()
+{
+  if ( iTime(Symbol(),PERIOD_M5,1) != global_379_datetime_5D88 )
+  {
+    global_379_datetime_5D88 = iTime(Symbol(),PERIOD_M5,1) ;
+    UpdateStrategyPanelRows();
+    UpdateHistoryPanel();
+  }
+}
+
+// FinishTickLotResizeThrottle 鈥斺€?2-tick 鑺傛祦鐨勪綑棰濆揩鐓э紙椹卞姩鎸傚崟鎵嬫暟鍐嶅钩琛★級
+void FinishTickLotResizeThrottle()
+{
+  global_381_int_5D94 ++;
+  if ( global_381_int_5D94 < 2 )
+  {
+    return;
+  }
+  g_lastLotResizeBalance = AccountBalance() ; // JIT sync: original LastLotResizeBalance snapshots ACCOUNT_BALANCE
+  global_381_int_5D94 = 0 ;
+}
+
+// OnTick 鈥斺€?涓诲鐞嗗惊鐜細鍚勮繃婊ゅ櫒 -> 閫愮瓥鐣?LoadStrategyNSettings +
+//           ProcessStrategy -> 闈㈡澘鏇存柊锛堣涔夋ā鍧楀寲鍚庯紝璇彞椤哄簭涓庡師鐗堜竴鑷达級
+void OnTick()
+{
+  if(!(DumpBacktestSpeedAllowTick())) return;
+  g_live_valid=false;
+
+  UpdateEffectiveBalanceTracking();
+  ApplyFakeoutFilterMode();
+  UpdateGmtDstDetection();
+  RefreshNfpCalendarCache();
+  EnforceManualHistoricalDDCompat();
+  ApplyTradeFrequencyTiers();
+  if ( !(CheckDailyRolloverAndPropFirmGate()) )   return;
+
+  bool temp_newH1Bar = DetectNewH1Bar();
+  RunAllStrategies(temp_newH1Bar);
+
+  UpdateAccountPanel();
+  UpdatePanelsOnNewM5Bar();
+  FinishTickLotResizeThrottle();
+}
 //OnTick <<==--------   --------
 // OnDeinit —— 释放 9 个 iATR 指标句柄并删除信息面板
  void OnDeinit(const int reason)

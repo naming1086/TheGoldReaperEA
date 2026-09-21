@@ -8641,579 +8641,545 @@ void OnTick()
 //CalculatePerformanceMetrics <<==--------   --------
  void RankStrategiesByClosedProfit()
  {
-  int       local_1_int;
-  double    local_2_double;
-  int       local_3_int;
-  int       local_4_int;
-  int       local_5_int;
-  int       local_6_int;
-  bool      local_7_bool;
-  int       local_8_int;
-  int       local_9_int;
-  int       local_10_int;
-  int       local_11_int;
+  int       stratIdx;
+  double    stratMetric;
+  int       rankScore;
+  int       cmpIdx;
+  int       ownerIdx;
+  bool      ranksAdjusted;
+  int       bumpScanIdx;
 //----- -----
 
  CalculatePerformanceMetrics(); 
- for (local_1_int = 0 ; local_1_int < g_strategyCount ; local_1_int ++)
+ for (stratIdx = 0 ; stratIdx < g_strategyCount ; stratIdx ++)
  {
-   local_2_double = g_statTotalPL[local_1_int] ;
-   local_3_int = 1 ;
-   for (local_4_int = 0 ; local_4_int < g_strategyCount ; local_4_int ++)
+   stratMetric = g_statTotalPL[stratIdx] ;
+   rankScore = 1 ;
+   for (cmpIdx = 0 ; cmpIdx < g_strategyCount ; cmpIdx ++)
    {
-     if ( local_4_int == local_1_int || !(g_statTotalPL[local_4_int]>local_2_double) )   continue;
-     local_3_int ++;
+     if ( cmpIdx == stratIdx || !(g_statTotalPL[cmpIdx]>stratMetric) )   continue;
+     rankScore ++;
      
    }
-   g_statRankScore[local_1_int] = local_3_int;
+   g_statRankScore[stratIdx] = rankScore;
  }
- for (local_5_int = 0 ; local_5_int < g_strategyCount ; local_5_int ++)
+ for (ownerIdx = 0 ; ownerIdx < g_strategyCount ; ownerIdx ++)
  {
-   local_6_int = g_statRankScore[local_5_int] ;
-   local_7_bool = true ;
+   ranksAdjusted = true ;
    do
    {
-     local_7_bool = false ;
-     local_8_int = 0 ;
+     ranksAdjusted = false ;
+     bumpScanIdx = 0 ;
      if ( g_strategyCount <= 0 )   continue;
      
-     for ( ; local_8_int < g_strategyCount ; local_8_int ++)
+     for ( ; bumpScanIdx < g_strategyCount ; bumpScanIdx ++)
      {
-       if ( local_8_int == local_5_int || g_statRankScore[local_8_int] != g_statRankScore[local_5_int] )   continue;
-       g_statRankScore[local_8_int] ++;
-       local_7_bool = true ;
+       if ( bumpScanIdx == ownerIdx || g_statRankScore[bumpScanIdx] != g_statRankScore[ownerIdx] )   continue;
+       g_statRankScore[bumpScanIdx] ++;
+       ranksAdjusted = true ;
        
      }
      
    }
-   while(local_7_bool);
+   while(ranksAdjusted);
    
- }
- for (local_9_int = 0 ; local_9_int < g_strategyCount ; local_9_int ++)
- {
- }
- for (local_10_int = 1 ; local_10_int <= g_strategyCount ; local_10_int ++)
- {
-   for (local_11_int = 0 ; local_11_int < g_strategyCount ; local_11_int ++)
-   {
-     if ( g_statRankScore[local_11_int] == local_10_int )
-     {
-     }
-   }
  }
  }
 //RankStrategiesByClosedProfit <<==--------   --------
  void RankStrategiesByProfitPerTrade()
  {
-  int       local_1_int;
-  double    local_2_double;
-  int       local_3_int;
-  int       local_4_int;
-  int       local_5_int;
-  int       local_6_int;
-  bool      local_7_bool;
-  int       local_8_int;
-  int       local_9_int;
-  int       local_10_int;
-  int       local_11_int;
+  int       stratIdx;
+  double    stratMetric;
+  int       rankScore;
+  int       cmpIdx;
+  int       ownerIdx;
+  bool      ranksAdjusted;
+  int       bumpScanIdx;
 //----- -----
 
  CalculatePerformanceMetrics(); 
- for (local_1_int = 0 ; local_1_int < g_strategyCount ; local_1_int ++)
+ for (stratIdx = 0 ; stratIdx < g_strategyCount ; stratIdx ++)
  {
-   local_2_double = g_avgPLperTrade[local_1_int] ;
-   local_3_int = 1 ;
-   for (local_4_int = 0 ; local_4_int < g_strategyCount ; local_4_int ++)
+   stratMetric = g_avgPLperTrade[stratIdx] ;
+   rankScore = 1 ;
+   for (cmpIdx = 0 ; cmpIdx < g_strategyCount ; cmpIdx ++)
    {
-     if ( local_4_int == local_1_int || !(g_avgPLperTrade[local_4_int]>local_2_double) )   continue;
-     local_3_int ++;
+     if ( cmpIdx == stratIdx || !(g_avgPLperTrade[cmpIdx]>stratMetric) )   continue;
+     rankScore ++;
      
    }
-   g_statRankScore[local_1_int] = local_3_int;
+   g_statRankScore[stratIdx] = rankScore;
  }
- for (local_5_int = 0 ; local_5_int < g_strategyCount ; local_5_int ++)
+ for (ownerIdx = 0 ; ownerIdx < g_strategyCount ; ownerIdx ++)
  {
-   local_6_int = g_statRankScore[local_5_int] ;
-   local_7_bool = true ;
+   ranksAdjusted = true ;
    do
    {
-     local_7_bool = false ;
-     local_8_int = 0 ;
+     ranksAdjusted = false ;
+     bumpScanIdx = 0 ;
      if ( g_strategyCount <= 0 )   continue;
      
-     for ( ; local_8_int < g_strategyCount ; local_8_int ++)
+     for ( ; bumpScanIdx < g_strategyCount ; bumpScanIdx ++)
      {
-       if ( local_8_int == local_5_int || g_statRankScore[local_8_int] != g_statRankScore[local_5_int] )   continue;
-       g_statRankScore[local_8_int] ++;
-       local_7_bool = true ;
+       if ( bumpScanIdx == ownerIdx || g_statRankScore[bumpScanIdx] != g_statRankScore[ownerIdx] )   continue;
+       g_statRankScore[bumpScanIdx] ++;
+       ranksAdjusted = true ;
        
      }
      
    }
-   while(local_7_bool);
+   while(ranksAdjusted);
    
- }
- for (local_9_int = 0 ; local_9_int < g_strategyCount ; local_9_int ++)
- {
- }
- for (local_10_int = 1 ; local_10_int <= g_strategyCount ; local_10_int ++)
- {
-   for (local_11_int = 0 ; local_11_int < g_strategyCount ; local_11_int ++)
-   {
-     if ( g_statRankScore[local_11_int] == local_10_int )
-     {
-     }
-   }
  }
  }
 //RankStrategiesByProfitPerTrade <<==--------   --------
- double ConvertUsdToAccountCurrency( double arg_0_double)
+ double ConvertUsdToAccountCurrency( double usdAmount)
  {
-  double    local_2_double;
-  string    local_3_string;
+  double    accountAmount;
+  string    rateSymbol;
 //----- -----
 
- local_2_double = arg_0_double ;
+ accountAmount = usdAmount ;
  if ( ( AccountCurrency() == "USD" || AccountCurrency() == "usd" ) )
  {
-   local_2_double = arg_0_double ;
+   accountAmount = usdAmount ;
  }
  if ( ( AccountCurrency() == "EUR" || AccountCurrency() == "eur" ) )
  {
-   local_3_string="EURUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="EURUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "GBP" || AccountCurrency() == "gbp" ) )
  {
-   local_3_string="GBPUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="GBPUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "AUD" || AccountCurrency() == "aud" ) )
  {
-   local_3_string="AUDUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="AUDUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "JPY" || AccountCurrency() == "jpy" || AccountCurrency() == "YEN" || AccountCurrency() == "yen" ) )
  {
-   local_3_string="USDJPY" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDJPY" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "CHF" || AccountCurrency() == "chf" ) )
  {
-   local_3_string="USDCHF" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDCHF" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "HKD" || AccountCurrency() == "hkd" ) )
  {
-   local_3_string="USDHKD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDHKD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "SGD" || AccountCurrency() == "sgd" ) )
  {
-   local_3_string="USDSGD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDSGD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "RUB" || AccountCurrency() == "rub" ) )
  {
-   local_3_string="USDRUB" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDRUB" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "BTC" || AccountCurrency() == "btc" ) )
  {
-   local_3_string="BTCUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="BTCUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "ETH" || AccountCurrency() == "eth" ) )
  {
-   local_3_string="ETHUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="ETHUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "BCH" || AccountCurrency() == "bch" ) )
  {
-   local_3_string="BCHUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="BCHUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "BCC" || AccountCurrency() == "bcc" ) )
  {
-   local_3_string="BCCUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="BCCUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "XRP" || AccountCurrency() == "xrp" ) )
  {
-   local_3_string="XRPUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="XRPUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "LTC" || AccountCurrency() == "ltc" ) )
  {
-   local_3_string="LTCUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="LTCUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "XMR" || AccountCurrency() == "xmr" ) )
  {
-   local_3_string="XMRUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="XMRUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "DSH" || AccountCurrency() == "dsh" ) )
  {
-   local_3_string="DSHUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="DSHUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "EOS" || AccountCurrency() == "eos" ) )
  {
-   local_3_string="EOSUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="EOSUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "TRX" || AccountCurrency() == "trx" ) )
  {
-   local_3_string="TRXUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="TRXUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "ADA" || AccountCurrency() == "ada" ) )
  {
-   local_3_string="ADAUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="ADAUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "BSV" || AccountCurrency() == "bsv" ) )
  {
-   local_3_string="BSVUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="BSVUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "XLM" || AccountCurrency() == "xlm" ) )
  {
-   local_3_string="XLMUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="XLMUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "GLD" || AccountCurrency() == "gld" ) )
  {
-   local_3_string="GLDUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="GLDUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "ZEC" || AccountCurrency() == "zec" ) )
  {
-   local_3_string="ZECUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="ZECUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountCurrency() == "XEM" || AccountCurrency() == "xem" ) )
  {
-   local_3_string="XEMUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="XEMUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     accountAmount = usdAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
- return(local_2_double); 
+ return(accountAmount); 
  }
 //ConvertUsdToAccountCurrency <<==--------   --------
- double ConvertAccountCurrencyToUsd( double arg_0_double)
+ double ConvertAccountCurrencyToUsd( double accountAmount)
  {
- double    local_2_double;
-  string    local_3_string;
+ double    usdAmount;
+  string    rateSymbol;
 //----- -----
 
- local_2_double = arg_0_double ;
+ usdAmount = accountAmount ;
  string temp_account_currency=AccountInfoString(ACCOUNT_CURRENCY);
  if(temp_account_currency=="USD" || temp_account_currency=="usd")
  {
-   return(MathRound(arg_0_double));
+   return(MathRound(accountAmount));
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "USD" || AccountInfoString(ACCOUNT_CURRENCY) == "usd" ) )
  {
-   local_2_double = arg_0_double ;
+   usdAmount = accountAmount ;
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "EUR" || AccountInfoString(ACCOUNT_CURRENCY) == "eur" ) )
  {
-   local_3_string="EURUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="EURUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "GBP" || AccountInfoString(ACCOUNT_CURRENCY) == "gbp" ) )
  {
-   local_3_string="GBPUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="GBPUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "AUD" || AccountInfoString(ACCOUNT_CURRENCY) == "aud" ) )
  {
-   local_3_string="AUDUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="AUDUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "JPY" || AccountInfoString(ACCOUNT_CURRENCY) == "jpy" || AccountInfoString(ACCOUNT_CURRENCY) == "YEN" || AccountInfoString(ACCOUNT_CURRENCY) == "yen" ) )
  {
-   local_3_string="USDJPY" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDJPY" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "CHF" || AccountInfoString(ACCOUNT_CURRENCY) == "chf" ) )
  {
-   local_3_string="USDCHF" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDCHF" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "HKD" || AccountInfoString(ACCOUNT_CURRENCY) == "hkd" ) )
  {
-   local_3_string="USDHKD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDHKD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "RUB" || AccountInfoString(ACCOUNT_CURRENCY) == "rub" ) )
  {
-   local_3_string="USDRUB" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDRUB" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "CNH" || AccountInfoString(ACCOUNT_CURRENCY) == "cnh" ) )
  {
-   local_3_string="USDCNH" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDCNH" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
    else
    {
-     local_3_string="USDCNY" + g_symbolSuffix;
-     if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+     rateSymbol="USDCNY" + g_symbolSuffix;
+     if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
      {
-       local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+       usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
      }
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "CNY" || AccountInfoString(ACCOUNT_CURRENCY) == "cny" ) )
  {
-   local_3_string="USDCNH" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDCNH" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
    else
    {
-     local_3_string="USDCNY" + g_symbolSuffix;
-     if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+     rateSymbol="USDCNY" + g_symbolSuffix;
+     if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
      {
-       local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+       usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
      }
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "SGD" || AccountInfoString(ACCOUNT_CURRENCY) == "sgd" ) )
  {
-   local_3_string="USDSGD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="USDSGD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double / iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount / iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "BTC" || AccountInfoString(ACCOUNT_CURRENCY) == "btc" ) )
  {
-   local_3_string="BTCUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="BTCUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "ETH" || AccountInfoString(ACCOUNT_CURRENCY) == "eth" ) )
  {
-   local_3_string="ETHUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="ETHUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "BCH" || AccountInfoString(ACCOUNT_CURRENCY) == "bch" ) )
  {
-   local_3_string="BCHUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="BCHUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "BCC" || AccountInfoString(ACCOUNT_CURRENCY) == "bcc" ) )
  {
-   local_3_string="BCCUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="BCCUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "XRP" || AccountInfoString(ACCOUNT_CURRENCY) == "xrp" ) )
  {
-   local_3_string="XRPUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="XRPUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "LTC" || AccountInfoString(ACCOUNT_CURRENCY) == "ltc" ) )
  {
-   local_3_string="LTCUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="LTCUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "XMR" || AccountInfoString(ACCOUNT_CURRENCY) == "xmr" ) )
  {
-   local_3_string="XMRUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="XMRUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "DSH" || AccountInfoString(ACCOUNT_CURRENCY) == "dsh" ) )
  {
-   local_3_string="DSHUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="DSHUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "EOS" || AccountInfoString(ACCOUNT_CURRENCY) == "eos" ) )
  {
-   local_3_string="EOSUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="EOSUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "TRX" || AccountInfoString(ACCOUNT_CURRENCY) == "trx" ) )
  {
-   local_3_string="TRXUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="TRXUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "ADA" || AccountInfoString(ACCOUNT_CURRENCY) == "ada" ) )
  {
-   local_3_string="ADAUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="ADAUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "BSV" || AccountInfoString(ACCOUNT_CURRENCY) == "bsv" ) )
  {
-   local_3_string="BSVUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="BSVUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "XLM" || AccountInfoString(ACCOUNT_CURRENCY) == "xlm" ) )
  {
-   local_3_string="XLMUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="XLMUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "GLD" || AccountInfoString(ACCOUNT_CURRENCY) == "gld" ) )
  {
-   local_3_string="GLDUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="GLDUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "ZEC" || AccountInfoString(ACCOUNT_CURRENCY) == "zec" ) )
  {
-   local_3_string="ZECUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="ZECUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
  if ( ( AccountInfoString(ACCOUNT_CURRENCY) == "XEM" || AccountInfoString(ACCOUNT_CURRENCY) == "xem" ) )
  {
-   local_3_string="XEMUSD" + g_symbolSuffix;
-   if ( iClose(local_3_string,MT4Period(PERIOD_D1),1)>0.0 )
+   rateSymbol="XEMUSD" + g_symbolSuffix;
+   if ( iClose(rateSymbol,MT4Period(PERIOD_D1),1)>0.0 )
    {
-     local_2_double = arg_0_double * iClose(local_3_string,MT4Period(PERIOD_D1),1) ;
+     usdAmount = accountAmount * iClose(rateSymbol,MT4Period(PERIOD_D1),1) ;
    }
  }
- return(MathRound(local_2_double)); 
+ return(MathRound(usdAmount)); 
  }
 //ConvertAccountCurrencyToUsd <<==--------   --------
 // ============================================================================

@@ -4386,19 +4386,17 @@ void OnTick()
 // CalculateStrategyLotSize —— 按 Risk 模式（固定手数 / 最大总回撤 / 单策略
 //                             风险）并结合 OnlyUp/HighestBalance/ManualBalance
 //                             计算当前策略手数
- void CalculateStrategyLotSize( double arg_0_double,int arg_1_int)
+ void CalculateStrategyLotSize( double stopLossPips,int lotScalePercent)
  {
-  double    local_1_double;
-  double    local_2_double;
-  double    local_3_double;
-  double    local_4_double;
- double    local_5_double;
- double    local_6_double;
- double    local_7_double;
+  double    computedLots;
+  double    slPipsAdjusted;
+  double    riskPercent;
+ double    riskBalanceAmount;
+ double    risk999Balance;
+ double    balanceInUsd;
 //----- -----
 
- local_1_double = g_strategyStartLots[g_currentStrategyIndex] ;
- local_2_double = g_strategyStartLots[g_currentStrategyIndex] ;
+ computedLots = g_strategyStartLots[g_currentStrategyIndex] ;
  g_effectiveBalance = AccountInfoDouble(ACCOUNT_BALANCE) ;
  if ( UseEquity )
  {
@@ -4422,56 +4420,56 @@ void OnTick()
  {
    g_effectiveBalance = 0.01 ;
  }
- local_3_double = arg_0_double ;
+ slPipsAdjusted = stopLossPips ;
  if ( ( g_symbolDigits == 2 || g_symbolDigits == 4 ) )
  {
-   local_3_double = arg_0_double / 10.0 ;
+   slPipsAdjusted = stopLossPips / 10.0 ;
  }
  if ( Risk <  999 && Risk >  0 )
  {
-   local_4_double = Risk ;
-   local_5_double = local_4_double / 1000.0 * g_effectiveBalance ;
+   riskPercent = Risk ;
+   riskBalanceAmount = riskPercent / 1000.0 * g_effectiveBalance ;
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_5_double / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * local_3_double) * 0.1),1) ;
+     computedLots = NormalizeDouble(lotScalePercent * 0.01 * (riskBalanceAmount / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * slPipsAdjusted) * 0.1),1) ;
    }
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.01 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_5_double / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * local_3_double) * 0.1),2) ;
+     computedLots = NormalizeDouble(lotScalePercent * 0.01 * (riskBalanceAmount / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * slPipsAdjusted) * 0.1),2) ;
    }
  }
  if ( Risk == 999 )
  {
-   local_6_double = g_risk999BalancePct / 100.0 * g_effectiveBalance ;
+   risk999Balance = g_risk999BalancePct / 100.0 * g_effectiveBalance ;
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_6_double / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * local_3_double) * 0.1),1) ;
+     computedLots = NormalizeDouble(lotScalePercent * 0.01 * (risk999Balance / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * slPipsAdjusted) * 0.1),1) ;
    }
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.01 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_6_double / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * local_3_double) * 0.1),2) ;
+     computedLots = NormalizeDouble(lotScalePercent * 0.01 * (risk999Balance / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * slPipsAdjusted) * 0.1),2) ;
    }
  }
  if ( Risk == 0 )
  {
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * g_startLots_rw,1) ;
+     computedLots = NormalizeDouble(lotScalePercent * 0.01 * g_startLots_rw,1) ;
    }
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.01 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * g_startLots_rw,2) ;
+     computedLots = NormalizeDouble(lotScalePercent * 0.01 * g_startLots_rw,2) ;
    }
  }
  if ( Risk == 9999 )
  {
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (g_effectiveBalance / g_ddTierDivisor * 0.01),1) ;
+     computedLots = NormalizeDouble(lotScalePercent * 0.01 * (g_effectiveBalance / g_ddTierDivisor * 0.01),1) ;
    }
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.01 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (g_effectiveBalance / g_ddTierDivisor * 0.01),2) ;
+     computedLots = NormalizeDouble(lotScalePercent * 0.01 * (g_effectiveBalance / g_ddTierDivisor * 0.01),2) ;
    }
  }
  if ( Risk == 1234 )
@@ -4485,11 +4483,11 @@ void OnTick()
      g_ddLotFactor = MaxAllowedDD / g_riskFactorByTier ;
      if ( SymbolInfoDouble(g_chartSymbol,36)==0.1 )
      {
-       local_2_double = NormalizeDouble(g_ddLotFactor / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,1) ;
+       computedLots = NormalizeDouble(g_ddLotFactor / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,1) ;
      }
      if ( SymbolInfoDouble(g_chartSymbol,36)==0.01 )
      {
-       local_2_double = NormalizeDouble(g_ddLotFactor / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,2) ;
+       computedLots = NormalizeDouble(g_ddLotFactor / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,2) ;
      }
    }
    else
@@ -4498,7 +4496,7 @@ void OnTick()
      {
        g_usdToAccountRate = 100000.0 ;
      }
-     local_7_double = ConvertAccountCurrencyToUsd(g_effectiveBalance) ;
+     balanceInUsd = ConvertAccountCurrencyToUsd(g_effectiveBalance) ;
      if ( g_tradeFrequencyMode == 0 )
      {
        g_ddTierDivisor = (int)(g_ddTierThreshold1 / (MaxAllowedDD / 100.0)) ;
@@ -4521,11 +4519,11 @@ void OnTick()
      }
      if ( SymbolInfoDouble(g_chartSymbol,36)==0.1 )
      {
-       local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_7_double / g_ddTierDivisor * 0.01),1) ;
+       computedLots = NormalizeDouble(lotScalePercent * 0.01 * (balanceInUsd / g_ddTierDivisor * 0.01),1) ;
      }
      if ( SymbolInfoDouble(g_chartSymbol,36)==0.01 )
      {
-       local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_7_double / g_ddTierDivisor * 0.01),2) ;
+       computedLots = NormalizeDouble(lotScalePercent * 0.01 * (balanceInUsd / g_ddTierDivisor * 0.01),2) ;
      }
    }
  }
@@ -4533,11 +4531,11 @@ void OnTick()
  {
    if ( SymbolInfoDouble(g_chartSymbol,36)==0.1 )
    {
-     local_2_double = NormalizeDouble(MaxRiskPerStrategy_ / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,1) ;
+     computedLots = NormalizeDouble(MaxRiskPerStrategy_ / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,1) ;
    }
    if ( SymbolInfoDouble(g_chartSymbol,36)==0.01 )
    {
-     local_2_double = NormalizeDouble(MaxRiskPerStrategy_ / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,2) ;
+     computedLots = NormalizeDouble(MaxRiskPerStrategy_ / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,2) ;
    }
  }
  // Legacy hidden Risk values 1/2 preserve strategy 1's manual lot until its
@@ -4546,31 +4544,31 @@ void OnTick()
  if ( g_currentStrategyIndex == 0 && (Risk == 1 || Risk == 2) &&
       (g_initialLegacyRiskLotPending || MathAbs(g_lotRatioInv - 1.0) < 0.0000001) )
  {
-   local_2_double = g_startLots_rw ;
+   computedLots = g_startLots_rw ;
  }
- local_2_double = local_2_double * g_lotRatioInv ;
- if ( local_2_double<MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
+ computedLots = computedLots * g_lotRatioInv ;
+ if ( computedLots<MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
  {
-   local_2_double = MarketInfo(g_chartSymbol,MODE_LOTSTEP) ;
+   computedLots = MarketInfo(g_chartSymbol,MODE_LOTSTEP) ;
  }
- if ( local_2_double>g_maxLotCap )
+ if ( computedLots>g_maxLotCap )
  {
-   local_2_double = g_maxLotCap ;
+   computedLots = g_maxLotCap ;
  }
- if ( local_2_double<MarketInfo(g_chartSymbol,MODE_MINLOT) )
+ if ( computedLots<MarketInfo(g_chartSymbol,MODE_MINLOT) )
  {
-   local_2_double = MarketInfo(g_chartSymbol,MODE_MINLOT) ;
+   computedLots = MarketInfo(g_chartSymbol,MODE_MINLOT) ;
  }
- if ( local_2_double>MarketInfo(g_chartSymbol,MODE_MAXLOT) && MarketInfo(g_chartSymbol,MODE_MAXLOT)!=0.0 )
+ if ( computedLots>MarketInfo(g_chartSymbol,MODE_MAXLOT) && MarketInfo(g_chartSymbol,MODE_MAXLOT)!=0.0 )
  {
-   local_2_double = MarketInfo(g_chartSymbol,MODE_MAXLOT) ;
+   computedLots = MarketInfo(g_chartSymbol,MODE_MAXLOT) ;
  }
  if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
  {
-   g_strategyStartLots[g_currentStrategyIndex] = NormalizeDouble((MathFloor(local_2_double * 10.0)) / 10.0,1);
+   g_strategyStartLots[g_currentStrategyIndex] = NormalizeDouble((MathFloor(computedLots * 10.0)) / 10.0,1);
    return;
  }
- g_strategyStartLots[g_currentStrategyIndex] = NormalizeDouble(MathFloor(local_2_double * 100.0) / 100.0,2);
+ g_strategyStartLots[g_currentStrategyIndex] = NormalizeDouble(MathFloor(computedLots * 100.0) / 100.0,2);
  }
 //CalculateStrategyLotSize <<==--------   --------
 // ============================================================================
@@ -7032,26 +7030,26 @@ void OnTick()
 
  bool IsTradingScheduleOpen()
  {
-  bool      local_2_bool;
-  datetime  local_3_datetime;
-  int       local_4_int;
+  bool      scheduleOpen;
+  datetime  scheduleNow;
+  int       currentHour;
 //----- -----
- bool       temp_bool_1;
- bool       temp_bool_2;
- bool       temp_bool_3;
- bool       temp_bool_4;
- bool       temp_bool_5;
- bool       temp_bool_6;
+ bool       sundayOpen;
+ bool       mondayOpen;
+ bool       tuesdayOpen;
+ bool       wednesdayOpen;
+ bool       thursdayOpen;
+ bool       fridayOpen;
 
  if ( !(g_useTradingHours) )
  {
    return(true); 
  }
- local_2_bool = false ;
- local_3_datetime = 0 ;
+ scheduleOpen = false ;
+ scheduleNow = 0 ;
  if ( g_scheduleTimeBase == 2 )
  {
-   local_3_datetime = TimeCurrent() ;
+   scheduleNow = TimeCurrent() ;
  }
  if ( g_scheduleTimeBase == 0 )
  {
@@ -7061,469 +7059,469 @@ void OnTick()
  {
    TimeLocal(); 
  }
- local_4_int = TimeHour(local_3_datetime) ;
- if ( TimeDayOfWeek(local_3_datetime) == 0 )
+ currentHour = TimeHour(scheduleNow) ;
+ if ( TimeDayOfWeek(scheduleNow) == 0 )
  {
-   if ( g_sunStartHour <  g_sunEndHour && ( local_4_int < g_sunStartHour || local_4_int >= g_sunEndHour ) )
+   if ( g_sunStartHour <  g_sunEndHour && ( currentHour < g_sunStartHour || currentHour >= g_sunEndHour ) )
    {
-     temp_bool_1 = false;
+     sundayOpen = false;
    }
    else
    {
-     if ( g_sunStartHour >  g_sunEndHour && local_4_int <  g_sunStartHour && local_4_int >= g_sunEndHour )
+     if ( g_sunStartHour >  g_sunEndHour && currentHour <  g_sunStartHour && currentHour >= g_sunEndHour )
      {
-       temp_bool_1 = false;
+       sundayOpen = false;
      }
      else
      {
        if ( g_sunStartHour == g_sunEndHour )
        {
-         temp_bool_1 = false;
+         sundayOpen = false;
        }
        else
        {
-         temp_bool_1 = true;
+         sundayOpen = true;
        }
      }
    }
-   if ( temp_bool_1 )
+   if ( sundayOpen )
    {
-     local_2_bool = true ;
+     scheduleOpen = true ;
    }
  }
- if ( TimeDayOfWeek(local_3_datetime) == 1 )
+ if ( TimeDayOfWeek(scheduleNow) == 1 )
  {
-   if ( g_monStartHour <  g_monEndHour && ( local_4_int < g_monStartHour || local_4_int >= g_monEndHour ) )
+   if ( g_monStartHour <  g_monEndHour && ( currentHour < g_monStartHour || currentHour >= g_monEndHour ) )
    {
-     temp_bool_2 = false;
+     mondayOpen = false;
    }
    else
    {
-     if ( g_monStartHour >  g_monEndHour && local_4_int <  g_monStartHour && local_4_int >= g_monEndHour )
+     if ( g_monStartHour >  g_monEndHour && currentHour <  g_monStartHour && currentHour >= g_monEndHour )
      {
-       temp_bool_2 = false;
+       mondayOpen = false;
      }
      else
      {
        if ( g_monStartHour == g_monEndHour )
        {
-         temp_bool_2 = false;
+         mondayOpen = false;
        }
        else
        {
-         temp_bool_2 = true;
+         mondayOpen = true;
        }
      }
    }
-   if ( temp_bool_2 )
+   if ( mondayOpen )
    {
-     local_2_bool = true ;
+     scheduleOpen = true ;
    }
  }
- if ( TimeDayOfWeek(local_3_datetime) == 2 )
+ if ( TimeDayOfWeek(scheduleNow) == 2 )
  {
-   if ( g_tueStartHour <  g_tueEndHour && ( local_4_int < g_tueStartHour || local_4_int >= g_tueEndHour ) )
+   if ( g_tueStartHour <  g_tueEndHour && ( currentHour < g_tueStartHour || currentHour >= g_tueEndHour ) )
    {
-     temp_bool_3 = false;
+     tuesdayOpen = false;
    }
    else
    {
-     if ( g_tueStartHour >  g_tueEndHour && local_4_int <  g_tueStartHour && local_4_int >= g_tueEndHour )
+     if ( g_tueStartHour >  g_tueEndHour && currentHour <  g_tueStartHour && currentHour >= g_tueEndHour )
      {
-       temp_bool_3 = false;
+       tuesdayOpen = false;
      }
      else
      {
        if ( g_tueStartHour == g_tueEndHour )
        {
-         temp_bool_3 = false;
+         tuesdayOpen = false;
        }
        else
        {
-         temp_bool_3 = true;
+         tuesdayOpen = true;
        }
      }
    }
-   if ( temp_bool_3 )
+   if ( tuesdayOpen )
    {
-     local_2_bool = true ;
+     scheduleOpen = true ;
    }
  }
- if ( TimeDayOfWeek(local_3_datetime) == 3 )
+ if ( TimeDayOfWeek(scheduleNow) == 3 )
  {
-   if ( g_wedStartHour <  g_wedEndHour && ( local_4_int < g_wedStartHour || local_4_int >= g_wedEndHour ) )
+   if ( g_wedStartHour <  g_wedEndHour && ( currentHour < g_wedStartHour || currentHour >= g_wedEndHour ) )
    {
-     temp_bool_4 = false;
+     wednesdayOpen = false;
    }
    else
    {
-     if ( g_wedStartHour >  g_wedEndHour && local_4_int <  g_wedStartHour && local_4_int >= g_wedEndHour )
+     if ( g_wedStartHour >  g_wedEndHour && currentHour <  g_wedStartHour && currentHour >= g_wedEndHour )
      {
-       temp_bool_4 = false;
+       wednesdayOpen = false;
      }
      else
      {
        if ( g_wedStartHour == g_wedEndHour )
        {
-         temp_bool_4 = false;
+         wednesdayOpen = false;
        }
        else
        {
-         temp_bool_4 = true;
+         wednesdayOpen = true;
        }
      }
    }
-   if ( temp_bool_4 )
+   if ( wednesdayOpen )
    {
-     local_2_bool = true ;
+     scheduleOpen = true ;
    }
  }
- if ( TimeDayOfWeek(local_3_datetime) == 4 )
+ if ( TimeDayOfWeek(scheduleNow) == 4 )
  {
-   if ( g_thuStartHour <  g_thuEndHour && ( local_4_int < g_thuStartHour || local_4_int >= g_thuEndHour ) )
+   if ( g_thuStartHour <  g_thuEndHour && ( currentHour < g_thuStartHour || currentHour >= g_thuEndHour ) )
    {
-     temp_bool_5 = false;
+     thursdayOpen = false;
    }
    else
    {
-     if ( g_thuStartHour >  g_thuEndHour && local_4_int <  g_thuStartHour && local_4_int >= g_thuEndHour )
+     if ( g_thuStartHour >  g_thuEndHour && currentHour <  g_thuStartHour && currentHour >= g_thuEndHour )
      {
-       temp_bool_5 = false;
+       thursdayOpen = false;
      }
      else
      {
        if ( g_thuStartHour == g_thuEndHour )
        {
-         temp_bool_5 = false;
+         thursdayOpen = false;
        }
        else
        {
-         temp_bool_5 = true;
+         thursdayOpen = true;
        }
      }
    }
-   if ( temp_bool_5 )
+   if ( thursdayOpen )
    {
-     local_2_bool = true ;
+     scheduleOpen = true ;
    }
  }
- if ( TimeDayOfWeek(local_3_datetime) == 5 )
+ if ( TimeDayOfWeek(scheduleNow) == 5 )
  {
-   if ( g_friStartHour <  g_friEndHour && ( local_4_int < g_friStartHour || local_4_int >= g_friEndHour ) )
+   if ( g_friStartHour <  g_friEndHour && ( currentHour < g_friStartHour || currentHour >= g_friEndHour ) )
    {
-     temp_bool_6 = false;
+     fridayOpen = false;
    }
    else
    {
-     if ( g_friStartHour >  g_friEndHour && local_4_int <  g_friStartHour && local_4_int >= g_friEndHour )
+     if ( g_friStartHour >  g_friEndHour && currentHour <  g_friStartHour && currentHour >= g_friEndHour )
      {
-       temp_bool_6 = false;
+       fridayOpen = false;
      }
      else
      {
        if ( g_friStartHour == g_friEndHour )
        {
-         temp_bool_6 = false;
+         fridayOpen = false;
        }
        else
        {
-         temp_bool_6 = true;
+         fridayOpen = true;
        }
      }
    }
-   if ( temp_bool_6 )
+   if ( fridayOpen )
    {
-     local_2_bool = true ;
+     scheduleOpen = true ;
    }
  }
- return(local_2_bool); 
+ return(scheduleOpen); 
  }
 //IsTradingScheduleOpen <<==--------   --------
- string GetTradeErrorDescription( int arg_0_int)
+ string GetTradeErrorDescription( int errorCode)
  {
-  string    local_1_string;
+  string    errorDescription;
 //----- -----
 
  g_tradeErrorCount ++;
- switch(arg_0_int)
+ switch(errorCode)
  {
    case 0 : case 1 :
-   local_1_string = "no error" ;
+   errorDescription = "no error" ;
      break;
    case 2 :
-   local_1_string = "common error" ;
+   errorDescription = "common error" ;
      break;
    case 3 :
-   local_1_string = "invalid trade parameters" ;
+   errorDescription = "invalid trade parameters" ;
      break;
    case 4 :
-   local_1_string = "trade server is busy" ;
+   errorDescription = "trade server is busy" ;
      break;
    case 5 :
-   local_1_string = "old version of the client terminal" ;
+   errorDescription = "old version of the client terminal" ;
      break;
    case 6 :
-   local_1_string = "no connection with trade server" ;
+   errorDescription = "no connection with trade server" ;
      break;
    case 7 :
-   local_1_string = "not enough rights" ;
+   errorDescription = "not enough rights" ;
      break;
    case 8 :
-   local_1_string = "too frequent requests" ;
+   errorDescription = "too frequent requests" ;
      break;
    case 9 :
-   local_1_string = "malfunctional trade operation (never returned error)" ;
+   errorDescription = "malfunctional trade operation (never returned error)" ;
      break;
    case 64 :
-   local_1_string = "account disabled" ;
+   errorDescription = "account disabled" ;
      break;
    case 65 :
-   local_1_string = "invalid account" ;
+   errorDescription = "invalid account" ;
      break;
    case 128 :
-   local_1_string = "trade timeout" ;
+   errorDescription = "trade timeout" ;
      break;
    case 129 :
-   local_1_string = "invalid price" ;
+   errorDescription = "invalid price" ;
      break;
    case 130 :
-   local_1_string = "invalid stops" ;
+   errorDescription = "invalid stops" ;
      break;
    case 131 :
-   local_1_string = "invalid trade volume" ;
+   errorDescription = "invalid trade volume" ;
      break;
    case 132 :
-   local_1_string = "market is closed" ;
+   errorDescription = "market is closed" ;
      break;
    case 133 :
-   local_1_string = "trade is disabled" ;
+   errorDescription = "trade is disabled" ;
      break;
    case 134 :
-   local_1_string = "not enough money" ;
+   errorDescription = "not enough money" ;
      break;
    case 135 :
-   local_1_string = "price changed" ;
+   errorDescription = "price changed" ;
      break;
    case 136 :
-   local_1_string = "off quotes" ;
+   errorDescription = "off quotes" ;
      break;
    case 137 :
-   local_1_string = "broker is busy (never returned error)" ;
+   errorDescription = "broker is busy (never returned error)" ;
      break;
    case 138 :
-   local_1_string = "requote" ;
+   errorDescription = "requote" ;
      break;
    case 139 :
-   local_1_string = "order is locked" ;
+   errorDescription = "order is locked" ;
      break;
    case 140 :
-   local_1_string = "long positions only allowed" ;
+   errorDescription = "long positions only allowed" ;
      break;
    case 141 :
-   local_1_string = "too many requests" ;
+   errorDescription = "too many requests" ;
      break;
    case 145 :
-   local_1_string = "modification denied because order too close to market" ;
+   errorDescription = "modification denied because order too close to market" ;
      break;
    case 146 :
-   local_1_string = "trade context is busy" ;
+   errorDescription = "trade context is busy" ;
      break;
    case 147 :
-   local_1_string = "expirations are denied by broker" ;
+   errorDescription = "expirations are denied by broker" ;
      break;
    case 148 :
-   local_1_string = "amount of open and pending orders has reached the Exit_limit" ;
+   errorDescription = "amount of open and pending orders has reached the Exit_limit" ;
      break;
    case 149 :
-   local_1_string = "hedging is prohibited" ;
+   errorDescription = "hedging is prohibited" ;
      break;
    case 150 :
-   local_1_string = "prohibited by FIFO rules" ;
+   errorDescription = "prohibited by FIFO rules" ;
      break;
    case 4000 :
-   local_1_string = "no error (never generated code)" ;
+   errorDescription = "no error (never generated code)" ;
      break;
    case 4001 :
-   local_1_string = "wrong function pointer" ;
+   errorDescription = "wrong function pointer" ;
      break;
    case 4002 :
-   local_1_string = "array index is out of range" ;
+   errorDescription = "array index is out of range" ;
      break;
    case 4003 :
-   local_1_string = "no memory for function call stack" ;
+   errorDescription = "no memory for function call stack" ;
      break;
    case 4004 :
-   local_1_string = "recursive stack overflow" ;
+   errorDescription = "recursive stack overflow" ;
      break;
    case 4005 :
-   local_1_string = "not enough stack for parameter" ;
+   errorDescription = "not enough stack for parameter" ;
      break;
    case 4006 :
-   local_1_string = "no memory for parameter string" ;
+   errorDescription = "no memory for parameter string" ;
      break;
    case 4007 :
-   local_1_string = "no memory for temp string" ;
+   errorDescription = "no memory for temp string" ;
      break;
    case 4008 :
-   local_1_string = "not initialized string" ;
+   errorDescription = "not initialized string" ;
      break;
    case 4009 :
-   local_1_string = "not initialized string in array" ;
+   errorDescription = "not initialized string in array" ;
      break;
    case 4010 :
-   local_1_string = "no memory for array\' string" ;
+   errorDescription = "no memory for array\' string" ;
      break;
    case 4011 :
-   local_1_string = "too long string" ;
+   errorDescription = "too long string" ;
      break;
    case 4012 :
-   local_1_string = "remainder from zero divide" ;
+   errorDescription = "remainder from zero divide" ;
      break;
    case 4013 :
-   local_1_string = "zero divide" ;
+   errorDescription = "zero divide" ;
      break;
    case 4014 :
-   local_1_string = "unknown command" ;
+   errorDescription = "unknown command" ;
      break;
    case 4015 :
-   local_1_string = "wrong jump (never generated error)" ;
+   errorDescription = "wrong jump (never generated error)" ;
      break;
    case 4016 :
-   local_1_string = "not initialized array" ;
+   errorDescription = "not initialized array" ;
      break;
    case 4017 :
-   local_1_string = "dll calls are not allowed" ;
+   errorDescription = "dll calls are not allowed" ;
      break;
    case 4018 :
-   local_1_string = "cannot load library" ;
+   errorDescription = "cannot load library" ;
      break;
    case 4019 :
-   local_1_string = "cannot call function" ;
+   errorDescription = "cannot call function" ;
      break;
    case 4020 :
-   local_1_string = "expert function calls are not allowed" ;
+   errorDescription = "expert function calls are not allowed" ;
      break;
    case 4021 :
-   local_1_string = "not enough memory for temp string returned from function" ;
+   errorDescription = "not enough memory for temp string returned from function" ;
      break;
    case 4022 :
-   local_1_string = "system is busy (never generated error)" ;
+   errorDescription = "system is busy (never generated error)" ;
      break;
    case 4050 :
-   local_1_string = "invalid function parameters count" ;
+   errorDescription = "invalid function parameters count" ;
      break;
    case 4051 :
-   local_1_string = "invalid function parameter value" ;
+   errorDescription = "invalid function parameter value" ;
      break;
    case 4052 :
-   local_1_string = "string function internal error" ;
+   errorDescription = "string function internal error" ;
      break;
    case 4053 :
-   local_1_string = "some array error" ;
+   errorDescription = "some array error" ;
      break;
    case 4054 :
-   local_1_string = "incorrect series array using" ;
+   errorDescription = "incorrect series array using" ;
      break;
    case 4055 :
-   local_1_string = "custom indicator error" ;
+   errorDescription = "custom indicator error" ;
      break;
    case 4056 :
-   local_1_string = "arrays are incompatible" ;
+   errorDescription = "arrays are incompatible" ;
      break;
    case 4057 :
-   local_1_string = "global variables processing error" ;
+   errorDescription = "global variables processing error" ;
      break;
    case 4058 :
-   local_1_string = "global variable not found" ;
+   errorDescription = "global variable not found" ;
      break;
    case 4059 :
-   local_1_string = "function is not allowed in testing mode" ;
+   errorDescription = "function is not allowed in testing mode" ;
      break;
    case 4060 :
-   local_1_string = "function is not confirmed" ;
+   errorDescription = "function is not confirmed" ;
      break;
    case 4061 :
-   local_1_string = "send mail error" ;
+   errorDescription = "send mail error" ;
      break;
    case 4062 :
-   local_1_string = "string parameter expected" ;
+   errorDescription = "string parameter expected" ;
      break;
    case 4063 :
-   local_1_string = "integer parameter expected" ;
+   errorDescription = "integer parameter expected" ;
      break;
    case 4064 :
-   local_1_string = "double parameter expected" ;
+   errorDescription = "double parameter expected" ;
      break;
    case 4065 :
-   local_1_string = "array as parameter expected" ;
+   errorDescription = "array as parameter expected" ;
      break;
    case 4066 :
-   local_1_string = "requested history data in update state" ;
+   errorDescription = "requested history data in update state" ;
      break;
    case 4099 :
-   local_1_string = "end of file" ;
+   errorDescription = "end of file" ;
      break;
    case 4100 :
-   local_1_string = "some file error" ;
+   errorDescription = "some file error" ;
      break;
    case 4101 :
-   local_1_string = "wrong file name" ;
+   errorDescription = "wrong file name" ;
      break;
    case 4102 :
-   local_1_string = "too many opened files" ;
+   errorDescription = "too many opened files" ;
      break;
    case 4103 :
-   local_1_string = "cannot open file" ;
+   errorDescription = "cannot open file" ;
      break;
    case 4104 :
-   local_1_string = "incompatible access to a file" ;
+   errorDescription = "incompatible access to a file" ;
      break;
    case 4105 :
-   local_1_string = "no order selected" ;
+   errorDescription = "no order selected" ;
      break;
    case 4106 :
-   local_1_string = "unknown symbol" ;
+   errorDescription = "unknown symbol" ;
      break;
    case 4107 :
-   local_1_string = "invalid price parameter for trade function" ;
+   errorDescription = "invalid price parameter for trade function" ;
      break;
    case 4108 :
-   local_1_string = "invalid ticket" ;
+   errorDescription = "invalid ticket" ;
      break;
    case 4109 :
-   local_1_string = "trade is not allowed in the expert properties" ;
+   errorDescription = "trade is not allowed in the expert properties" ;
      break;
    case 4110 :
-   local_1_string = "longs are not allowed in the expert properties" ;
+   errorDescription = "longs are not allowed in the expert properties" ;
      break;
    case 4111 :
-   local_1_string = "shorts are not allowed in the expert properties" ;
+   errorDescription = "shorts are not allowed in the expert properties" ;
      break;
    case 4200 :
-   local_1_string = "object is already exist" ;
+   errorDescription = "object is already exist" ;
      break;
    case 4201 :
-   local_1_string = "unknown object property" ;
+   errorDescription = "unknown object property" ;
      break;
    case 4202 :
-   local_1_string = "object is not exist" ;
+   errorDescription = "object is not exist" ;
      break;
    case 4203 :
-   local_1_string = "unknown object type" ;
+   errorDescription = "unknown object type" ;
      break;
    case 4204 :
-   local_1_string = "no object name" ;
+   errorDescription = "no object name" ;
      break;
    case 4205 :
-   local_1_string = "object coordinates error" ;
+   errorDescription = "object coordinates error" ;
      break;
    case 4206 :
-   local_1_string = "no specified subwindow" ;
+   errorDescription = "no specified subwindow" ;
      break;
    default :
-   local_1_string = "unknown error" ;
+   errorDescription = "unknown error" ;
  }
- return(local_1_string);
+ return(errorDescription);
  }
 //GetTradeErrorDescription <<==--------   --------
  void RefreshPendingOrderLotSizes( bool forceRefresh)

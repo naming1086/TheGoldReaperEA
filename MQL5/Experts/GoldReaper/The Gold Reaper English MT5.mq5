@@ -1476,6 +1476,12 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 //   （常量/变量读/iBars/iTime/TimeCurrent/AccountBalance/iFractals 查询），
 //   删除为行为中性。验证：git diff 纯删除 97 行、零新增、零意外行；
 //   删后复扫 writeOnly=0。剩余 105 个 global_* 声明全部有真实读点。
+//
+// ---- 批次6b 数组型写而不读清理（4 个 / 18 行，2026-09，纯删除）----
+//   数组写入形如 global_x[i] = ... 此前逃过批次6的写检测，精查补删 4 个：
+//   global_339(排序映射表)/344(近期成交计数)/346(近期均盈亏)/354(排序权重)
+//   连同 344 守卫 if/else 整块死代码。验证：纯删除 18 行、零新增、括号平衡、
+//   代码中四者零残留（§5 表内旧名注释保留）。
 // ============================================================================
 
   double    g_curSpread = 0.0;
@@ -1679,17 +1685,13 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   string    g_orderComment;
   string    g_chartSymbol;
   double    g_symbolPoint = 0.0;
-  int       global_339_int_3184_si99[99];
   int       g_panelStrategyRowStart = 0;
   bool      g_minTradesReachedFlag[99];
   int       g_closedTradeCount[99];
-  int       global_344_int_38EC_si99[99];
   double    g_avgPLperTrade[99];
-  double    global_346_double_3DF8_si99[99];
   string    g_strategySymbols[99]={};
   double    global_349_double_46B4_si99[99];
   double    g_recentPLbyStrategy[99];
-  double    global_354_double_5730_si99[99];
   int       global_356_int_5B14_si99[99];
   int       g_maxPanelObjects = 0;
   double    global_361_double_5CC0 = 0.0;
@@ -8557,7 +8559,6 @@ void OnTick()
    local_3_double_si99[local_4_int] = 0.0;
    g_minTradesReachedFlag[local_4_int] = false;
    g_closedTradeCount[local_4_int] = 0;
-   global_344_int_38EC_si99[local_4_int] = 0;
  }
  for (local_5_int = HistoryTotal() ; local_5_int >= 0 ; local_5_int --)
  {
@@ -8606,7 +8607,6 @@ void OnTick()
      local_3_double_si99[local_9_int] +=OrderProfit() / local_8_double;
      local_3_double_si99[local_9_int] +=OrderSwap() / local_8_double;
      local_3_double_si99[local_9_int] +=OrderCommission() / local_8_double;
-     global_344_int_38EC_si99[local_9_int] ++;
      
    }
    
@@ -8623,14 +8623,6 @@ void OnTick()
      g_avgPLperTrade[local_10_int] = 0.0;
    }
    g_recentPLbyStrategy[local_10_int] = local_3_double_si99[local_10_int];
-   if ( global_344_int_38EC_si99[local_10_int] >  0 )
-   {
-     global_346_double_3DF8_si99[local_10_int] = NormalizeDouble(local_3_double_si99[local_10_int] / global_344_int_38EC_si99[local_10_int],2);
-   }
-   else
-   {
-     global_346_double_3DF8_si99[local_10_int] = 0.0;
-   }
  }
  }
 //CalculatePerformanceMetrics <<==--------   --------
@@ -8686,7 +8678,6 @@ void OnTick()
  }
  for (local_9_int = 0 ; local_9_int < g_strategyCount ; local_9_int ++)
  {
-   global_354_double_5730_si99[local_9_int] = 1.0;
  }
  for (local_10_int = 1 ; local_10_int <= g_strategyCount ; local_10_int ++)
  {
@@ -8694,7 +8685,6 @@ void OnTick()
    {
      if ( global_356_int_5B14_si99[local_11_int] == local_10_int )
      {
-       global_339_int_3184_si99[local_10_int - 1] = local_11_int;
      }
    }
  }
@@ -8752,7 +8742,6 @@ void OnTick()
  }
  for (local_9_int = 0 ; local_9_int < g_strategyCount ; local_9_int ++)
  {
-   global_354_double_5730_si99[local_9_int] = 1.0;
  }
  for (local_10_int = 1 ; local_10_int <= g_strategyCount ; local_10_int ++)
  {
@@ -8760,7 +8749,6 @@ void OnTick()
    {
      if ( global_356_int_5B14_si99[local_11_int] == local_10_int )
      {
-       global_339_int_3184_si99[local_10_int - 1] = local_11_int;
      }
    }
  }

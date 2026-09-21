@@ -1499,6 +1499,15 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 //   跨函数语义冲突。验证：新名域内零冲突；逆向替换逐行字节一致；域外行零改动；
 //   域内 arg_/local_/temp_ 残留=0。注意：本批改用环视断言 (?<!\w)x(?!\w) 替换，
 //   修复了边界捕获组吞并相邻 token 分隔符的缺陷（如 for(i=0;;i=i+1) 第三子句）。
+//
+// ---- 批次9 面板/统计集群局部变量语义命名（7 个函数约 110 变量 + 8 死变量，2026-09）----
+//   RefreshPendingOrderLotSizes / CreateInfoPanel / UpdateAccountPanel /
+//   UpdateHistoryPanel / CountWinningTrades+CountLosingTrades(孪生) /
+//   CalculatePerformanceMetrics：local_/temp_/arg_ 全部语义化。
+//   反编译展开的 15 层 magic 比对阶梯统一命名为 magicVal/magicRef 对。
+//   另删 8 个写而不读死局部（CreateInfoPanel 7 个 + CalculatePerformanceMetrics
+//   1 个，共 13 行声明/赋值，删前逐个验证零读点）。
+//   验证同批次8：域内新名零冲突、逆向逐行字节一致、域外零改动、残留=0。
 // ============================================================================
 
   double    g_curSpread = 0.0;
@@ -7518,44 +7527,44 @@ void OnTick()
  return(local_1_string);
  }
 //GetTradeErrorDescription <<==--------   --------
- void RefreshPendingOrderLotSizes( bool arg_0_bool)
+ void RefreshPendingOrderLotSizes( bool forceRefresh)
  {
-  double    local_1_double;
-  int       local_2_int;
-  int       local_3_int;
-  double    local_4_double;
-  long      local_5_long;
-  double    local_6_double;
-  double    local_7_double;
-  datetime  local_8_datetime;
-  string    local_9_string;
-  long      local_10_int; // ticket 64-bit
-  double    local_11_double;
-  long      local_12_long;
-  double    local_13_double;
-  double    local_14_double;
-  datetime  local_15_datetime;
-  string    local_16_string;
-  long      local_17_int; // ticket 64-bit
+  double    lotChangeRatio;
+  int       ordersTotal;
+  int       orderScanIdx;
+  double    buyStopLoss;
+  long      buyTicket;
+  double    buyTakeProfit;
+  double    buyOpenPrice;
+  datetime  buyExpiry;
+  string    buyComment;
+  long      buyNewTicket; // ticket 64-bit
+  double    sellStopLoss;
+  long      sellTicket;
+  double    sellTakeProfit;
+  double    sellOpenPrice;
+  datetime  sellExpiry;
+  string    sellComment;
+  long      sellNewTicket; // ticket 64-bit
 //----- -----
- long       temp_long_1;
- long       temp_long_2;
- int        temp_int_3;
- long       temp_long_4;
- long       temp_long_5;
- int        temp_int_6;
+ long       buyNewTicketVal;
+ long       buyOldTicketVal;
+ int        buySlotScanIdx;
+ long       sellNewTicketVal;
+ long       sellOldTicketVal;
+ int        sellSlotScanIdx;
 
- local_1_double = g_lotChangePctAlert / 100.0 + 1.0 ;
+ lotChangeRatio = g_lotChangePctAlert / 100.0 + 1.0 ;
  // JIT compare fix: threshold uses the lot-sizing balance basis
  // (OnlyUp / ManualBalance aware), while OnTick keeps LastLotResizeBalance
  // as the raw account-balance snapshot.
- if ( ( !(g_effectiveBalance!=g_lastLotResizeBalance) && !(arg_0_bool) ) )
+ if ( ( !(g_effectiveBalance!=g_lastLotResizeBalance) && !(forceRefresh) ) )
  {
    return;
  }
  
- if ( ( !(g_effectiveBalance>g_lastLotResizeBalance * local_1_double) &&
-        !(g_effectiveBalance<g_lastLotResizeBalance / local_1_double) && !(arg_0_bool) ) )
+ if ( ( !(g_effectiveBalance>g_lastLotResizeBalance * lotChangeRatio) &&
+        !(g_effectiveBalance<g_lastLotResizeBalance / lotChangeRatio) && !(forceRefresh) ) )
  {
    return;
  }
@@ -7570,27 +7579,27 @@ void OnTick()
  {
    return;
  }
- local_2_int = MT4OrdersTotal() ;
- for (local_3_int = local_2_int ; local_3_int >= 0 ; local_3_int --)
+ ordersTotal = MT4OrdersTotal() ;
+ for (orderScanIdx = ordersTotal ; orderScanIdx >= 0 ; orderScanIdx --)
  {
-   if ( OrderSelect(local_3_int,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
+   if ( OrderSelect(orderScanIdx,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
    
    if ( OrderType() == 4 && OrderLots()!=g_strategyStartLots[g_currentStrategyIndex] )
    {
-     local_4_double = OrderStopLoss() ;
-     local_5_long = OrderTicket() ;
-     local_6_double = OrderTakeProfit() ;
-     local_7_double = OrderOpenPrice() ;
-     local_8_datetime = OrderExpiration() ;
-     local_9_string = OrderComment() ;
-     OrderDelete(local_5_long,Red); 
-     local_10_int = OrderSend(g_chartSymbol,4,g_strategyStartLots[g_currentStrategyIndex],local_7_double,(int)g_slippagePts,local_4_double,local_6_double,local_9_string,g_curStrategyMagic,local_8_datetime,Green) ;
-     temp_long_1 = local_10_int;
-     temp_long_2 = local_5_long;
-     for (temp_int_3 = 0 ; temp_int_3 < 100 ; temp_int_3=temp_int_3 + 1)
+     buyStopLoss = OrderStopLoss() ;
+     buyTicket = OrderTicket() ;
+     buyTakeProfit = OrderTakeProfit() ;
+     buyOpenPrice = OrderOpenPrice() ;
+     buyExpiry = OrderExpiration() ;
+     buyComment = OrderComment() ;
+     OrderDelete(buyTicket,Red); 
+     buyNewTicket = OrderSend(g_chartSymbol,4,g_strategyStartLots[g_currentStrategyIndex],buyOpenPrice,(int)g_slippagePts,buyStopLoss,buyTakeProfit,buyComment,g_curStrategyMagic,buyExpiry,Green) ;
+     buyNewTicketVal = buyNewTicket;
+     buyOldTicketVal = buyTicket;
+     for (buySlotScanIdx = 0 ; buySlotScanIdx < 100 ; buySlotScanIdx=buySlotScanIdx + 1)
      {
-       if ( !(g_stopOrderTicketPrice[temp_int_3][0]==temp_long_2) )   continue;
-       g_stopOrderTicketPrice[temp_int_3][0] = (double)temp_long_1;
+       if ( !(g_stopOrderTicketPrice[buySlotScanIdx][0]==buyOldTicketVal) )   continue;
+       g_stopOrderTicketPrice[buySlotScanIdx][0] = (double)buyNewTicketVal;
        break;
        
      }
@@ -7598,20 +7607,20 @@ void OnTick()
      Sleep(1000); 
    }
    if ( OrderType() != 5 || !(OrderLots()!=g_strategyStartLots[g_currentStrategyIndex]) )   continue;
-   local_11_double = OrderStopLoss() ;
-   local_12_long = OrderTicket() ;
-   local_13_double = OrderTakeProfit() ;
-   local_14_double = OrderOpenPrice() ;
-   local_15_datetime = OrderExpiration() ;
-   local_16_string = OrderComment() ;
-   OrderDelete(local_12_long,Red); 
-   local_17_int = OrderSend(g_chartSymbol,5,g_strategyStartLots[g_currentStrategyIndex],local_14_double,(int)g_slippagePts,local_11_double,local_13_double,local_16_string,g_curStrategyMagic,local_15_datetime,Green) ;
-   temp_long_4 = local_17_int;
-   temp_long_5 = local_12_long;
-   for (temp_int_6 = 0 ; temp_int_6 < 100 ; temp_int_6=temp_int_6 + 1)
+   sellStopLoss = OrderStopLoss() ;
+   sellTicket = OrderTicket() ;
+   sellTakeProfit = OrderTakeProfit() ;
+   sellOpenPrice = OrderOpenPrice() ;
+   sellExpiry = OrderExpiration() ;
+   sellComment = OrderComment() ;
+   OrderDelete(sellTicket,Red); 
+   sellNewTicket = OrderSend(g_chartSymbol,5,g_strategyStartLots[g_currentStrategyIndex],sellOpenPrice,(int)g_slippagePts,sellStopLoss,sellTakeProfit,sellComment,g_curStrategyMagic,sellExpiry,Green) ;
+   sellNewTicketVal = sellNewTicket;
+   sellOldTicketVal = sellTicket;
+   for (sellSlotScanIdx = 0 ; sellSlotScanIdx < 100 ; sellSlotScanIdx=sellSlotScanIdx + 1)
    {
-     if ( !(g_stopOrderTicketPrice[temp_int_6][0]==temp_long_5) )   continue;
-     g_stopOrderTicketPrice[temp_int_6][0] = (double)temp_long_4;
+     if ( !(g_stopOrderTicketPrice[sellSlotScanIdx][0]==sellOldTicketVal) )   continue;
+     g_stopOrderTicketPrice[sellSlotScanIdx][0] = (double)sellNewTicketVal;
      break;
      
    }
@@ -7623,58 +7632,46 @@ void OnTick()
 
  void CreateInfoPanel()
  {
-  int       local_1_int = 0;
-  int       local_2_int = 0;
-  int       local_3_int;
-  int       local_4_int;
-  int       local_5_int;
-  double    local_6_double;
-  int       local_7_int;
-  int       local_8_int;
-  int       local_9_int;
-  int       local_10_int;
-  int       local_11_int;
-  int       local_12_int;
-  int       local_13_int;
-  uint      local_14_uint;
-  bool      local_15_bool;
-  int       local_16_int;
-  string    local_17_string;
-  int       local_18_int;
-  int       local_19_int;
-  int       local_20_int;
-  string    local_21_string;
-  int       local_22_int;
-  int       local_23_int;
-  int       local_24_int;
+  int       textOffsetX;
+  int       textOffsetY;
+  int       panelWidth;
+  int       panelBaseHeight;
+  int       panelCorner;
+  int       panelX;
+  int       panelY;
+  uint      panelBgColor;
+  int       extraHeightAllSymbols;
+  string    frequencyText;
+  int       cellColumnIdx;
+  int       cellSubIdx;
+  int       cellRowIdx;
+  string    cellText;
+  int       tableX;
+  int       tableY;
+  int       strategyIdx;
 //----- -----
 
- local_3_int = 20 ;
- local_4_int = 300 ;
- local_5_int = 7 ;
- local_6_double = InfoPanelSizeAdjust ;
- local_7_int = 6 ;
- local_8_int = 4 ;
- local_9_int = 350 ;
- local_10_int = 366 ;
- local_11_int = 0 ;
- local_12_int = 5 ;
- local_13_int = 20 ;
- local_14_uint = LightSteelBlue ;
- local_15_bool = false ;
- local_16_int = 0 ;
+ textOffsetX = 6 ;
+ textOffsetY = 4 ;
+ panelWidth = 350 ;
+ panelBaseHeight = 366 ;
+ panelCorner = 0 ;
+ panelX = 5 ;
+ panelY = 20 ;
+ panelBgColor = LightSteelBlue ;
+ extraHeightAllSymbols = 0 ;
  if ( g_manageAllSymbols )
  {
-   local_16_int = (int)((g_strategyCount + 3) * g_panelCellHeight) ;
+   extraHeightAllSymbols = (int)((g_strategyCount + 3) * g_panelCellHeight) ;
  }
  ObjectCreate(0,"infopanel_rectangle",OBJ_RECTANGLE_LABEL,0,0,0.0); 
- ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_XDISTANCE,local_12_int); 
- ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_YDISTANCE,local_13_int); 
- ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_XSIZE,long(local_9_int * InfoPanelSizeAdjust)); 
- ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_YSIZE,long(local_10_int * InfoPanelSizeAdjust + local_16_int)); 
+ ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_XDISTANCE,panelX); 
+ ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_YDISTANCE,panelY); 
+ ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_XSIZE,long(panelWidth * InfoPanelSizeAdjust)); 
+ ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_YSIZE,long(panelBaseHeight * InfoPanelSizeAdjust + extraHeightAllSymbols)); 
  ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_CORNER,0); 
  ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_COLOR,0xFF0000); 
- ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_BGCOLOR,local_14_uint); 
+ ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_BGCOLOR,panelBgColor); 
  ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_BACK,0); 
  ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_BORDER_COLOR,0xFF0000); 
  ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_COLOR,0xFF0000); 
@@ -7683,9 +7680,9 @@ void OnTick()
  ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_WIDTH,0x2); 
  ObjectSetInteger(0,"infopanel_rectangle",OBJPROP_SELECTABLE,0); 
  ObjectCreate(0,"line1",OBJ_LABEL,0,0,0.0); 
- ObjectSetInteger(0,"line1",OBJPROP_CORNER,local_11_int); 
- ObjectSetInteger(0,"line1",OBJPROP_YDISTANCE,local_13_int + local_8_int); 
- ObjectSetInteger(0,"line1",OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+ ObjectSetInteger(0,"line1",OBJPROP_CORNER,panelCorner); 
+ ObjectSetInteger(0,"line1",OBJPROP_YDISTANCE,panelY + textOffsetY); 
+ ObjectSetInteger(0,"line1",OBJPROP_XDISTANCE,panelX + textOffsetX); 
  ObjectSetString(0,"line1",OBJPROP_TEXT,"The Gold Reaper v4.6"); 
  ObjectSetInteger(0,"line1",OBJPROP_COLOR,g_panelTextColor);
  // Ban decompile goc thieu set co chu rieng cho cac dong tieu de/tom tat panel
@@ -7695,68 +7692,68 @@ void OnTick()
  // khung panel. Set khop voi co chu cua bang chien luoc de dong bo.
  ObjectSetInteger(0,"line1",OBJPROP_FONTSIZE,g_panelFontSize);
  ObjectCreate(0,"linec",OBJ_LABEL,0,0,0.0);
- ObjectSetInteger(0,"linec",OBJPROP_CORNER,local_11_int); 
- ObjectSetInteger(0,"linec",OBJPROP_YDISTANCE,long(local_13_int + InfoPanelSizeAdjust * 20.0 + local_8_int)); 
- ObjectSetInteger(0,"linec",OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+ ObjectSetInteger(0,"linec",OBJPROP_CORNER,panelCorner); 
+ ObjectSetInteger(0,"linec",OBJPROP_YDISTANCE,long(panelY + InfoPanelSizeAdjust * 20.0 + textOffsetY)); 
+ ObjectSetInteger(0,"linec",OBJPROP_XDISTANCE,panelX + textOffsetX); 
  ObjectSetString(0,"linec",OBJPROP_TEXT,"EA Developed by Wim Schrynemakers - 2024"); 
  ObjectSetInteger(0,"linec",OBJPROP_COLOR,g_panelTextColor);
  ObjectSetInteger(0,"linec",OBJPROP_FONTSIZE,g_panelFontSize);
  ObjectCreate(0,"line2",OBJ_LABEL,0,0,0.0);
- ObjectSetInteger(0,"line2",OBJPROP_CORNER,local_11_int); 
- ObjectSetInteger(0,"line2",OBJPROP_YDISTANCE,long(local_13_int + InfoPanelSizeAdjust * 32.0 + local_8_int)); 
- ObjectSetInteger(0,"line2",OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+ ObjectSetInteger(0,"line2",OBJPROP_CORNER,panelCorner); 
+ ObjectSetInteger(0,"line2",OBJPROP_YDISTANCE,long(panelY + InfoPanelSizeAdjust * 32.0 + textOffsetY)); 
+ ObjectSetInteger(0,"line2",OBJPROP_XDISTANCE,panelX + textOffsetX); 
  ObjectSetString(0,"line2",OBJPROP_TEXT,"------------------------------------------------------"); 
  ObjectSetInteger(0,"line2",OBJPROP_COLOR,g_panelTextColor);
  ObjectSetInteger(0,"line2",OBJPROP_FONTSIZE,g_panelFontSize);
  ObjectCreate(0,"lines",OBJ_LABEL,0,0,0.0);
- ObjectSetInteger(0,"lines",OBJPROP_CORNER,local_11_int); 
- ObjectSetInteger(0,"lines",OBJPROP_YDISTANCE,long(local_13_int + InfoPanelSizeAdjust * 44.0 + local_8_int)); 
- ObjectSetInteger(0,"lines",OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+ ObjectSetInteger(0,"lines",OBJPROP_CORNER,panelCorner); 
+ ObjectSetInteger(0,"lines",OBJPROP_YDISTANCE,long(panelY + InfoPanelSizeAdjust * 44.0 + textOffsetY)); 
+ ObjectSetInteger(0,"lines",OBJPROP_XDISTANCE,panelX + textOffsetX); 
  if ( g_tradeFrequencyMode == 1 )
  {
-   local_17_string = "conservative" ;
+   frequencyText = "conservative" ;
  }
  else
  {
    if ( g_tradeFrequencyMode == 2 )
    {
-     local_17_string = "moderate" ;
+     frequencyText = "moderate" ;
    }
    else
    {
      if ( g_tradeFrequencyMode == 3 )
      {
-       local_17_string = "intense" ;
+       frequencyText = "intense" ;
      }
      else
      {
        if ( g_tradeFrequencyMode == 4 )
        {
-         local_17_string = "extreme" ;
+         frequencyText = "extreme" ;
        }
        else
        {
          if ( g_tradeFrequencyMode == 0 )
          {
-           local_17_string = "extreme conservative" ;
+           frequencyText = "extreme conservative" ;
          }
          else
          {
-           local_17_string = "manual strategy selection" ;
+           frequencyText = "manual strategy selection" ;
          }
        }
      }
    }
  }
- ObjectSetString(0,"lines",OBJPROP_TEXT,"Trade Frequency: " + local_17_string);
+ ObjectSetString(0,"lines",OBJPROP_TEXT,"Trade Frequency: " + frequencyText);
  ObjectSetInteger(0,"lines",OBJPROP_COLOR,g_panelTextColor);
  ObjectSetInteger(0,"lines",OBJPROP_FONTSIZE,g_panelFontSize);
  if ( Risk == 1234 )
  {
    ObjectCreate(0,"linet",OBJ_LABEL,0,0,0.0); 
-   ObjectSetInteger(0,"linet",OBJPROP_CORNER,local_11_int); 
-   ObjectSetInteger(0,"linet",OBJPROP_YDISTANCE,long(local_13_int + InfoPanelSizeAdjust * 60.0 + local_8_int)); 
-   ObjectSetInteger(0,"linet",OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+   ObjectSetInteger(0,"linet",OBJPROP_CORNER,panelCorner); 
+   ObjectSetInteger(0,"linet",OBJPROP_YDISTANCE,long(panelY + InfoPanelSizeAdjust * 60.0 + textOffsetY)); 
+   ObjectSetInteger(0,"linet",OBJPROP_XDISTANCE,panelX + textOffsetX); 
    ObjectSetString(0,"linet",OBJPROP_TEXT,"Max allowed DD: " + string(MaxAllowedDD) + "%");
    ObjectSetInteger(0,"linet",OBJPROP_COLOR,g_panelTextColor);
    ObjectSetInteger(0,"linet",OBJPROP_FONTSIZE,g_panelFontSize);
@@ -7766,9 +7763,9 @@ void OnTick()
    if ( Risk == 3 )
    {
      ObjectCreate(0,"linet",OBJ_LABEL,0,0,0.0); 
-     ObjectSetInteger(0,"linet",OBJPROP_CORNER,local_11_int); 
-     ObjectSetInteger(0,"linet",OBJPROP_YDISTANCE,long(local_13_int + InfoPanelSizeAdjust * 60.0 + local_8_int)); 
-     ObjectSetInteger(0,"linet",OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+     ObjectSetInteger(0,"linet",OBJPROP_CORNER,panelCorner); 
+     ObjectSetInteger(0,"linet",OBJPROP_YDISTANCE,long(panelY + InfoPanelSizeAdjust * 60.0 + textOffsetY)); 
+     ObjectSetInteger(0,"linet",OBJPROP_XDISTANCE,panelX + textOffsetX); 
      ObjectSetString(0,"linet",OBJPROP_TEXT,"Max risk per strategy: " + string(MaxRiskPerStrategy_) + "%");
      ObjectSetInteger(0,"linet",OBJPROP_COLOR,g_panelTextColor);
      ObjectSetInteger(0,"linet",OBJPROP_FONTSIZE,g_panelFontSize);
@@ -7776,98 +7773,98 @@ void OnTick()
    else
    {
      ObjectCreate(0,"linet",OBJ_LABEL,0,0,0.0);
-     ObjectSetInteger(0,"linet",OBJPROP_CORNER,local_11_int); 
-     ObjectSetInteger(0,"linet",OBJPROP_YDISTANCE,long(local_13_int + InfoPanelSizeAdjust * 60.0 + local_8_int)); 
-     ObjectSetInteger(0,"linet",OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+     ObjectSetInteger(0,"linet",OBJPROP_CORNER,panelCorner); 
+     ObjectSetInteger(0,"linet",OBJPROP_YDISTANCE,long(panelY + InfoPanelSizeAdjust * 60.0 + textOffsetY)); 
+     ObjectSetInteger(0,"linet",OBJPROP_XDISTANCE,panelX + textOffsetX); 
      ObjectSetString(0,"linet",OBJPROP_TEXT,"Manual lotsize: " + string(g_startLots_rw) + "lots");
      ObjectSetInteger(0,"linet",OBJPROP_COLOR,g_panelTextColor);
      ObjectSetInteger(0,"linet",OBJPROP_FONTSIZE,g_panelFontSize);
    }
  }
  ObjectCreate(0,"lineopl" + IntegerToString(0,0,32),OBJ_LABEL,0,0,0.0);
- ObjectSetInteger(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_CORNER,local_11_int); 
- ObjectSetInteger(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(local_13_int + InfoPanelSizeAdjust * 76.0 + local_8_int)); 
- ObjectSetInteger(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+ ObjectSetInteger(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_CORNER,panelCorner); 
+ ObjectSetInteger(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(panelY + InfoPanelSizeAdjust * 76.0 + textOffsetY)); 
+ ObjectSetInteger(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,panelX + textOffsetX); 
  ObjectSetString(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_TEXT,"Open P/L: -");
  ObjectSetInteger(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_COLOR,g_panelTextColor);
  ObjectSetInteger(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_FONTSIZE,g_panelFontSize);
  ObjectCreate(0,"linehb" + IntegerToString(0,0,32),OBJ_LABEL,0,0,0.0);
- ObjectSetInteger(0,"linehb" + IntegerToString(0,0,32),OBJPROP_CORNER,local_11_int);
- ObjectSetInteger(0,"linehb" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(local_13_int + InfoPanelSizeAdjust * 92.0 + local_8_int));
- ObjectSetInteger(0,"linehb" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,local_12_int + local_7_int);
+ ObjectSetInteger(0,"linehb" + IntegerToString(0,0,32),OBJPROP_CORNER,panelCorner);
+ ObjectSetInteger(0,"linehb" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(panelY + InfoPanelSizeAdjust * 92.0 + textOffsetY));
+ ObjectSetInteger(0,"linehb" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,panelX + textOffsetX);
  ObjectSetString(0,"linehb" + IntegerToString(0,0,32),OBJPROP_TEXT,"Higher Balance: -");
  ObjectSetInteger(0,"linehb" + IntegerToString(0,0,32),OBJPROP_COLOR,g_panelTextColor);
  ObjectSetInteger(0,"linehb" + IntegerToString(0,0,32),OBJPROP_FONTSIZE,g_panelFontSize);
  ObjectCreate(0,"linea" + IntegerToString(0,0,32),OBJ_LABEL,0,0,0.0);
- ObjectSetInteger(0,"linea" + IntegerToString(0,0,32),OBJPROP_CORNER,local_11_int); 
- ObjectSetInteger(0,"linea" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(local_13_int + InfoPanelSizeAdjust * 108.0 + local_8_int)); 
- ObjectSetInteger(0,"linea" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,local_12_int + local_7_int); 
+ ObjectSetInteger(0,"linea" + IntegerToString(0,0,32),OBJPROP_CORNER,panelCorner); 
+ ObjectSetInteger(0,"linea" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(panelY + InfoPanelSizeAdjust * 108.0 + textOffsetY)); 
+ ObjectSetInteger(0,"linea" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,panelX + textOffsetX); 
  ObjectSetString(0,"linea" + IntegerToString(0,0,32),OBJPROP_TEXT,"Account Balance: -");
  ObjectSetInteger(0,"linea" + IntegerToString(0,0,32),OBJPROP_COLOR,g_panelTextColor);
  ObjectSetInteger(0,"linea" + IntegerToString(0,0,32),OBJPROP_FONTSIZE,g_panelFontSize);
  ObjectCreate(0,"linetp" + IntegerToString(0,0,32),OBJ_LABEL,0,0,0.0);
- ObjectSetInteger(0,"linetp" + IntegerToString(0,0,32),OBJPROP_CORNER,local_11_int);
- ObjectSetInteger(0,"linetp" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(local_13_int + InfoPanelSizeAdjust * 124.0 + local_8_int));
- ObjectSetInteger(0,"linetp" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,local_12_int + local_7_int);
+ ObjectSetInteger(0,"linetp" + IntegerToString(0,0,32),OBJPROP_CORNER,panelCorner);
+ ObjectSetInteger(0,"linetp" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(panelY + InfoPanelSizeAdjust * 124.0 + textOffsetY));
+ ObjectSetInteger(0,"linetp" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,panelX + textOffsetX);
  ObjectSetString(0,"linetp" + IntegerToString(0,0,32),OBJPROP_TEXT,"Total P/L so far: -");
  ObjectSetInteger(0,"linetp" + IntegerToString(0,0,32),OBJPROP_COLOR,g_panelTextColor);
  ObjectSetInteger(0,"linetp" + IntegerToString(0,0,32),OBJPROP_FONTSIZE,g_panelFontSize);
  if ( EnableNFP_Filter )
  {
    ObjectCreate(0,"linenfp" + IntegerToString(0,0,32),OBJ_LABEL,0,0,0.0);
-   ObjectSetInteger(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_CORNER,local_11_int);
-   ObjectSetInteger(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(local_13_int + InfoPanelSizeAdjust * 140.0 + local_8_int));
-   ObjectSetInteger(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,local_12_int + local_7_int);
+   ObjectSetInteger(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_CORNER,panelCorner);
+   ObjectSetInteger(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_YDISTANCE,(long)(panelY + InfoPanelSizeAdjust * 140.0 + textOffsetY));
+   ObjectSetInteger(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_XDISTANCE,panelX + textOffsetX);
    ObjectSetString(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_TEXT,"no news coming up");
    ObjectSetInteger(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_COLOR,g_panelTextColor);
    ObjectSetInteger(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_FONTSIZE,g_panelFontSize);
  }
- local_18_int = 0 ;
- local_19_int = 0 ;
- local_20_int = 0 ;
- local_22_int = local_12_int + local_7_int ;
- local_23_int = (int)(local_13_int + InfoPanelSizeAdjust * 176.0 + local_8_int) ;
- local_21_string = "Strategy" ;
- CreateInfoPanelCell(local_22_int,local_23_int,0,"Strategy",0,0,1,0,1.0); 
- local_18_int = 1 ;
- local_19_int = 1 ;
- local_21_string = "Closed PL" ;
+ cellColumnIdx = 0 ;
+ cellSubIdx = 0 ;
+ cellRowIdx = 0 ;
+ tableX = panelX + textOffsetX ;
+ tableY = (int)(panelY + InfoPanelSizeAdjust * 176.0 + textOffsetY) ;
+ cellText = "Strategy" ;
+ CreateInfoPanelCell(tableX,tableY,0,"Strategy",0,0,1,0,1.0); 
+ cellColumnIdx = 1 ;
+ cellSubIdx = 1 ;
+ cellText = "Closed PL" ;
  if ( g_rankMode == 1 )
  {
-   local_21_string = "Closed PL*" ;
+   cellText = "Closed PL*" ;
  }
- CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,local_21_string,local_20_int,local_19_int,1,0,1.0); 
- local_18_int ++;
- local_19_int ++;
- local_21_string = "PL per trade" ;
- CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,local_21_string,local_20_int,local_19_int,1,0,1.0); 
- local_18_int ++;
- local_19_int ++;
- local_21_string = "Lotsize" ;
- CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,"Lotsize",local_20_int,local_19_int,1,0,1.0); 
- local_18_int ++;
- local_19_int = 0 ;
- local_20_int ++;
- g_panelStrategyRowStart = local_18_int ;
- for (local_24_int = 0 ; local_24_int < 9 ; local_24_int ++)
+ CreateInfoPanelCell(tableX,tableY,cellColumnIdx,cellText,cellRowIdx,cellSubIdx,1,0,1.0); 
+ cellColumnIdx ++;
+ cellSubIdx ++;
+ cellText = "PL per trade" ;
+ CreateInfoPanelCell(tableX,tableY,cellColumnIdx,cellText,cellRowIdx,cellSubIdx,1,0,1.0); 
+ cellColumnIdx ++;
+ cellSubIdx ++;
+ cellText = "Lotsize" ;
+ CreateInfoPanelCell(tableX,tableY,cellColumnIdx,"Lotsize",cellRowIdx,cellSubIdx,1,0,1.0); 
+ cellColumnIdx ++;
+ cellSubIdx = 0 ;
+ cellRowIdx ++;
+ g_panelStrategyRowStart = cellColumnIdx ;
+ for (strategyIdx = 0 ; strategyIdx < 9 ; strategyIdx ++)
  {
-   local_21_string="Strategy " + IntegerToString(local_24_int + 1,0,32);
-   CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,local_21_string,local_20_int,local_19_int,1,0,1.0); 
-   local_18_int ++;
-   local_19_int ++;
-   local_21_string = DoubleToString(NormalizeDouble(g_histClosedPLbyStrategy[local_24_int],2),2) ;
-   CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,local_21_string,local_20_int,local_19_int,1,0,1.0); 
-   local_18_int ++;
-   local_19_int ++;
-   local_21_string = DoubleToString(NormalizeDouble(g_avgPLperTrade[local_24_int],2),2) ;
-   CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,local_21_string,local_20_int,local_19_int,1,0,1.0); 
-   local_18_int ++;
-   local_19_int ++;
-   local_21_string = DoubleToString(NormalizeDouble(g_strategyStartLots[local_24_int],2),2) ;
-   CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,local_21_string,local_20_int,local_19_int,1,0,1.0); 
-   local_18_int ++;
-   local_19_int = 0 ;
-   local_20_int ++;
+   cellText="Strategy " + IntegerToString(strategyIdx + 1,0,32);
+   CreateInfoPanelCell(tableX,tableY,cellColumnIdx,cellText,cellRowIdx,cellSubIdx,1,0,1.0); 
+   cellColumnIdx ++;
+   cellSubIdx ++;
+   cellText = DoubleToString(NormalizeDouble(g_histClosedPLbyStrategy[strategyIdx],2),2) ;
+   CreateInfoPanelCell(tableX,tableY,cellColumnIdx,cellText,cellRowIdx,cellSubIdx,1,0,1.0); 
+   cellColumnIdx ++;
+   cellSubIdx ++;
+   cellText = DoubleToString(NormalizeDouble(g_avgPLperTrade[strategyIdx],2),2) ;
+   CreateInfoPanelCell(tableX,tableY,cellColumnIdx,cellText,cellRowIdx,cellSubIdx,1,0,1.0); 
+   cellColumnIdx ++;
+   cellSubIdx ++;
+   cellText = DoubleToString(NormalizeDouble(g_strategyStartLots[strategyIdx],2),2) ;
+   CreateInfoPanelCell(tableX,tableY,cellColumnIdx,cellText,cellRowIdx,cellSubIdx,1,0,1.0); 
+   cellColumnIdx ++;
+   cellSubIdx = 0 ;
+   cellRowIdx ++;
  }
  }
 //CreateInfoPanel <<==--------   --------
@@ -7952,27 +7949,27 @@ void OnTick()
 //GetNextNFPText <<==--------   --------
  void UpdateAccountPanel()
  {
-  string    local_1_string;
+  string    frequencyText;
 //----- -----
- double     temp_double_1;
- double     temp_double_2;
- int        temp_int_3;
- int        temp_int_4;
- int        temp_int_5;
- int        temp_int_6;
- int        temp_int_7;
- int        temp_int_8;
- int        temp_int_9;
- int        temp_int_10;
- int        temp_int_11;
- int        temp_int_12;
- int        temp_int_13;
- int        temp_int_14;
- int        temp_int_15;
- int        temp_int_16;
- int        temp_int_17;
- int        temp_int_18;
- int        temp_int_19;
+ double     openPLDisplay;
+ double     openPLSum;
+ int        orderScanIdx;
+ int        magicVal1;
+ int        magicRef1;
+ int        magicVal2;
+ int        magicRef2;
+ int        magicVal3;
+ int        magicRef3;
+ int        magicVal4;
+ int        magicRef4;
+ int        magicVal5;
+ int        magicRef5;
+ int        magicVal6;
+ int        magicRef6;
+ int        magicVal7;
+ int        magicRef7;
+ int        magicVal8;
+ int        magicRef8;
 
  if ( !(ShowInfoPanel) )   return;
  
@@ -7980,75 +7977,75 @@ void OnTick()
  
  if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
  {
-   temp_double_1 = 0.0;
+   openPLDisplay = 0.0;
  }
  else
  {
-   temp_double_2 = 0.0;
-   for (temp_int_3 = MT4OrdersTotal() ; temp_int_3 >= 0 ; temp_int_3=temp_int_3 - 1)
+   openPLSum = 0.0;
+   for (orderScanIdx = MT4OrdersTotal() ; orderScanIdx >= 0 ; orderScanIdx=orderScanIdx - 1)
    {
-     if ( OrderSelect(temp_int_3,0,0) != true )   continue;
+     if ( OrderSelect(orderScanIdx,0,0) != true )   continue;
      
      if ( ( OrderSymbol() != g_chartSymbol && !(g_manageAllSymbols) ) )   continue;
-     temp_int_4 = OrderMagicNumber();
-     temp_int_5=ST1_MagicNumber + 1;
-     if ( temp_int_4 != temp_int_5 )
+     magicVal1 = OrderMagicNumber();
+     magicRef1=ST1_MagicNumber + 1;
+     if ( magicVal1 != magicRef1 )
      {
-       temp_int_5 = OrderMagicNumber();
-       temp_int_6=ST1_MagicNumber + 2;
-       if ( temp_int_5 != temp_int_6 )
+       magicRef1 = OrderMagicNumber();
+       magicVal2=ST1_MagicNumber + 2;
+       if ( magicRef1 != magicVal2 )
        {
-         temp_int_6 = OrderMagicNumber();
-         temp_int_7=ST1_MagicNumber + 3;
-         if ( temp_int_6 != temp_int_7 )
+         magicVal2 = OrderMagicNumber();
+         magicRef2=ST1_MagicNumber + 3;
+         if ( magicVal2 != magicRef2 )
          {
-           temp_int_7 = OrderMagicNumber();
-           temp_int_8=ST1_MagicNumber + 4;
-           if ( temp_int_7 != temp_int_8 )
+           magicRef2 = OrderMagicNumber();
+           magicVal3=ST1_MagicNumber + 4;
+           if ( magicRef2 != magicVal3 )
            {
-             temp_int_8 = OrderMagicNumber();
-             temp_int_9=ST1_MagicNumber + 5;
-             if ( temp_int_8 != temp_int_9 )
+             magicVal3 = OrderMagicNumber();
+             magicRef3=ST1_MagicNumber + 5;
+             if ( magicVal3 != magicRef3 )
              {
-               temp_int_9 = OrderMagicNumber();
-               temp_int_10=ST1_MagicNumber + 6;
-               if ( temp_int_9 != temp_int_10 )
+               magicRef3 = OrderMagicNumber();
+               magicVal4=ST1_MagicNumber + 6;
+               if ( magicRef3 != magicVal4 )
                {
-                 temp_int_10 = OrderMagicNumber();
-                 temp_int_11=ST1_MagicNumber + 7;
-                 if ( temp_int_10 != temp_int_11 )
+                 magicVal4 = OrderMagicNumber();
+                 magicRef4=ST1_MagicNumber + 7;
+                 if ( magicVal4 != magicRef4 )
                  {
-                   temp_int_11 = OrderMagicNumber();
-                   temp_int_12=ST1_MagicNumber + 8;
-                   if ( temp_int_11 != temp_int_12 )
+                   magicRef4 = OrderMagicNumber();
+                   magicVal5=ST1_MagicNumber + 8;
+                   if ( magicRef4 != magicVal5 )
                    {
-                     temp_int_12 = OrderMagicNumber();
-                     temp_int_13=ST1_MagicNumber + 9;
-                     if ( temp_int_12 != temp_int_13 )
+                     magicVal5 = OrderMagicNumber();
+                     magicRef5=ST1_MagicNumber + 9;
+                     if ( magicVal5 != magicRef5 )
                      {
-                       temp_int_13 = OrderMagicNumber();
-                       temp_int_14=ST1_MagicNumber + 10;
-                       if ( temp_int_13 != temp_int_14 )
+                       magicRef5 = OrderMagicNumber();
+                       magicVal6=ST1_MagicNumber + 10;
+                       if ( magicRef5 != magicVal6 )
                        {
-                         temp_int_14 = OrderMagicNumber();
-                         temp_int_15=ST1_MagicNumber + 11;
-                         if ( temp_int_14 != temp_int_15 )
+                         magicVal6 = OrderMagicNumber();
+                         magicRef6=ST1_MagicNumber + 11;
+                         if ( magicVal6 != magicRef6 )
                          {
-                           temp_int_15 = OrderMagicNumber();
-                           temp_int_16=ST1_MagicNumber + 12;
-                           if ( temp_int_15 != temp_int_16 )
+                           magicRef6 = OrderMagicNumber();
+                           magicVal7=ST1_MagicNumber + 12;
+                           if ( magicRef6 != magicVal7 )
                            {
-                             temp_int_16 = OrderMagicNumber();
-                             temp_int_17=ST1_MagicNumber + 13;
-                             if ( temp_int_16 != temp_int_17 )
+                             magicVal7 = OrderMagicNumber();
+                             magicRef7=ST1_MagicNumber + 13;
+                             if ( magicVal7 != magicRef7 )
                              {
-                               temp_int_17 = OrderMagicNumber();
-                               temp_int_18=ST1_MagicNumber + 14;
-                               if ( temp_int_17 != temp_int_18 )
+                               magicRef7 = OrderMagicNumber();
+                               magicVal8=ST1_MagicNumber + 14;
+                               if ( magicRef7 != magicVal8 )
                                {
-                                 temp_int_18 = OrderMagicNumber();
-                                 temp_int_19=ST1_MagicNumber + 15;
-                               if ( temp_int_18 != temp_int_19 )   continue;
+                                 magicVal8 = OrderMagicNumber();
+                                 magicRef8=ST1_MagicNumber + 15;
+                               if ( magicVal8 != magicRef8 )   continue;
                                }
                              }
                            }
@@ -8064,52 +8061,52 @@ void OnTick()
        }
      }
      if ( ( OrderType() != 0 && OrderType() != 1 ) )   continue;
-     temp_double_2 = OrderProfit() + OrderSwap() + OrderCommission() + temp_double_2;
+     openPLSum = OrderProfit() + OrderSwap() + OrderCommission() + openPLSum;
      
    }
-   g_openPLbyStrategy[g_currentStrategyIndex] = temp_double_2;
-   temp_double_1 = temp_double_2;
+   g_openPLbyStrategy[g_currentStrategyIndex] = openPLSum;
+   openPLDisplay = openPLSum;
  }
- ObjectSetString(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_TEXT,"Open P/L: " + DoubleToString(temp_double_1,2)); 
+ ObjectSetString(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_TEXT,"Open P/L: " + DoubleToString(openPLDisplay,2)); 
  ObjectSetString(0,"linehb" + IntegerToString(0,0,32),OBJPROP_TEXT,"Higher Balance: " + DoubleToString(g_highestBalance,2));
  ObjectSetString(0,"linea" + IntegerToString(0,0,32),OBJPROP_TEXT,"Account Balance: " + DoubleToString(AccountBalance(),2)); 
  if ( g_tradeFrequencyMode == 1 )
  {
-   local_1_string = "conservative" ;
+   frequencyText = "conservative" ;
  }
  else
  {
    if ( g_tradeFrequencyMode == 2 )
    {
-     local_1_string = "moderate" ;
+     frequencyText = "moderate" ;
    }
    else
    {
      if ( g_tradeFrequencyMode == 3 )
      {
-       local_1_string = "intense" ;
+       frequencyText = "intense" ;
      }
      else
      {
        if ( g_tradeFrequencyMode == 4 )
        {
-         local_1_string = "extreme" ;
+         frequencyText = "extreme" ;
        }
        else
        {
          if ( g_tradeFrequencyMode == 0 )
          {
-           local_1_string = "extreme conservative" ;
+           frequencyText = "extreme conservative" ;
          }
          else
          {
-           local_1_string = "manual strategy selection" ;
+           frequencyText = "manual strategy selection" ;
          }
        }
      }
    }
  }
- ObjectSetString(0,"lines",OBJPROP_TEXT,"Trade Frequency: " + local_1_string); 
+ ObjectSetString(0,"lines",OBJPROP_TEXT,"Trade Frequency: " + frequencyText); 
  if ( Risk == 1234 )
  {
    ObjectSetString(0,"linet",OBJPROP_TEXT,"Max allowed DD: " + string(MaxAllowedDD) + "%"); 
@@ -8157,26 +8154,26 @@ void OnTick()
 //UpdateStrategyPanelRows <<==--------   --------
  void UpdateHistoryPanel()
  {
- double     temp_double_1;
- double     temp_double_2;
- int        temp_int_3;
- int        temp_int_4;
- int        temp_int_5;
- int        temp_int_6;
- int        temp_int_7;
- int        temp_int_8;
- int        temp_int_9;
- int        temp_int_10;
- int        temp_int_11;
- int        temp_int_12;
- int        temp_int_13;
- int        temp_int_14;
- int        temp_int_15;
- int        temp_int_16;
- int        temp_int_17;
- int        temp_int_18;
- int        temp_int_19;
- int        temp_int_20;
+ double     totalPLDisplay;
+ double     totalPLSum;
+ int        countedTrades;
+ int        historyScanIdx;
+ int        magicVal1;
+ int        magicRef1;
+ int        magicVal2;
+ int        magicRef2;
+ int        magicVal3;
+ int        magicRef3;
+ int        magicVal4;
+ int        magicRef4;
+ int        magicVal5;
+ int        magicRef5;
+ int        magicVal6;
+ int        magicRef6;
+ int        magicVal7;
+ int        magicRef7;
+ int        magicVal8;
+ int        magicRef8;
 
  if ( !(ShowInfoPanel) )   return;
  
@@ -8184,76 +8181,76 @@ void OnTick()
  ObjectSetString(0,"lineto" + IntegerToString(0,0,32),OBJPROP_TEXT,"Total profits/losses so far: " + IntegerToString(CountWinningTrades(0,9999999),0,32) + "/" + IntegerToString(CountLosingTrades(0,9999999),0,32)); 
  if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
  {
-   temp_double_1 = 0.0;
+   totalPLDisplay = 0.0;
  }
  else
  {
-   temp_double_2 = 0.0;
-   temp_int_3 = 0;
-   for (temp_int_4 = HistoryTotal() ; temp_int_4 >= 0 ; temp_int_4=temp_int_4 - 1)
+   totalPLSum = 0.0;
+   countedTrades = 0;
+   for (historyScanIdx = HistoryTotal() ; historyScanIdx >= 0 ; historyScanIdx=historyScanIdx - 1)
    {
-     if ( OrderSelect(temp_int_4,0,1) != true )   continue;
+     if ( OrderSelect(historyScanIdx,0,1) != true )   continue;
      
      if ( ( OrderSymbol() != g_chartSymbol && !(g_manageAllSymbols) ) )   continue;
-     temp_int_5 = OrderMagicNumber();
-     temp_int_6=ST1_MagicNumber + 1;
-     if ( temp_int_5 != temp_int_6 )
+     magicVal1 = OrderMagicNumber();
+     magicRef1=ST1_MagicNumber + 1;
+     if ( magicVal1 != magicRef1 )
      {
-       temp_int_6 = OrderMagicNumber();
-       temp_int_7=ST1_MagicNumber + 2;
-       if ( temp_int_6 != temp_int_7 )
+       magicRef1 = OrderMagicNumber();
+       magicVal2=ST1_MagicNumber + 2;
+       if ( magicRef1 != magicVal2 )
        {
-         temp_int_7 = OrderMagicNumber();
-         temp_int_8=ST1_MagicNumber + 3;
-         if ( temp_int_7 != temp_int_8 )
+         magicVal2 = OrderMagicNumber();
+         magicRef2=ST1_MagicNumber + 3;
+         if ( magicVal2 != magicRef2 )
          {
-           temp_int_8 = OrderMagicNumber();
-           temp_int_9=ST1_MagicNumber + 4;
-           if ( temp_int_8 != temp_int_9 )
+           magicRef2 = OrderMagicNumber();
+           magicVal3=ST1_MagicNumber + 4;
+           if ( magicRef2 != magicVal3 )
            {
-             temp_int_9 = OrderMagicNumber();
-             temp_int_10=ST1_MagicNumber + 5;
-             if ( temp_int_9 != temp_int_10 )
+             magicVal3 = OrderMagicNumber();
+             magicRef3=ST1_MagicNumber + 5;
+             if ( magicVal3 != magicRef3 )
              {
-               temp_int_10 = OrderMagicNumber();
-               temp_int_11=ST1_MagicNumber + 6;
-               if ( temp_int_10 != temp_int_11 )
+               magicRef3 = OrderMagicNumber();
+               magicVal4=ST1_MagicNumber + 6;
+               if ( magicRef3 != magicVal4 )
                {
-                 temp_int_11 = OrderMagicNumber();
-                 temp_int_12=ST1_MagicNumber + 7;
-                 if ( temp_int_11 != temp_int_12 )
+                 magicVal4 = OrderMagicNumber();
+                 magicRef4=ST1_MagicNumber + 7;
+                 if ( magicVal4 != magicRef4 )
                  {
-                   temp_int_12 = OrderMagicNumber();
-                   temp_int_13=ST1_MagicNumber + 8;
-                   if ( temp_int_12 != temp_int_13 )
+                   magicRef4 = OrderMagicNumber();
+                   magicVal5=ST1_MagicNumber + 8;
+                   if ( magicRef4 != magicVal5 )
                    {
-                     temp_int_13 = OrderMagicNumber();
-                     temp_int_14=ST1_MagicNumber + 9;
-                     if ( temp_int_13 != temp_int_14 )
+                     magicVal5 = OrderMagicNumber();
+                     magicRef5=ST1_MagicNumber + 9;
+                     if ( magicVal5 != magicRef5 )
                      {
-                       temp_int_14 = OrderMagicNumber();
-                       temp_int_15=ST1_MagicNumber + 10;
-                       if ( temp_int_14 != temp_int_15 )
+                       magicRef5 = OrderMagicNumber();
+                       magicVal6=ST1_MagicNumber + 10;
+                       if ( magicRef5 != magicVal6 )
                        {
-                         temp_int_15 = OrderMagicNumber();
-                         temp_int_16=ST1_MagicNumber + 11;
-                         if ( temp_int_15 != temp_int_16 )
+                         magicVal6 = OrderMagicNumber();
+                         magicRef6=ST1_MagicNumber + 11;
+                         if ( magicVal6 != magicRef6 )
                          {
-                           temp_int_16 = OrderMagicNumber();
-                           temp_int_17=ST1_MagicNumber + 12;
-                           if ( temp_int_16 != temp_int_17 )
+                           magicRef6 = OrderMagicNumber();
+                           magicVal7=ST1_MagicNumber + 12;
+                           if ( magicRef6 != magicVal7 )
                            {
-                             temp_int_17 = OrderMagicNumber();
-                             temp_int_18=ST1_MagicNumber + 13;
-                             if ( temp_int_17 != temp_int_18 )
+                             magicVal7 = OrderMagicNumber();
+                             magicRef7=ST1_MagicNumber + 13;
+                             if ( magicVal7 != magicRef7 )
                              {
-                               temp_int_18 = OrderMagicNumber();
-                               temp_int_19=ST1_MagicNumber + 14;
-                               if ( temp_int_18 != temp_int_19 )
+                               magicRef7 = OrderMagicNumber();
+                               magicVal8=ST1_MagicNumber + 14;
+                               if ( magicRef7 != magicVal8 )
                                {
-                                 temp_int_19 = OrderMagicNumber();
-                                 temp_int_20=ST1_MagicNumber + 15;
-                               if ( temp_int_19 != temp_int_20 )   continue;
+                                 magicVal8 = OrderMagicNumber();
+                                 magicRef8=ST1_MagicNumber + 15;
+                               if ( magicVal8 != magicRef8 )   continue;
                                }
                              }
                            }
@@ -8268,116 +8265,116 @@ void OnTick()
          }
        }
      }
-     temp_int_3=temp_int_3 + 1;
-     temp_double_2 = temp_double_2 + OrderProfit() + OrderSwap() + OrderCommission();
-     if ( temp_int_3 >= 1000 )   break;
+     countedTrades=countedTrades + 1;
+     totalPLSum = totalPLSum + OrderProfit() + OrderSwap() + OrderCommission();
+     if ( countedTrades >= 1000 )   break;
      
    }
-   g_totalPLbyStrategy[g_currentStrategyIndex] = temp_double_2;
-   temp_double_1 = temp_double_2;
+   g_totalPLbyStrategy[g_currentStrategyIndex] = totalPLSum;
+   totalPLDisplay = totalPLSum;
  }
- ObjectSetString(0,"linetp" + IntegerToString(0,0,32),OBJPROP_TEXT,"Total P/L so far: " + DoubleToString(NormalizeDouble(temp_double_1,2),2));
+ ObjectSetString(0,"linetp" + IntegerToString(0,0,32),OBJPROP_TEXT,"Total P/L so far: " + DoubleToString(NormalizeDouble(totalPLDisplay,2),2));
  if ( EnableNFP_Filter )
  {
    ObjectSetString(0,"linenfp" + IntegerToString(0,0,32),OBJPROP_TEXT,GetNextNFPText());
  }
  }
 //UpdateHistoryPanel <<==--------   --------
- int CountWinningTrades( int arg_0_int,int arg_1_int)
+ int CountWinningTrades( int scanFromIdx,int maxTradesToScan)
  {
-  double    local_2_double;
-  int       local_3_int;
-  int       local_4_int;
-  int       local_5_int;
+  double    tradePriceDiff;
+  int       scannedCount;
+  int       winCount;
+  int       historyScanIdx;
 //----- -----
- int        temp_int_1;
- int        temp_int_2;
- int        temp_int_3;
- int        temp_int_4;
- int        temp_int_5;
- int        temp_int_6;
- int        temp_int_7;
- int        temp_int_8;
- int        temp_int_9;
- int        temp_int_10;
- int        temp_int_11;
- int        temp_int_12;
- int        temp_int_13;
- int        temp_int_14;
- int        temp_int_15;
- int        temp_int_16;
+ int        magicVal1;
+ int        magicRef1;
+ int        magicVal2;
+ int        magicRef2;
+ int        magicVal3;
+ int        magicRef3;
+ int        magicVal4;
+ int        magicRef4;
+ int        magicVal5;
+ int        magicRef5;
+ int        magicVal6;
+ int        magicRef6;
+ int        magicVal7;
+ int        magicRef7;
+ int        magicVal8;
+ int        magicRef8;
 
  if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
  {
    return(0); 
  }
- local_2_double = 0.0 ;
- local_3_int = 0 ;
- local_4_int = 0 ;
- for (local_5_int = HistoryTotal() ; local_5_int >= 0 ; local_5_int --)
+ tradePriceDiff = 0.0 ;
+ scannedCount = 0 ;
+ winCount = 0 ;
+ for (historyScanIdx = HistoryTotal() ; historyScanIdx >= 0 ; historyScanIdx --)
  {
-   if ( OrderSelect(local_5_int,0,1) != true )   continue;
+   if ( OrderSelect(historyScanIdx,0,1) != true )   continue;
    
    if ( ( OrderSymbol() != g_chartSymbol && !(g_manageAllSymbols) ) )   continue;
-   temp_int_1 = OrderMagicNumber();
-   temp_int_2=ST1_MagicNumber + 1;
-   if ( temp_int_1 != temp_int_2 )
+   magicVal1 = OrderMagicNumber();
+   magicRef1=ST1_MagicNumber + 1;
+   if ( magicVal1 != magicRef1 )
    {
-     temp_int_2 = OrderMagicNumber();
-     temp_int_3=ST1_MagicNumber + 2;
-     if ( temp_int_2 != temp_int_3 )
+     magicRef1 = OrderMagicNumber();
+     magicVal2=ST1_MagicNumber + 2;
+     if ( magicRef1 != magicVal2 )
      {
-       temp_int_3 = OrderMagicNumber();
-       temp_int_4=ST1_MagicNumber + 3;
-       if ( temp_int_3 != temp_int_4 )
+       magicVal2 = OrderMagicNumber();
+       magicRef2=ST1_MagicNumber + 3;
+       if ( magicVal2 != magicRef2 )
        {
-         temp_int_4 = OrderMagicNumber();
-         temp_int_5=ST1_MagicNumber + 4;
-         if ( temp_int_4 != temp_int_5 )
+         magicRef2 = OrderMagicNumber();
+         magicVal3=ST1_MagicNumber + 4;
+         if ( magicRef2 != magicVal3 )
          {
-           temp_int_5 = OrderMagicNumber();
-           temp_int_6=ST1_MagicNumber + 5;
-           if ( temp_int_5 != temp_int_6 )
+           magicVal3 = OrderMagicNumber();
+           magicRef3=ST1_MagicNumber + 5;
+           if ( magicVal3 != magicRef3 )
            {
-             temp_int_6 = OrderMagicNumber();
-             temp_int_7=ST1_MagicNumber + 6;
-             if ( temp_int_6 != temp_int_7 )
+             magicRef3 = OrderMagicNumber();
+             magicVal4=ST1_MagicNumber + 6;
+             if ( magicRef3 != magicVal4 )
              {
-               temp_int_7 = OrderMagicNumber();
-               temp_int_8=ST1_MagicNumber + 7;
-               if ( temp_int_7 != temp_int_8 )
+               magicVal4 = OrderMagicNumber();
+               magicRef4=ST1_MagicNumber + 7;
+               if ( magicVal4 != magicRef4 )
                {
-                 temp_int_8 = OrderMagicNumber();
-                 temp_int_9=ST1_MagicNumber + 8;
-                 if ( temp_int_8 != temp_int_9 )
+                 magicRef4 = OrderMagicNumber();
+                 magicVal5=ST1_MagicNumber + 8;
+                 if ( magicRef4 != magicVal5 )
                  {
-                   temp_int_9 = OrderMagicNumber();
-                   temp_int_10=ST1_MagicNumber + 9;
-                   if ( temp_int_9 != temp_int_10 )
+                   magicVal5 = OrderMagicNumber();
+                   magicRef5=ST1_MagicNumber + 9;
+                   if ( magicVal5 != magicRef5 )
                    {
-                     temp_int_10 = OrderMagicNumber();
-                     temp_int_11=ST1_MagicNumber + 10;
-                     if ( temp_int_10 != temp_int_11 )
+                     magicRef5 = OrderMagicNumber();
+                     magicVal6=ST1_MagicNumber + 10;
+                     if ( magicRef5 != magicVal6 )
                      {
-                       temp_int_11 = OrderMagicNumber();
-                       temp_int_12=ST1_MagicNumber + 11;
-                       if ( temp_int_11 != temp_int_12 )
+                       magicVal6 = OrderMagicNumber();
+                       magicRef6=ST1_MagicNumber + 11;
+                       if ( magicVal6 != magicRef6 )
                        {
-                         temp_int_12 = OrderMagicNumber();
-                         temp_int_13=ST1_MagicNumber + 12;
-                         if ( temp_int_12 != temp_int_13 )
+                         magicRef6 = OrderMagicNumber();
+                         magicVal7=ST1_MagicNumber + 12;
+                         if ( magicRef6 != magicVal7 )
                          {
-                           temp_int_13 = OrderMagicNumber();
-                           temp_int_14=ST1_MagicNumber + 13;
-                           if ( temp_int_13 != temp_int_14 )
+                           magicVal7 = OrderMagicNumber();
+                           magicRef7=ST1_MagicNumber + 13;
+                           if ( magicVal7 != magicRef7 )
                            {
-                             temp_int_14 = OrderMagicNumber();
-                             temp_int_15=ST1_MagicNumber + 14;
-                             if ( temp_int_14 != temp_int_15 )
+                             magicRef7 = OrderMagicNumber();
+                             magicVal8=ST1_MagicNumber + 14;
+                             if ( magicRef7 != magicVal8 )
                              {
-                               temp_int_15 = OrderMagicNumber();
-                               temp_int_16=ST1_MagicNumber + 15;
-                             if ( temp_int_15 != temp_int_16 )   continue;
+                               magicVal8 = OrderMagicNumber();
+                               magicRef8=ST1_MagicNumber + 15;
+                             if ( magicVal8 != magicRef8 )   continue;
                              }
                            }
                          }
@@ -8392,127 +8389,127 @@ void OnTick()
        }
      }
    }
-   local_3_int ++;
+   scannedCount ++;
    if ( ( OrderType() == 0 || OrderType() == 1 ) )
    {
      if ( OrderType() == 0 )
      {
-       local_2_double = OrderClosePrice() - OrderOpenPrice() ;
+       tradePriceDiff = OrderClosePrice() - OrderOpenPrice() ;
      }
      else
      {
        if ( OrderType() == 1 )
        {
-         local_2_double = OrderOpenPrice() - OrderClosePrice() ;
+         tradePriceDiff = OrderOpenPrice() - OrderClosePrice() ;
        }
      }
-     if ( local_2_double>0.0 )
+     if ( tradePriceDiff>0.0 )
      {
-       local_4_int ++;
+       winCount ++;
      }
    }
-   if ( local_3_int >= arg_1_int )   break;
+   if ( scannedCount >= maxTradesToScan )   break;
    
  }
- g_winTradeCount[g_currentStrategyIndex] = local_4_int;
- return(local_4_int); 
+ g_winTradeCount[g_currentStrategyIndex] = winCount;
+ return(winCount); 
  }
 //CountWinningTrades <<==--------   --------
- int CountLosingTrades( int arg_0_int,int arg_1_int)
+ int CountLosingTrades( int scanFromIdx,int maxTradesToScan)
  {
-  double    local_2_double;
-  int       local_3_int;
-  int       local_4_int;
-  int       local_5_int;
+  double    tradePriceDiff;
+  int       scannedCount;
+  int       loseCount;
+  int       historyScanIdx;
 //----- -----
- int        temp_int_1;
- int        temp_int_2;
- int        temp_int_3;
- int        temp_int_4;
- int        temp_int_5;
- int        temp_int_6;
- int        temp_int_7;
- int        temp_int_8;
- int        temp_int_9;
- int        temp_int_10;
- int        temp_int_11;
- int        temp_int_12;
- int        temp_int_13;
- int        temp_int_14;
- int        temp_int_15;
- int        temp_int_16;
+ int        magicVal1;
+ int        magicRef1;
+ int        magicVal2;
+ int        magicRef2;
+ int        magicVal3;
+ int        magicRef3;
+ int        magicVal4;
+ int        magicRef4;
+ int        magicVal5;
+ int        magicRef5;
+ int        magicVal6;
+ int        magicRef6;
+ int        magicVal7;
+ int        magicRef7;
+ int        magicVal8;
+ int        magicRef8;
 
  if ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) )
  {
    return(0); 
  }
- local_2_double = 0.0 ;
- local_3_int = 0 ;
- local_4_int = 0 ;
- for (local_5_int = HistoryTotal() ; local_5_int >= 0 ; local_5_int --)
+ tradePriceDiff = 0.0 ;
+ scannedCount = 0 ;
+ loseCount = 0 ;
+ for (historyScanIdx = HistoryTotal() ; historyScanIdx >= 0 ; historyScanIdx --)
  {
-   if ( OrderSelect(local_5_int,0,1) != true )   continue;
+   if ( OrderSelect(historyScanIdx,0,1) != true )   continue;
    
    if ( ( OrderSymbol() != g_chartSymbol && !(g_manageAllSymbols) ) )   continue;
-   temp_int_1 = OrderMagicNumber();
-   temp_int_2=ST1_MagicNumber + 1;
-   if ( temp_int_1 != temp_int_2 )
+   magicVal1 = OrderMagicNumber();
+   magicRef1=ST1_MagicNumber + 1;
+   if ( magicVal1 != magicRef1 )
    {
-     temp_int_2 = OrderMagicNumber();
-     temp_int_3=ST1_MagicNumber + 2;
-     if ( temp_int_2 != temp_int_3 )
+     magicRef1 = OrderMagicNumber();
+     magicVal2=ST1_MagicNumber + 2;
+     if ( magicRef1 != magicVal2 )
      {
-       temp_int_3 = OrderMagicNumber();
-       temp_int_4=ST1_MagicNumber + 3;
-       if ( temp_int_3 != temp_int_4 )
+       magicVal2 = OrderMagicNumber();
+       magicRef2=ST1_MagicNumber + 3;
+       if ( magicVal2 != magicRef2 )
        {
-         temp_int_4 = OrderMagicNumber();
-         temp_int_5=ST1_MagicNumber + 4;
-         if ( temp_int_4 != temp_int_5 )
+         magicRef2 = OrderMagicNumber();
+         magicVal3=ST1_MagicNumber + 4;
+         if ( magicRef2 != magicVal3 )
          {
-           temp_int_5 = OrderMagicNumber();
-           temp_int_6=ST1_MagicNumber + 5;
-           if ( temp_int_5 != temp_int_6 )
+           magicVal3 = OrderMagicNumber();
+           magicRef3=ST1_MagicNumber + 5;
+           if ( magicVal3 != magicRef3 )
            {
-             temp_int_6 = OrderMagicNumber();
-             temp_int_7=ST1_MagicNumber + 6;
-             if ( temp_int_6 != temp_int_7 )
+             magicRef3 = OrderMagicNumber();
+             magicVal4=ST1_MagicNumber + 6;
+             if ( magicRef3 != magicVal4 )
              {
-               temp_int_7 = OrderMagicNumber();
-               temp_int_8=ST1_MagicNumber + 7;
-               if ( temp_int_7 != temp_int_8 )
+               magicVal4 = OrderMagicNumber();
+               magicRef4=ST1_MagicNumber + 7;
+               if ( magicVal4 != magicRef4 )
                {
-                 temp_int_8 = OrderMagicNumber();
-                 temp_int_9=ST1_MagicNumber + 8;
-                 if ( temp_int_8 != temp_int_9 )
+                 magicRef4 = OrderMagicNumber();
+                 magicVal5=ST1_MagicNumber + 8;
+                 if ( magicRef4 != magicVal5 )
                  {
-                   temp_int_9 = OrderMagicNumber();
-                   temp_int_10=ST1_MagicNumber + 9;
-                   if ( temp_int_9 != temp_int_10 )
+                   magicVal5 = OrderMagicNumber();
+                   magicRef5=ST1_MagicNumber + 9;
+                   if ( magicVal5 != magicRef5 )
                    {
-                     temp_int_10 = OrderMagicNumber();
-                     temp_int_11=ST1_MagicNumber + 10;
-                     if ( temp_int_10 != temp_int_11 )
+                     magicRef5 = OrderMagicNumber();
+                     magicVal6=ST1_MagicNumber + 10;
+                     if ( magicRef5 != magicVal6 )
                      {
-                       temp_int_11 = OrderMagicNumber();
-                       temp_int_12=ST1_MagicNumber + 11;
-                       if ( temp_int_11 != temp_int_12 )
+                       magicVal6 = OrderMagicNumber();
+                       magicRef6=ST1_MagicNumber + 11;
+                       if ( magicVal6 != magicRef6 )
                        {
-                         temp_int_12 = OrderMagicNumber();
-                         temp_int_13=ST1_MagicNumber + 12;
-                         if ( temp_int_12 != temp_int_13 )
+                         magicRef6 = OrderMagicNumber();
+                         magicVal7=ST1_MagicNumber + 12;
+                         if ( magicRef6 != magicVal7 )
                          {
-                           temp_int_13 = OrderMagicNumber();
-                           temp_int_14=ST1_MagicNumber + 13;
-                           if ( temp_int_13 != temp_int_14 )
+                           magicVal7 = OrderMagicNumber();
+                           magicRef7=ST1_MagicNumber + 13;
+                           if ( magicVal7 != magicRef7 )
                            {
-                             temp_int_14 = OrderMagicNumber();
-                             temp_int_15=ST1_MagicNumber + 14;
-                             if ( temp_int_14 != temp_int_15 )
+                             magicRef7 = OrderMagicNumber();
+                             magicVal8=ST1_MagicNumber + 14;
+                             if ( magicRef7 != magicVal8 )
                              {
-                               temp_int_15 = OrderMagicNumber();
-                               temp_int_16=ST1_MagicNumber + 15;
-                             if ( temp_int_15 != temp_int_16 )   continue;
+                               magicVal8 = OrderMagicNumber();
+                               magicRef8=ST1_MagicNumber + 15;
+                             if ( magicVal8 != magicRef8 )   continue;
                              }
                            }
                          }
@@ -8527,119 +8524,118 @@ void OnTick()
        }
      }
    }
-   local_3_int ++;
+   scannedCount ++;
    if ( OrderType() == 0 )
    {
-     local_2_double = OrderClosePrice() - OrderOpenPrice() ;
+     tradePriceDiff = OrderClosePrice() - OrderOpenPrice() ;
    }
    else
    {
      if ( OrderType() == 1 )
      {
-       local_2_double = OrderOpenPrice() - OrderClosePrice() ;
+       tradePriceDiff = OrderOpenPrice() - OrderClosePrice() ;
      }
    }
-   if ( local_2_double<0.0 )
+   if ( tradePriceDiff<0.0 )
    {
-     local_4_int ++;
+     loseCount ++;
    }
-   if ( local_3_int >= arg_1_int )   break;
+   if ( scannedCount >= maxTradesToScan )   break;
    
  }
- g_lossTradeCount[g_currentStrategyIndex] = local_4_int;
- return(local_4_int); 
+ g_lossTradeCount[g_currentStrategyIndex] = loseCount;
+ return(loseCount); 
  }
 //CountLosingTrades <<==--------   --------
  void CalculatePerformanceMetrics()
  {
-  int       local_1_int = 0;
-  double    local_2_double_si99[99];
-  double    local_3_double_si99[99];
-  int       local_4_int;
-  int       local_5_int;
-  bool      local_6_bool;
-  int       local_7_int;
-  double    local_8_double;
-  int       local_9_int;
-  int       local_10_int;
+  double    statPL[99];
+  double    recentPL[99];
+  int       strategyIdx;
+  int       historyScanIdx;
+  bool      allMinTradesReached;
+  int       checkScanIdx;
+  double    tradeWeight;
+  int       strategyMatchIdx;
+  int       publishIdx;
 //----- -----
- long       temp_long_1;
- long       temp_long_2;
- long       temp_long_3;
- long       temp_long_4;
- long       temp_long_5;
+ long       closeTimeChk;
+ long       windowStartChk;
+ long       windowStartChk2;
+ long       closeTimeRecent;
+ long       recentStartChk;
 
  if ( ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) ) )   return;
- for (local_4_int = 0 ; local_4_int < g_strategyCount ; local_4_int ++)
+ for (strategyIdx = 0 ; strategyIdx < g_strategyCount ; strategyIdx ++)
  {
-   local_2_double_si99[local_4_int] = 0.0;
-   local_3_double_si99[local_4_int] = 0.0;
-   g_minTradesReachedFlag[local_4_int] = false;
-   g_closedTradeCount[local_4_int] = 0;
+   statPL[strategyIdx] = 0.0;
+   recentPL[strategyIdx] = 0.0;
+   g_minTradesReachedFlag[strategyIdx] = false;
+   g_closedTradeCount[strategyIdx] = 0;
  }
- for (local_5_int = HistoryTotal() ; local_5_int >= 0 ; local_5_int --)
+ for (historyScanIdx = HistoryTotal() ; historyScanIdx >= 0 ; historyScanIdx --)
  {
-   if ( OrderSelect(local_5_int,0,1) != true || OrderMagicNumber() != g_curStrategyMagic )   continue;
-   local_6_bool = true ;
-   for (local_7_int = 0 ; local_7_int < g_strategyCount ; local_7_int ++)
+   if ( OrderSelect(historyScanIdx,0,1) != true || OrderMagicNumber() != g_curStrategyMagic )   continue;
+   allMinTradesReached = true ;
+   for (checkScanIdx = 0 ; checkScanIdx < g_strategyCount ; checkScanIdx ++)
    {
-     if ( !(g_minTradesReachedFlag[local_7_int]) )
+     if ( !(g_minTradesReachedFlag[checkScanIdx]) )
      {
-       local_6_bool = false ;
+       allMinTradesReached = false ;
      }
    }
-   if ( ( OrderCloseTime() <  TimeCurrent() - g_statWindowDays * 24 * 60 * 60 && local_6_bool ) )   break;
-   local_8_double = OrderLots() * 100.0 ;
+   if ( ( OrderCloseTime() <  TimeCurrent() - g_statWindowDays * 24 * 60 * 60 && allMinTradesReached ) )   break;
+   tradeWeight = OrderLots() * 100.0 ;
    if ( g_statWeightPerTrade == 1 )
    {
-     local_8_double = 1.0 ;
+     tradeWeight = 1.0 ;
    }
-   local_9_int = 0 ;
+   strategyMatchIdx = 0 ;
    if ( g_strategyCount <= 0 )   continue;
    
-   for ( ; local_9_int < g_strategyCount ; local_9_int ++)
+   for ( ; strategyMatchIdx < g_strategyCount ; strategyMatchIdx ++)
    {
-     if ( g_strategySymbols[local_9_int] != OrderSymbol() )   continue;
+     if ( g_strategySymbols[strategyMatchIdx] != OrderSymbol() )   continue;
      
      if ( ( OrderType() != 0 && OrderType() != 1 ) )   continue;
-     temp_long_1 = OrderCloseTime();
-     temp_long_2=TimeCurrent() - g_statWindowDays * 24 * 60 * 60;
-     if ( temp_long_1 <  temp_long_2 )
+     closeTimeChk = OrderCloseTime();
+     windowStartChk=TimeCurrent() - g_statWindowDays * 24 * 60 * 60;
+     if ( closeTimeChk <  windowStartChk )
      {
-       temp_long_2 = OrderCloseTime();
-       temp_long_3=TimeCurrent() - g_statWindowDays * 24 * 60 * 60;
-     if ( (temp_long_2 >= temp_long_3 || g_minTradesReachedFlag[local_9_int]) )   continue;
+       windowStartChk = OrderCloseTime();
+       windowStartChk2=TimeCurrent() - g_statWindowDays * 24 * 60 * 60;
+     if ( (windowStartChk >= windowStartChk2 || g_minTradesReachedFlag[strategyMatchIdx]) )   continue;
      }
-     g_closedTradeCount[local_9_int] ++;
-     if ( g_closedTradeCount[local_9_int] >= g_statMinTrades )
+     g_closedTradeCount[strategyMatchIdx] ++;
+     if ( g_closedTradeCount[strategyMatchIdx] >= g_statMinTrades )
      {
-       g_minTradesReachedFlag[local_9_int] = true;
+       g_minTradesReachedFlag[strategyMatchIdx] = true;
      }
-     local_2_double_si99[local_9_int] +=OrderProfit() / local_8_double;
-     local_2_double_si99[local_9_int] +=OrderSwap() / local_8_double;
-     local_2_double_si99[local_9_int] +=OrderCommission() / local_8_double;
-     temp_long_4 = OrderCloseTime();
-     temp_long_5=TimeCurrent() - g_statRecentDays * 24 * 60 * 60;
-     if ( temp_long_4 < temp_long_5 )   continue;
-     local_3_double_si99[local_9_int] +=OrderProfit() / local_8_double;
-     local_3_double_si99[local_9_int] +=OrderSwap() / local_8_double;
-     local_3_double_si99[local_9_int] +=OrderCommission() / local_8_double;
+     statPL[strategyMatchIdx] +=OrderProfit() / tradeWeight;
+     statPL[strategyMatchIdx] +=OrderSwap() / tradeWeight;
+     statPL[strategyMatchIdx] +=OrderCommission() / tradeWeight;
+     closeTimeRecent = OrderCloseTime();
+     recentStartChk=TimeCurrent() - g_statRecentDays * 24 * 60 * 60;
+     if ( closeTimeRecent < recentStartChk )   continue;
+     recentPL[strategyMatchIdx] +=OrderProfit() / tradeWeight;
+     recentPL[strategyMatchIdx] +=OrderSwap() / tradeWeight;
+     recentPL[strategyMatchIdx] +=OrderCommission() / tradeWeight;
      
    }
    
  }
- for (local_10_int = 0 ; local_10_int < g_strategyCount ; local_10_int ++)
+ for (publishIdx = 0 ; publishIdx < g_strategyCount ; publishIdx ++)
  {
-   g_statTotalPL[local_10_int] = local_2_double_si99[local_10_int];
-   if ( g_closedTradeCount[local_10_int] >  0 )
+   g_statTotalPL[publishIdx] = statPL[publishIdx];
+   if ( g_closedTradeCount[publishIdx] >  0 )
    {
-     g_avgPLperTrade[local_10_int] = NormalizeDouble(local_2_double_si99[local_10_int] / g_closedTradeCount[local_10_int],2);
+     g_avgPLperTrade[publishIdx] = NormalizeDouble(statPL[publishIdx] / g_closedTradeCount[publishIdx],2);
    }
    else
    {
-     g_avgPLperTrade[local_10_int] = 0.0;
+     g_avgPLperTrade[publishIdx] = 0.0;
    }
-   g_recentPLbyStrategy[local_10_int] = local_3_double_si99[local_10_int];
+   g_recentPLbyStrategy[publishIdx] = recentPL[publishIdx];
  }
  }
 //CalculatePerformanceMetrics <<==--------   --------

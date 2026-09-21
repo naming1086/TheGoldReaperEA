@@ -1276,81 +1276,136 @@ input bool RunStrat8=true  ;    //Run Strategy 8 (high risk)
 input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 // ============================================================================
 // [§5] 转储重建全局变量（原 V4.6 JIT 数据段）
-//      保留 global_N_type_XX 原始命名，便于与转储地址逐一对照；
-//      其中字符串型变量同时充当 V4.6 输入面板的分组分隔标题。
+//      高置信度符号已分批重命名为 g_* 可读名（对照表见下）；
+//      其余仍保留 global_N_type_XX 原始命名，便于与转储地址逐一对照；
+//      字符串型变量同时充当 V4.6 输入面板的分组分隔标题。
+//
+// ---- 批次1 重命名对照表（新名 <- 原名@数据段地址，2026-09，纯标识符替换）----
+//   g_curSpread                <- global_1_double_0       @0x000
+//   g_atrPeriod                <- global_3_int_10          @0x010
+//   g_atrTimeframe             <- global_4_int_14          @0x014
+//   g_atrHandle                <- global_5_int_18          @0x018
+//   g_atrBuffer                <- global_6_double_1C_ko    @0x01C
+//   g_variableRatio            <- global_8_double_58        @0x058
+//   g_lotRatioInv              <- global_9_double_60        @0x060
+//   g_hdrTradingFilters        <- global_16_string_80      @0x080（分组标题）
+//   g_tradeFrequencyMode       <- global_19_int_9C         @0x09C
+//   g_runStrategy1             <- global_20_bool_A0        @0x0A0
+//   g_runStrategy2             <- global_23_bool_A3         @0x0A3
+//   g_runStrategy3             <- global_26_bool_A6         @0x0A6
+//   g_runStrategy4             <- global_27_bool_A7         @0x0A7
+//   g_runStrategy5             <- global_31_bool_AB         @0x0AB
+//   g_runStrategy6             <- global_28_bool_A8         @0x0A8
+//   g_runStrategy7             <- global_33_bool_AD         @0x0AD
+//   g_runStrategy8             <- global_34_bool_AE         @0x0AE
+//   g_runStrategy9             <- global_32_bool_AC         @0x0AC
+//   g_maxSpreadPts             <- global_37_double_B8       @0x0B8
+//   g_slippagePts              <- global_38_double_C0       @0x0C0
+//   g_hdrTimeFilters           <- global_44_string_F0      @0x0F0（分组标题）
+//   g_useFridayStop            <- global_45_bool_FC         @0x0FC
+//   g_hdrOtherFilters          <- global_50_string_108    @0x108（分组标题）
+//   g_fakeoutEnableM1          <- global_53_bool_11C       @0x11C
+//   g_fakeoutEnableM15         <- global_57_bool_12C       @0x12C
+//   g_fakeoutEnableH1          <- global_61_bool_13C       @0x13C
+//   g_profitCloseMode          <- global_63_int_140        @0x140
+//   g_orderMgmtMode            <- global_69_int_160        @0x160
+//   g_hdrTradeEntryMgmt        <- global_70_string_168    @0x168（分组标题）
+//   g_entryTfPeriod            <- global_71_int_174        @0x174
+//   g_signalTfPeriod          <- global_72_int_178        @0x178
+//   g_entryBreakoutPips        <- global_80_double_198      @0x198
+//   g_buyEntryOffsetPips       <- global_83_double_1B0    @0x1B0
+//   g_sellEntryOffsetPips      <- global_84_double_1B8    @0x1B8
+//   g_maxPendingOrders         <- global_86_int_1C8        @0x1C8
+//   g_maxOpenTradesPerSide     <- global_87_int_1CC        @0x1CC
+//   g_orderPriceTolerancePips <- global_88_double_1D0     @0x1D0
+//   g_pendingExpiryHours       <- global_89_int_1D8        @0x1D8
+//   g_strategyMagicNumber      <- global_93_int_1F0        @0x1F0
+//   g_manualSymbolMode         <- global_95_int_204        @0x204
+//   g_manualMagicNumber        <- global_96_int_208        @0x208
+//   g_manualCommentFilter      <- global_97_string_210     @0x210
+//   g_stopLossPips             <- global_100_double_230    @0x230
+//   g_takeProfitPips           <- global_101_double_238    @0x238
+//   g_trailSlPips              <- global_103_double_250    @0x250
+//   g_trailActivationPips      <- global_104_double_258    @0x258
+//   g_trailStepPips            <- global_106_double_268    @0x268
+//   g_trailTpPips              <- global_108_double_278    @0x278
+//   g_beStartPips              <- global_113_double_2A8    @0x2A8
+//   g_beExtraPips              <- global_114_double_2B0    @0x2B0
+//   g_hlFractalTfPeriod        <- global_117_int_2C8       @0x2C8
+//   g_hlOffsetPips             <- global_123_double_2E0    @0x2E0
 // ============================================================================
 
-  double    global_1_double_0 = 0.0;
+  double    g_curSpread = 0.0;
   double    global_2_double_8 = 0.0;
-  int       global_3_int_10 = 30;
-  int       global_4_int_14 = (int)PERIOD_D1;
-  int       global_5_int_18 = 0;
-  double    global_6_double_1C_ko[];
+  int       g_atrPeriod = 30;
+  int       g_atrTimeframe = (int)PERIOD_D1;
+  int       g_atrHandle = 0;
+  double    g_atrBuffer[];
   double    global_7_double_50 = 0.0;
-  double    global_8_double_58 = 0.0;
-  double    global_9_double_60 = 0.0;
+  double    g_variableRatio = 0.0;
+  double    g_lotRatioInv = 0.0;
   bool      global_10_bool_68 = false;
   int       global_11_int_6C = 3;
   int       global_12_int_70 = 2;
   bool      global_13_bool_74 = false;
   bool      global_14_bool_75 = false;
   int       global_15_int_78 = 0;
-  string    global_16_string_80 = "------------------------------ trading filters ------------------------------";
+  string    g_hdrTradingFilters = "------------------------------ trading filters ------------------------------";
   bool      global_17_bool_8C = false;
   string    global_18_string_90 = "EURUSD;GBPUSD;USDJPY;AUDJPY;AUDUSD;EURAUD;EURCAD;EURGBP;EURJPY;GBPJPY;USDCAD;USDCHF;";
-  int       global_19_int_9C = 5;
-  bool      global_20_bool_A0 = true;
+  int       g_tradeFrequencyMode = 5;
+  bool      g_runStrategy1 = true;
   bool      global_21_bool_A1 = false;
   bool      global_22_bool_A2 = false;
-  bool      global_23_bool_A3 = true;
+  bool      g_runStrategy2 = true;
   bool      global_24_bool_A4 = false;
   bool      global_25_bool_A5 = false;
-  bool      global_26_bool_A6 = true;
-  bool      global_27_bool_A7 = false;
-  bool      global_28_bool_A8 = false;
+  bool      g_runStrategy3 = true;
+  bool      g_runStrategy4 = false;
+  bool      g_runStrategy6 = false;
   bool      global_29_bool_A9 = false;
   bool      global_30_bool_AA = false;
-  bool      global_31_bool_AB = false;
-  bool      global_32_bool_AC = false;
-  bool      global_33_bool_AD = false;
-  bool      global_34_bool_AE = false;
+  bool      g_runStrategy5 = false;
+  bool      g_runStrategy9 = false;
+  bool      g_runStrategy7 = false;
+  bool      g_runStrategy8 = false;
   bool      global_35_bool_AF = true;
   int       global_36_int_B0 = 2;
-  double    global_37_double_B8 = 0.0;
-  double    global_38_double_C0 = 5000.0;
+  double    g_maxSpreadPts = 0.0;
+  double    g_slippagePts = 5000.0;
   int       global_39_int_C8 = 1;
   double    global_40_double_D0 = 40.0;
   double    global_41_double_D8 = 10.0;
   double    global_42_double_E0 = 30.0;
   bool      global_43_bool_E8 = false; // v106: marketplace trace uses actual fill as trailing-reference threshold
-  string    global_44_string_F0 = "------------------------------ time filters ------------------------------";
-  bool      global_45_bool_FC = false;
+  string    g_hdrTimeFilters = "------------------------------ time filters ------------------------------";
+  bool      g_useFridayStop = false;
   bool      global_46_bool_FD = false;
   bool      global_47_bool_FE = false;
   int       global_48_int_100 = 14;
   int       global_49_int_104 = 17;
-  string    global_50_string_108 = "------------------------------ other filters ------------------------------";
+  string    g_hdrOtherFilters = "------------------------------ other filters ------------------------------";
   int       global_51_int_114 = 1;
   int       global_52_int_118 = 1;
-  bool      global_53_bool_11C = false;
+  bool      g_fakeoutEnableM1 = false;
   int       global_54_int_120 = 5;
   bool      global_55_bool_124 = false;
   int       global_56_int_128 = 15;
-  bool      global_57_bool_12C = false;
+  bool      g_fakeoutEnableM15 = false;
   int       global_58_int_130 = 30;
   bool      global_59_bool_134 = false;
   int       global_60_int_138 = 60;
-  bool      global_61_bool_13C = false;
+  bool      g_fakeoutEnableH1 = false;
   bool      global_62_bool_13D = false;
-  int       global_63_int_140 = 1;
+  int       g_profitCloseMode = 1;
   double    global_64_double_148 = 0.0;
   int       global_65_int_150 = 99;
   int       global_66_int_154 = 5;
   bool      global_67_bool_158 = false;
-  int       global_69_int_160 = 1;
-  string    global_70_string_168 = "------------------------------ Trade Entry management ------------------------------";
-  int       global_71_int_174 = 0;
-  int       global_72_int_178 = 60;
+  int       g_orderMgmtMode = 1;
+  string    g_hdrTradeEntryMgmt = "------------------------------ Trade Entry management ------------------------------";
+  int       g_entryTfPeriod = 0;
+  int       g_signalTfPeriod = 60;
   int       global_73_int_17C = 10;
   int       global_74_int_180 = 3;
   bool      global_75_bool_184 = false;
@@ -1358,41 +1413,41 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   int       global_77_int_188 = 120;
   int       global_78_int_18C = 0;
   int       global_79_int_190 = 0;
-  double    global_80_double_198 = 30.0;
+  double    g_entryBreakoutPips = 30.0;
   double    global_81_double_1A0 = 0.0;
   double    global_82_double_1A8 = 25.0;
-  double    global_83_double_1B0 = 0.5;
-  double    global_84_double_1B8 = 0.0;
+  double    g_buyEntryOffsetPips = 0.5;
+  double    g_sellEntryOffsetPips = 0.0;
   double    global_85_double_1C0 = 0.0;
-  int       global_86_int_1C8 = 1;
-  int       global_87_int_1CC = 99;
+  int       g_maxPendingOrders = 1;
+  int       g_maxOpenTradesPerSide = 99;
   double    global_88_double_1D0 = 1.0;
-  int       global_89_int_1D8 = 24;
+  int       g_pendingExpiryHours = 24;
   double    global_90_double_1E0 = 3.0;
   int       global_91_int_1E8 = 0;
   int       global_92_int_1EC = 100;
   int       global_93_int_1F0 = 0;
   string    global_94_string_1F8 = "------------------------------ Strategy 2 - Manual Trade settings ------------------------------";
-  int       global_95_int_204 = 1;
-  int       global_96_int_208 = 1991199118;
-  string    global_97_string_210 = "";
+  int       g_manualSymbolMode = 1;
+  int       g_manualMagicNumber = 1991199118;
+  string    g_manualCommentFilter = "";
   string    global_98_string_220 = "------------------------------ Trade Exit management ------------------------------";
   int       global_99_int_22C = 0;
   double    global_100_double_230 = 20.0;
-  double    global_101_double_238 = 100.0;
+  double    g_takeProfitPips = 100.0;
   string    global_102_string_240 = "------------------------------ Trailing SL settings ------------------------------";
   double    global_103_double_250 = 10.0;
-  double    global_104_double_258 = 10.0;
+  double    g_trailActivationPips = 10.0;
   double    global_105_double_260 = 100.0;
   double    global_106_double_268 = 0.1;
   double    global_107_double_270 = 0.0;
-  double    global_108_double_278 = 0.0;
+  double    g_trailTpPips = 0.0;
   double    global_109_double_280 = 0.0;
   double    global_110_double_288 = 0.0;
   double    global_111_double_290 = 0.0;
   string    global_112_string_298 = "------------------------------ Break-even SL management ------------------------------";
   double    global_113_double_2A8 = 0.0;
-  double    global_114_double_2B0 = 0.0;
+  double    g_beExtraPips = 0.0;
   string    global_115_string_2B8 = "------------------------------ HIGH/LOW Trailing SL settings ------------------------------";
   bool      global_116_bool_2C4 = false;
   int       global_117_int_2C8 = 0;
@@ -1401,7 +1456,7 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   int       global_120_int_2D4 = 0;
   int       global_121_int_2D8 = 0;
   int       global_122_int_2DC = 0;
-  double    global_123_double_2E0 = 2.0;
+  double    g_hlOffsetPips = 2.0;
   string    global_124_string_2E8 = "------------------------------ recovery Trailing SL based on time ------------------------------";
   double    global_125_double_2F8 = 0.0;
   double    global_126_double_300 = 0.0;
@@ -1814,8 +1869,8 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 
  void CloseDailyDDPositionsInOriginalOrder()
  {
-   CloseManagedPositionsByType(OP_BUY,(int)global_38_double_C0);
-   CloseManagedPositionsByType(OP_SELL,(int)global_38_double_C0);
+   CloseManagedPositionsByType(OP_BUY,(int)g_slippagePts);
+   CloseManagedPositionsByType(OP_SELL,(int)g_slippagePts);
  }
 
  // Original V4.6 dump has no withdrawal-reconciliation layer here.
@@ -2156,39 +2211,39 @@ g_initialLegacyRiskLotPending=true;
    local_3_double = MaxAllowedDD / 100.0 * local_2_double ;
    if ( local_3_double>global_388_int_5DB4 )
    {
-     global_19_int_9C = 3 ;
+     g_tradeFrequencyMode = 3 ;
    }
    else
    {
      if ( local_3_double>global_387_int_5DB0 )
      {
-       global_19_int_9C = 2 ;
+       g_tradeFrequencyMode = 2 ;
      }
      else
      {
        if ( local_3_double>global_386_int_5DAC )
        {
-         global_19_int_9C = 1 ;
+         g_tradeFrequencyMode = 1 ;
        }
        else
        {
-         global_19_int_9C = 0 ;
+         g_tradeFrequencyMode = 0 ;
        }
      }
    }
  }
  else
  {
-   global_19_int_9C = TradeFrequency ;
+   g_tradeFrequencyMode = TradeFrequency ;
  }
- if ( global_19_int_9C == 0 )
+ if ( g_tradeFrequencyMode == 0 )
  {
-   global_27_bool_A7 = false ;
-   global_31_bool_AB = false ;
-   global_28_bool_A8 = false ;
-   global_33_bool_AD = false ;
-   global_34_bool_AE = false ;
-   global_32_bool_AC = false ;
+   g_runStrategy4 = false ;
+   g_runStrategy5 = false ;
+   g_runStrategy6 = false ;
+   g_runStrategy7 = false ;
+   g_runStrategy8 = false ;
+   g_runStrategy9 = false ;
    global_398_double_6770 = 2.4 ;
    if ( UseVariableValues )
    {
@@ -2197,14 +2252,14 @@ g_initialLegacyRiskLotPending=true;
  }
  else
  {
-   if ( global_19_int_9C == 1 )
+   if ( g_tradeFrequencyMode == 1 )
    {
-     global_27_bool_A7 = true ;
-     global_31_bool_AB = true ;
-     global_28_bool_A8 = false ;
-     global_33_bool_AD = false ;
-     global_34_bool_AE = false ;
-     global_32_bool_AC = false ;
+     g_runStrategy4 = true ;
+     g_runStrategy5 = true ;
+     g_runStrategy6 = false ;
+     g_runStrategy7 = false ;
+     g_runStrategy8 = false ;
+     g_runStrategy9 = false ;
      global_398_double_6770 = 3.4 ;
      if ( UseVariableValues )
      {
@@ -2213,14 +2268,14 @@ g_initialLegacyRiskLotPending=true;
    }
    else
    {
-     if ( global_19_int_9C == 2 )
+     if ( g_tradeFrequencyMode == 2 )
      {
-       global_27_bool_A7 = true ;
-       global_31_bool_AB = true ;
-       global_28_bool_A8 = true ;
-       global_33_bool_AD = true ;
-       global_34_bool_AE = false ;
-       global_32_bool_AC = false ;
+       g_runStrategy4 = true ;
+       g_runStrategy5 = true ;
+       g_runStrategy6 = true ;
+       g_runStrategy7 = true ;
+       g_runStrategy8 = false ;
+       g_runStrategy9 = false ;
        global_398_double_6770 = 4.1 ;
        if ( UseVariableValues )
        {
@@ -2229,14 +2284,14 @@ g_initialLegacyRiskLotPending=true;
      }
      else
      {
-       if ( global_19_int_9C == 3 )
+       if ( g_tradeFrequencyMode == 3 )
        {
-         global_27_bool_A7 = true ;
-         global_31_bool_AB = true ;
-         global_28_bool_A8 = true ;
-         global_33_bool_AD = true ;
-         global_34_bool_AE = true ;
-         global_32_bool_AC = false ;
+         g_runStrategy4 = true ;
+         g_runStrategy5 = true ;
+         g_runStrategy6 = true ;
+         g_runStrategy7 = true ;
+         g_runStrategy8 = true ;
+         g_runStrategy9 = false ;
          global_398_double_6770 = 4.8 ;
          if ( UseVariableValues )
          {
@@ -2245,14 +2300,14 @@ g_initialLegacyRiskLotPending=true;
        }
        else
        {
-         if ( global_19_int_9C == 4 )
+         if ( g_tradeFrequencyMode == 4 )
          {
-           global_27_bool_A7 = true ;
-           global_31_bool_AB = true ;
-           global_28_bool_A8 = true ;
-           global_33_bool_AD = true ;
-           global_34_bool_AE = true ;
-           global_32_bool_AC = true ;
+           g_runStrategy4 = true ;
+           g_runStrategy5 = true ;
+           g_runStrategy6 = true ;
+           g_runStrategy7 = true ;
+           g_runStrategy8 = true ;
+           g_runStrategy9 = true ;
            global_398_double_6770 = 5.1 ;
            if ( UseVariableValues )
            {
@@ -2261,17 +2316,17 @@ g_initialLegacyRiskLotPending=true;
          }
          else
          {
-           if ( global_19_int_9C == 6 )
+           if ( g_tradeFrequencyMode == 6 )
            {
-             global_20_bool_A0 = RunStrat1 ;
-             global_23_bool_A3 = RunStrat2 ;
-             global_26_bool_A6 = RunStrat3 ;
-             global_27_bool_A7 = RunStrat4 ;
-             global_31_bool_AB = RunStrat5 ;
-             global_28_bool_A8 = RunStrat6 ;
-             global_33_bool_AD = RunStrat7 ;
-             global_34_bool_AE = RunStrat8 ;
-             global_32_bool_AC = RunStrat9 ;
+             g_runStrategy1 = RunStrat1 ;
+             g_runStrategy2 = RunStrat2 ;
+             g_runStrategy3 = RunStrat3 ;
+             g_runStrategy4 = RunStrat4 ;
+             g_runStrategy5 = RunStrat5 ;
+             g_runStrategy6 = RunStrat6 ;
+             g_runStrategy7 = RunStrat7 ;
+             g_runStrategy8 = RunStrat8 ;
+             g_runStrategy9 = RunStrat9 ;
            }
          }
        }
@@ -2305,14 +2360,14 @@ g_initialLegacyRiskLotPending=true;
  global_190_int_518 = (int)MarketInfo(global_336_string_3130,MODE_DIGITS) ;
  if ( FridayStopHour <  0 )
  {
-   global_45_bool_FC = false ;
+   g_useFridayStop = false ;
  }
  else
  {
-   global_45_bool_FC = true ;
+   g_useFridayStop = true ;
  }
  global_251_double_2520 = (double)TimeCurrent() ;
- global_1_double_0 = MarketInfo(global_336_string_3130,MODE_ASK) - MarketInfo(global_336_string_3130,MODE_BID) ;
+ g_curSpread = MarketInfo(global_336_string_3130,MODE_ASK) - MarketInfo(global_336_string_3130,MODE_BID) ;
  global_223_double_1AC4_si99[global_328_int_3100] = NormalizeDouble(MathFloor(g_startLots_rw * 100.0) / 100.0,2);
  if ( MarketInfo(global_336_string_3130,MODE_LOTSTEP)==0.1 )
  {
@@ -2361,13 +2416,13 @@ g_initialLegacyRiskLotPending=true;
  {
    global_100_double_230 = 1.0 ;
  }
- if ( global_101_double_238<=0.0 )
+ if ( g_takeProfitPips<=0.0 )
  {
-   global_101_double_238 = 1.0 ;
+   g_takeProfitPips = 1.0 ;
  }
- if ( global_114_double_2B0>global_113_double_2A8 )
+ if ( g_beExtraPips>global_113_double_2A8 )
  {
-   global_114_double_2B0 = global_113_double_2A8 + 0.1 ;
+   g_beExtraPips = global_113_double_2A8 + 0.1 ;
  }
  if ( global_36_int_B0<global_309_double_2898 / global_229_double_1E00 )
  {
@@ -2393,13 +2448,13 @@ g_initialLegacyRiskLotPending=true;
  {
    global_100_double_230 = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
  }
- if ( global_101_double_238<global_221_double_1A80 * 2.0 / global_229_double_1E00 )
+ if ( g_takeProfitPips<global_221_double_1A80 * 2.0 / global_229_double_1E00 )
  {
-   global_101_double_238 = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
+   g_takeProfitPips = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
  }
- if ( global_80_double_198<global_221_double_1A80 * 2.0 / global_229_double_1E00 )
+ if ( g_entryBreakoutPips<global_221_double_1A80 * 2.0 / global_229_double_1E00 )
  {
-   global_80_double_198 = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
+   g_entryBreakoutPips = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
  }
  if ( global_73_int_17C <  1 )
  {
@@ -2409,12 +2464,12 @@ g_initialLegacyRiskLotPending=true;
  {
    global_74_int_180 = 1 ;
  }
- if ( global_80_double_198<0.1 )
+ if ( g_entryBreakoutPips<0.1 )
  {
-   global_80_double_198 = 0.1 ;
+   g_entryBreakoutPips = 0.1 ;
  }
- global_234_int_1E20=global_89_int_1D8 * 60 * 60;
- if ( global_89_int_1D8 >  0 )
+ global_234_int_1E20=g_pendingExpiryHours * 60 * 60;
+ if ( g_pendingExpiryHours >  0 )
  {
    global_302_datetime_2870=TimeCurrent() + global_234_int_1E20;
  }
@@ -2435,13 +2490,13 @@ g_initialLegacyRiskLotPending=true;
  global_313_datetime_28B8 = iTime(global_336_string_3130,MT4Period(PERIOD_W1),1) ;
  global_314_datetime_28C0 = iTime(global_336_string_3130,MT4Period(PERIOD_M1),1) ;
  global_315_datetime_28C8 = iTime(global_336_string_3130,MT4Period(PERIOD_M1),1) ;
- if ( global_37_double_B8>g_MaxSpread_rw )
+ if ( g_maxSpreadPts>g_MaxSpread_rw )
  {
-   global_37_double_B8 = g_MaxSpread_rw ;
+   g_maxSpreadPts = g_MaxSpread_rw ;
  }
  global_257_bool_2565 = false ;
- FindBuyEntryHigh(global_71_int_174); 
- FindSellEntryLow(global_71_int_174); 
+ FindBuyEntryHigh(g_entryTfPeriod); 
+ FindSellEntryLow(g_entryTfPeriod); 
  global_188_double_508 = NormalizeDouble(global_262_double_2580,global_190_int_518) ;
  global_189_double_510 = NormalizeDouble(global_261_double_2578,global_190_int_518) ;
  global_250_int_2518 = 0 ;
@@ -2507,7 +2562,7 @@ g_initialLegacyRiskLotPending=true;
  global_267_int_25A0 = Hour() ;
  if ( global_67_bool_158 )
  {
-   global_86_int_1C8 = 1 ;
+   g_maxPendingOrders = 1 ;
    global_278_bool_25F8 = true ;
    global_279_bool_25F9 = true ;
  }
@@ -2519,7 +2574,7 @@ g_initialLegacyRiskLotPending=true;
  {
    global_322_int_2AE0_si99[local_9_int] = 0;
    global_321_int_2920_si99[local_9_int] = 0;
-   global_215_datetime_174C_si99[local_9_int] = iTime(global_336_string_3130,MT4Period(global_71_int_174),1);
+   global_215_datetime_174C_si99[local_9_int] = iTime(global_336_string_3130,MT4Period(g_entryTfPeriod),1);
    if ( !(global_223_double_1AC4_si99[local_9_int]<g_startLots_rw) )   continue;
    global_223_double_1AC4_si99[local_9_int] = g_startLots_rw;
    
@@ -2527,7 +2582,7 @@ g_initialLegacyRiskLotPending=true;
  global_216_long_1A68 = 0 ;
  global_238_bool_1E40 = false ;
  global_239_bool_1E41 = false ;
- if ( global_63_int_140 == 1 )
+ if ( g_profitCloseMode == 1 )
  {
    global_64_double_148 = 0.0 ;
  }
@@ -2654,33 +2709,33 @@ g_initialLegacyRiskLotPending=true;
  }
  if ( FakeOutFilter == 0 )
  {
-   global_53_bool_11C = false ;
-   global_57_bool_12C = false ;
-   global_61_bool_13C = false ;
+   g_fakeoutEnableM1 = false ;
+   g_fakeoutEnableM15 = false ;
+   g_fakeoutEnableH1 = false ;
  }
  else
  {
    if ( FakeOutFilter == 1 )
    {
-     global_53_bool_11C = true ;
-     global_57_bool_12C = false ;
-     global_61_bool_13C = false ;
+     g_fakeoutEnableM1 = true ;
+     g_fakeoutEnableM15 = false ;
+     g_fakeoutEnableH1 = false ;
    }
    else
    {
      if ( FakeOutFilter == 2 )
      {
-       global_53_bool_11C = true ;
-       global_57_bool_12C = true ;
-       global_61_bool_13C = false ;
+       g_fakeoutEnableM1 = true ;
+       g_fakeoutEnableM15 = true ;
+       g_fakeoutEnableH1 = false ;
      }
      else
      {
        if ( FakeOutFilter == 3 )
        {
-         global_53_bool_11C = true ;
-         global_57_bool_12C = true ;
-         global_61_bool_13C = true ;
+         g_fakeoutEnableM1 = true ;
+         g_fakeoutEnableM15 = true ;
+         g_fakeoutEnableH1 = true ;
        }
      }
    }
@@ -2819,39 +2874,39 @@ g_initialLegacyRiskLotPending=true;
    local_3_double = MaxAllowedDD / 100.0 * local_2_double ;
    if ( local_3_double>global_388_int_5DB4 )
    {
-     global_19_int_9C = 3 ;
+     g_tradeFrequencyMode = 3 ;
    }
    else
    {
      if ( local_3_double>global_387_int_5DB0 )
      {
-       global_19_int_9C = 2 ;
+       g_tradeFrequencyMode = 2 ;
      }
      else
      {
        if ( local_3_double>global_386_int_5DAC )
        {
-         global_19_int_9C = 1 ;
+         g_tradeFrequencyMode = 1 ;
        }
        else
        {
-         global_19_int_9C = 0 ;
+         g_tradeFrequencyMode = 0 ;
        }
      }
    }
  }
  else
  {
-   global_19_int_9C = TradeFrequency ;
+   g_tradeFrequencyMode = TradeFrequency ;
  }
- if ( global_19_int_9C == 0 )
+ if ( g_tradeFrequencyMode == 0 )
  {
-   global_27_bool_A7 = false ;
-   global_31_bool_AB = false ;
-   global_28_bool_A8 = false ;
-   global_33_bool_AD = false ;
-   global_34_bool_AE = false ;
-   global_32_bool_AC = false ;
+   g_runStrategy4 = false ;
+   g_runStrategy5 = false ;
+   g_runStrategy6 = false ;
+   g_runStrategy7 = false ;
+   g_runStrategy8 = false ;
+   g_runStrategy9 = false ;
    global_398_double_6770 = 2.4 ;
    if ( UseVariableValues )
    {
@@ -2860,14 +2915,14 @@ g_initialLegacyRiskLotPending=true;
  }
  else
  {
-   if ( global_19_int_9C == 1 )
+   if ( g_tradeFrequencyMode == 1 )
    {
-     global_27_bool_A7 = true ;
-     global_31_bool_AB = true ;
-     global_28_bool_A8 = false ;
-     global_33_bool_AD = false ;
-     global_34_bool_AE = false ;
-     global_32_bool_AC = false ;
+     g_runStrategy4 = true ;
+     g_runStrategy5 = true ;
+     g_runStrategy6 = false ;
+     g_runStrategy7 = false ;
+     g_runStrategy8 = false ;
+     g_runStrategy9 = false ;
      global_398_double_6770 = 3.4 ;
      if ( UseVariableValues )
      {
@@ -2876,14 +2931,14 @@ g_initialLegacyRiskLotPending=true;
    }
    else
    {
-     if ( global_19_int_9C == 2 )
+     if ( g_tradeFrequencyMode == 2 )
      {
-       global_27_bool_A7 = true ;
-       global_31_bool_AB = true ;
-       global_28_bool_A8 = true ;
-       global_33_bool_AD = true ;
-       global_34_bool_AE = false ;
-       global_32_bool_AC = false ;
+       g_runStrategy4 = true ;
+       g_runStrategy5 = true ;
+       g_runStrategy6 = true ;
+       g_runStrategy7 = true ;
+       g_runStrategy8 = false ;
+       g_runStrategy9 = false ;
        global_398_double_6770 = 4.1 ;
        if ( UseVariableValues )
        {
@@ -2892,14 +2947,14 @@ g_initialLegacyRiskLotPending=true;
      }
      else
      {
-       if ( global_19_int_9C == 3 )
+       if ( g_tradeFrequencyMode == 3 )
        {
-         global_27_bool_A7 = true ;
-         global_31_bool_AB = true ;
-         global_28_bool_A8 = true ;
-         global_33_bool_AD = true ;
-         global_34_bool_AE = true ;
-         global_32_bool_AC = false ;
+         g_runStrategy4 = true ;
+         g_runStrategy5 = true ;
+         g_runStrategy6 = true ;
+         g_runStrategy7 = true ;
+         g_runStrategy8 = true ;
+         g_runStrategy9 = false ;
          global_398_double_6770 = 4.8 ;
          if ( UseVariableValues )
          {
@@ -2908,14 +2963,14 @@ g_initialLegacyRiskLotPending=true;
        }
        else
        {
-         if ( global_19_int_9C == 4 )
+         if ( g_tradeFrequencyMode == 4 )
          {
-           global_27_bool_A7 = true ;
-           global_31_bool_AB = true ;
-           global_28_bool_A8 = true ;
-           global_33_bool_AD = true ;
-           global_34_bool_AE = true ;
-           global_32_bool_AC = true ;
+           g_runStrategy4 = true ;
+           g_runStrategy5 = true ;
+           g_runStrategy6 = true ;
+           g_runStrategy7 = true ;
+           g_runStrategy8 = true ;
+           g_runStrategy9 = true ;
            global_398_double_6770 = 5.1 ;
            if ( UseVariableValues )
            {
@@ -2924,17 +2979,17 @@ g_initialLegacyRiskLotPending=true;
          }
          else
          {
-           if ( global_19_int_9C == 6 )
+           if ( g_tradeFrequencyMode == 6 )
            {
-             global_20_bool_A0 = RunStrat1 ;
-             global_23_bool_A3 = RunStrat2 ;
-             global_26_bool_A6 = RunStrat3 ;
-             global_27_bool_A7 = RunStrat4 ;
-             global_31_bool_AB = RunStrat5 ;
-             global_28_bool_A8 = RunStrat6 ;
-             global_33_bool_AD = RunStrat7 ;
-             global_34_bool_AE = RunStrat8 ;
-             global_32_bool_AC = RunStrat9 ;
+             g_runStrategy1 = RunStrat1 ;
+             g_runStrategy2 = RunStrat2 ;
+             g_runStrategy3 = RunStrat3 ;
+             g_runStrategy4 = RunStrat4 ;
+             g_runStrategy5 = RunStrat5 ;
+             g_runStrategy6 = RunStrat6 ;
+             g_runStrategy7 = RunStrat7 ;
+             g_runStrategy8 = RunStrat8 ;
+             g_runStrategy9 = RunStrat9 ;
            }
          }
        }
@@ -2961,7 +3016,7 @@ g_initialLegacyRiskLotPending=true;
  if ( ( StringFind(Symbol(),"XAUUSD",0) >= 0 || StringFind(Symbol(),"xauusd",0) >= 0 || StringFind(Symbol(),"GOLD",0) >= 0 || StringFind(Symbol(),"GLD",0) >= 0 || StringFind(Symbol(),"gold",0) >= 0 || StringFind(Symbol(),"Gold",0) >= 0 ) )
  {
    global_336_string_3130 = Symbol() ;
-   if ( global_20_bool_A0 )
+   if ( g_runStrategy1 )
    {
      LoadStrategy1Settings(); 
      LoadStrategyRuntimeSettings(0); 
@@ -2997,7 +3052,7 @@ g_initialLegacyRiskLotPending=true;
        }
      }
    }
-   if ( global_27_bool_A7 )
+   if ( g_runStrategy4 )
    {
      LoadStrategy4Settings(); 
      LoadStrategyRuntimeSettings(3); 
@@ -3021,7 +3076,7 @@ g_initialLegacyRiskLotPending=true;
        }
      }
    }
-   if ( global_23_bool_A3 )
+   if ( g_runStrategy2 )
    {
      LoadStrategy2Settings(); 
      LoadStrategyRuntimeSettings(1); 
@@ -3045,7 +3100,7 @@ g_initialLegacyRiskLotPending=true;
        }
      }
    }
-   if ( global_26_bool_A6 )
+   if ( g_runStrategy3 )
    {
      LoadStrategy3Settings(); 
      LoadStrategyRuntimeSettings(2); 
@@ -3069,7 +3124,7 @@ g_initialLegacyRiskLotPending=true;
        }
      }
    }
-   if ( global_28_bool_A8 )
+   if ( g_runStrategy6 )
    {
      LoadStrategy6Settings(); 
      LoadStrategyRuntimeSettings(5); 
@@ -3093,7 +3148,7 @@ g_initialLegacyRiskLotPending=true;
        }
      }
    }
-   if ( global_31_bool_AB )
+   if ( g_runStrategy5 )
    {
      LoadStrategy5Settings(); 
      LoadStrategyRuntimeSettings(4); 
@@ -3117,7 +3172,7 @@ g_initialLegacyRiskLotPending=true;
        }
      }
    }
-   if ( global_32_bool_AC )
+   if ( g_runStrategy9 )
    {
      LoadStrategy9Settings(); 
      LoadStrategyRuntimeSettings(8); 
@@ -3141,7 +3196,7 @@ g_initialLegacyRiskLotPending=true;
        }
      }
    }
-   if ( global_33_bool_AD )
+   if ( g_runStrategy7 )
    {
      LoadStrategy7Settings(); 
      LoadStrategyRuntimeSettings(6); 
@@ -3165,7 +3220,7 @@ g_initialLegacyRiskLotPending=true;
        }
      }
    }
-   if ( global_34_bool_AE )
+   if ( g_runStrategy8 )
    {
      LoadStrategy8Settings(); 
      LoadStrategyRuntimeSettings(7); 
@@ -3241,21 +3296,21 @@ g_initialLegacyRiskLotPending=true;
  // -----------------------------------------------------------------
  int temp_atr_index=arg_0_int;
  if(temp_atr_index<0 || temp_atr_index>8) temp_atr_index=0;
- ENUM_TIMEFRAMES temp_atr_tf=MT4Period(global_4_int_14);
+ ENUM_TIMEFRAMES temp_atr_tf=MT4Period(g_atrTimeframe);
  if(g_atr_handles[temp_atr_index]<=0 ||
-    g_atr_periods[temp_atr_index]!=global_3_int_10 ||
+    g_atr_periods[temp_atr_index]!=g_atrPeriod ||
     g_atr_timeframes[temp_atr_index]!=temp_atr_tf)
  {
    if(g_atr_handles[temp_atr_index]>0) IndicatorRelease(g_atr_handles[temp_atr_index]);
-   g_atr_handles[temp_atr_index]=iATR(global_336_string_3130,temp_atr_tf,global_3_int_10);
-   g_atr_periods[temp_atr_index]=global_3_int_10;
+   g_atr_handles[temp_atr_index]=iATR(global_336_string_3130,temp_atr_tf,g_atrPeriod);
+   g_atr_periods[temp_atr_index]=g_atrPeriod;
    g_atr_timeframes[temp_atr_index]=temp_atr_tf;
    g_atr_checked_bars[temp_atr_index]=0;
    g_atr_cached_values[temp_atr_index]=0.0;
    g_atr_ready[temp_atr_index]=false;
  }
- global_5_int_18 = g_atr_handles[temp_atr_index];
- if ( global_5_int_18 < 0 )
+ g_atrHandle = g_atr_handles[temp_atr_index];
+ if ( g_atrHandle < 0 )
  {
    Print("The creation of iATR has failed: Runtime error =" + IntegerToString(GetLastError()));
    return;
@@ -3266,13 +3321,13 @@ g_initialLegacyRiskLotPending=true;
  datetime temp_atr_bar=iTime(global_336_string_3130,temp_atr_tf,0);
  if ( !(g_atr_ready[temp_atr_index]) || g_atr_checked_bars[temp_atr_index]!=temp_atr_bar )
  {
-   if ( CopyBuffer(global_5_int_18,0,0,2,global_6_double_1C_ko) == 0 )
+   if ( CopyBuffer(g_atrHandle,0,0,2,g_atrBuffer) == 0 )
    {
      return;
    }
-   ArraySetAsSeries(global_6_double_1C_ko,true);
+   ArraySetAsSeries(g_atrBuffer,true);
    // Original JIT contains the bounds check for element [1].
-   g_atr_cached_values[temp_atr_index]=global_6_double_1C_ko[1];
+   g_atr_cached_values[temp_atr_index]=g_atrBuffer[1];
    g_atr_checked_bars[temp_atr_index]=temp_atr_bar;
    g_atr_ready[temp_atr_index]=true;
  }
@@ -3289,23 +3344,23 @@ g_initialLegacyRiskLotPending=true;
  }
  if ( UseVariableValues )
  {
-   global_8_double_58 = temp_variableRatio ;
+   g_variableRatio = temp_variableRatio ;
  }
  else
  {
-   global_8_double_58 = 1.0 ;
+   g_variableRatio = 1.0 ;
  }
  if ( AdjustLotsizeToVariableValues )
  {
-   global_9_double_60 = 1.0 / global_8_double_58 ;
+   g_lotRatioInv = 1.0 / g_variableRatio ;
  }
  else
  {
-   global_9_double_60 = 1.0 ;
+   g_lotRatioInv = 1.0 ;
  }
- if ( global_8_double_58==0.0 )
+ if ( g_variableRatio==0.0 )
  {
-   global_8_double_58 = 1.0 ;
+   g_variableRatio = 1.0 ;
  }
 
 
@@ -3330,29 +3385,29 @@ g_initialLegacyRiskLotPending=true;
    global_229_double_1E00 = global_337_double_3140 / 10.0 ;
  }
  global_190_int_518 = (int)MarketInfo(global_336_string_3130,MODE_DIGITS) ;
- global_1_double_0 = MarketInfo(global_336_string_3130,MODE_ASK) - MarketInfo(global_336_string_3130,MODE_BID) ;
+ g_curSpread = MarketInfo(global_336_string_3130,MODE_ASK) - MarketInfo(global_336_string_3130,MODE_BID) ;
  global_221_double_1A80 = MarketInfo(global_336_string_3130,MODE_STOPLEVEL) * global_337_double_3140 ;
  global_309_double_2898 = MarketInfo(global_336_string_3130,MODE_FREEZELEVEL) * global_337_double_3140 ;
 
  // Recovered working-value transform from original JIT.  The nine strategy
  // setup functions rewrite every raw field before LoadStrategyRuntimeSettings(), so in-place use
  // is behaviorally safe for fields without an explicit shadow in the rebuild.
- g_MaxSpread_rw = MaxSpread * global_8_double_58 ;
- global_80_double_198 = global_80_double_198 * global_8_double_58 ;
- global_83_double_1B0 = global_83_double_1B0 * global_8_double_58 ;
- global_84_double_1B8 = global_84_double_1B8 * global_8_double_58 ;
- global_88_double_1D0 = global_88_double_1D0 * global_8_double_58 ;
- global_100_double_230 = global_100_double_230 * global_8_double_58 ;
- global_101_double_238 = global_101_double_238 * global_8_double_58 ;
- global_103_double_250 = global_103_double_250 * global_8_double_58 ;
- global_104_double_258 = global_104_double_258 * global_8_double_58 ;
- global_105_double_260 = global_105_double_260 * global_8_double_58 ;
- global_106_double_268 = global_106_double_268 * global_8_double_58 ;
+ g_MaxSpread_rw = MaxSpread * g_variableRatio ;
+ g_entryBreakoutPips = g_entryBreakoutPips * g_variableRatio ;
+ g_buyEntryOffsetPips = g_buyEntryOffsetPips * g_variableRatio ;
+ g_sellEntryOffsetPips = g_sellEntryOffsetPips * g_variableRatio ;
+ global_88_double_1D0 = global_88_double_1D0 * g_variableRatio ;
+ global_100_double_230 = global_100_double_230 * g_variableRatio ;
+ g_takeProfitPips = g_takeProfitPips * g_variableRatio ;
+ global_103_double_250 = global_103_double_250 * g_variableRatio ;
+ g_trailActivationPips = g_trailActivationPips * g_variableRatio ;
+ global_105_double_260 = global_105_double_260 * g_variableRatio ;
+ global_106_double_268 = global_106_double_268 * g_variableRatio ;
  // Original keeps raw trailing-TP settings and writes scaled shadows.
- global_110_double_288 = global_108_double_278 * global_8_double_58 ;
- global_111_double_290 = global_109_double_280 * global_8_double_58 ;
- global_113_double_2A8 = global_113_double_2A8 * global_8_double_58 ;
- global_114_double_2B0 = global_114_double_2B0 * global_8_double_58 ;
+ global_110_double_288 = g_trailTpPips * g_variableRatio ;
+ global_111_double_290 = global_109_double_280 * g_variableRatio ;
+ global_113_double_2A8 = global_113_double_2A8 * g_variableRatio ;
+ g_beExtraPips = g_beExtraPips * g_variableRatio ;
 
  // These clamps are part of LoadStrategyRuntimeSettings() in the original JIT and therefore
  // must run for every strategy, not only once during OnInit().
@@ -3360,17 +3415,17 @@ g_initialLegacyRiskLotPending=true;
  {
    global_100_double_230 = 1.0 ;
  }
- if ( global_101_double_238<=0.0 )
+ if ( g_takeProfitPips<=0.0 )
  {
-   global_101_double_238 = 1.0 ;
+   g_takeProfitPips = 1.0 ;
  }
- if ( global_114_double_2B0>global_113_double_2A8 )
+ if ( g_beExtraPips>global_113_double_2A8 )
  {
-   global_114_double_2B0 = global_113_double_2A8 + 0.1 ;
+   g_beExtraPips = global_113_double_2A8 + 0.1 ;
  }
- if ( global_37_double_B8>g_MaxSpread_rw )
+ if ( g_maxSpreadPts>g_MaxSpread_rw )
  {
-   global_37_double_B8 = g_MaxSpread_rw ;
+   g_maxSpreadPts = g_MaxSpread_rw ;
  }
  if ( global_36_int_B0<global_309_double_2898 / global_229_double_1E00 )
  {
@@ -3396,13 +3451,13 @@ g_initialLegacyRiskLotPending=true;
  {
    global_100_double_230 = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
  }
- if ( global_101_double_238<global_221_double_1A80 * 2.0 / global_229_double_1E00 )
+ if ( g_takeProfitPips<global_221_double_1A80 * 2.0 / global_229_double_1E00 )
  {
-   global_101_double_238 = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
+   g_takeProfitPips = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
  }
- if ( global_80_double_198<global_221_double_1A80 * 2.0 / global_229_double_1E00 )
+ if ( g_entryBreakoutPips<global_221_double_1A80 * 2.0 / global_229_double_1E00 )
  {
-   global_80_double_198 = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
+   g_entryBreakoutPips = global_221_double_1A80 * 2.0 / global_229_double_1E00 ;
  }
  if ( global_73_int_17C < 1 )
  {
@@ -3412,13 +3467,13 @@ g_initialLegacyRiskLotPending=true;
  {
    global_74_int_180 = 1 ;
  }
- if ( global_80_double_198<0.1 )
+ if ( g_entryBreakoutPips<0.1 )
  {
-   global_80_double_198 = 0.1 ;
+   g_entryBreakoutPips = 0.1 ;
  }
 
- global_234_int_1E20=global_89_int_1D8 * 60 * 60;
- if ( global_89_int_1D8 > 0 )
+ global_234_int_1E20=g_pendingExpiryHours * 60 * 60;
+ if ( g_pendingExpiryHours > 0 )
  {
    global_302_datetime_2870=TimeCurrent() + global_234_int_1E20;
  }
@@ -3532,7 +3587,7 @@ g_initialLegacyRiskLotPending=true;
  
  if ( global_81_double_1A0>0.0 )
  {
-   global_80_double_198 = global_81_double_1A0 / 100.0 * MarketInfo(global_336_string_3130,MODE_ASK) * 10.0 ;
+   g_entryBreakoutPips = global_81_double_1A0 / 100.0 * MarketInfo(global_336_string_3130,MODE_ASK) * 10.0 ;
  }
  bool temp_tradeAllowedForManagement = (MarketInfo(global_336_string_3130,MODE_TRADEALLOWED)!=0.0);
  if ( global_99_int_22C == 0 )
@@ -3628,7 +3683,7 @@ g_initialLegacyRiskLotPending=true;
      {
        for (temp_int_7 = MT4OrdersTotal() ; temp_int_7 >= 0 ; temp_int_7=temp_int_7 - 1)
        {
-         if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 )   continue;
+         if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 4 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
@@ -3644,7 +3699,7 @@ g_initialLegacyRiskLotPending=true;
      {
        for (temp_int_10 = MT4OrdersTotal() ; temp_int_10 >= 0 ; temp_int_10=temp_int_10 - 1)
        {
-         if ( OrderSelect(temp_int_10,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 )   continue;
+         if ( OrderSelect(temp_int_10,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 5 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
@@ -3665,7 +3720,7 @@ g_initialLegacyRiskLotPending=true;
      {
        for (temp_int_12 = MT4OrdersTotal() ; temp_int_12 >= 0 ; temp_int_12=temp_int_12 - 1)
        {
-         if ( OrderSelect(temp_int_12,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 )   continue;
+         if ( OrderSelect(temp_int_12,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 4 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
@@ -3686,7 +3741,7 @@ g_initialLegacyRiskLotPending=true;
      {
        for (temp_int_14 = MT4OrdersTotal() ; temp_int_14 >= 0 ; temp_int_14=temp_int_14 - 1)
        {
-         if ( OrderSelect(temp_int_14,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 )   continue;
+         if ( OrderSelect(temp_int_14,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 5 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
@@ -3733,7 +3788,7 @@ g_initialLegacyRiskLotPending=true;
          {
            for (temp_int_19 = MT4OrdersTotal() ; temp_int_19 >= 0 ; temp_int_19=temp_int_19 - 1)
            {
-              if ( OrderSelect(temp_int_19,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_19,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3749,7 +3804,7 @@ g_initialLegacyRiskLotPending=true;
          {
            for (temp_int_22 = MT4OrdersTotal() ; temp_int_22 >= 0 ; temp_int_22=temp_int_22 - 1)
            {
-              if ( OrderSelect(temp_int_22,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MarketInfo(global_336_string_3130,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_22,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MarketInfo(global_336_string_3130,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3770,7 +3825,7 @@ g_initialLegacyRiskLotPending=true;
          {
            for (temp_int_24 = MT4OrdersTotal() ; temp_int_24 >= 0 ; temp_int_24=temp_int_24 - 1)
            {
-              if ( OrderSelect(temp_int_24,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_24,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3791,7 +3846,7 @@ g_initialLegacyRiskLotPending=true;
          {
            for (temp_int_26 = MT4OrdersTotal() ; temp_int_26 >= 0 ; temp_int_26=temp_int_26 - 1)
            {
-              if ( OrderSelect(temp_int_26,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MarketInfo(global_336_string_3130,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_26,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MarketInfo(global_336_string_3130,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3833,7 +3888,7 @@ g_initialLegacyRiskLotPending=true;
            {
              for (temp_int_46 = MT4OrdersTotal() ; temp_int_46 >= 0 ; temp_int_46=temp_int_46 - 1)
              {
-                if ( OrderSelect(temp_int_46,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+                if ( OrderSelect(temp_int_46,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3849,7 +3904,7 @@ g_initialLegacyRiskLotPending=true;
            {
              for (temp_int_49 = MT4OrdersTotal() ; temp_int_49 >= 0 ; temp_int_49=temp_int_49 - 1)
              {
-                if ( OrderSelect(temp_int_49,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MarketInfo(global_336_string_3130,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+                if ( OrderSelect(temp_int_49,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MarketInfo(global_336_string_3130,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3870,7 +3925,7 @@ g_initialLegacyRiskLotPending=true;
            {
              for (temp_int_51 = MT4OrdersTotal() ; temp_int_51 >= 0 ; temp_int_51=temp_int_51 - 1)
              {
-                if ( OrderSelect(temp_int_51,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+                if ( OrderSelect(temp_int_51,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3891,7 +3946,7 @@ g_initialLegacyRiskLotPending=true;
            {
              for (temp_int_53 = MT4OrdersTotal() ; temp_int_53 >= 0 ; temp_int_53=temp_int_53 - 1)
              {
-                if ( OrderSelect(temp_int_53,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MarketInfo(global_336_string_3130,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+                if ( OrderSelect(temp_int_53,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MarketInfo(global_336_string_3130,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3918,7 +3973,7 @@ g_initialLegacyRiskLotPending=true;
  {
    return(0); 
  }
- if ( global_45_bool_FC )
+ if ( g_useFridayStop )
  {
    if ( DayOfWeek() == 5 && Hour() >= FridayStopHour && !(global_305_bool_2880) )
    {
@@ -3951,7 +4006,7 @@ g_initialLegacyRiskLotPending=true;
          double friday_price=(friday_type==OP_BUY)
                              ? MarketInfo(global_336_string_3130,MODE_BID)
                              : MarketInfo(global_336_string_3130,MODE_ASK);
-         OrderClose(OrderTicket(),OrderLots(),friday_price,(int)global_38_double_C0,Red);
+         OrderClose(OrderTicket(),OrderLots(),friday_price,(int)g_slippagePts,Red);
        }
      }
      for (temp_int_71 = MT4OrdersTotal() ; temp_int_71 >= 0 ; temp_int_71=temp_int_71 - 1)
@@ -4048,20 +4103,20 @@ g_initialLegacyRiskLotPending=true;
      }
    }
  }
- global_1_double_0 = MarketInfo(global_336_string_3130,MODE_ASK) - MarketInfo(global_336_string_3130,MODE_BID) ;
+ g_curSpread = MarketInfo(global_336_string_3130,MODE_ASK) - MarketInfo(global_336_string_3130,MODE_BID) ;
  if ( global_35_bool_AF )
  {
-   if ( global_1_double_0>g_MaxSpread_rw * global_229_double_1E00 )
+   if ( g_curSpread>g_MaxSpread_rw * global_229_double_1E00 )
    {
      RemovePendingOrdersDuringHighSpread(); 
      return(0); 
    }
-   if ( global_1_double_0<=global_37_double_B8 * global_229_double_1E00 && ( !(global_45_bool_FC) || DayOfWeek() != 5 || Hour() <  FridayStopHour ) && ( !(global_171_bool_4BC) || IsTradingScheduleOpen() ) )
+   if ( g_curSpread<=g_maxSpreadPts * global_229_double_1E00 && ( !(g_useFridayStop) || DayOfWeek() != 5 || Hour() <  FridayStopHour ) && ( !(global_171_bool_4BC) || IsTradingScheduleOpen() ) )
    {
      RestoreStoredPendingOrders(); 
    }
  }
- if ( global_69_int_160 == 1 )
+ if ( g_orderMgmtMode == 1 )
  {
    temp_int_88 = 0;
    for (temp_int_89 = MT4OrdersTotal() ; temp_int_89 >= 0 ; temp_int_89=temp_int_89 - 1)
@@ -4070,7 +4125,7 @@ g_initialLegacyRiskLotPending=true;
      temp_int_88=temp_int_88 + 1;
      
    }
-   if ( temp_int_88 >  global_86_int_1C8 )
+   if ( temp_int_88 >  g_maxPendingOrders )
    {
      temp_double_90 = 0.0;
      temp_long_91 = 0;
@@ -4103,7 +4158,7 @@ g_initialLegacyRiskLotPending=true;
      temp_int_95=temp_int_95 + 1;
      
    }
-   if ( temp_int_95 >  global_86_int_1C8 )
+   if ( temp_int_95 >  g_maxPendingOrders )
    {
      temp_double_97 = 9999.0;
      temp_long_98 = 0;
@@ -4130,22 +4185,22 @@ g_initialLegacyRiskLotPending=true;
      }
    }
  }
- if ( !(global_305_bool_2880) && global_69_int_160 == 1 && !(global_303_bool_2878) )
+ if ( !(global_305_bool_2880) && g_orderMgmtMode == 1 && !(global_303_bool_2878) )
  {
-   if ( ( global_322_int_2AE0_si99[global_328_int_3100] != iBars(global_336_string_3130,MT4Period(global_72_int_178)) || global_72_int_178 == 0 ) )
+   if ( ( global_322_int_2AE0_si99[global_328_int_3100] != iBars(global_336_string_3130,MT4Period(g_signalTfPeriod)) || g_signalTfPeriod == 0 ) )
    {
-     global_322_int_2AE0_si99[global_328_int_3100] = iBars(global_336_string_3130,MT4Period(global_72_int_178));
+     global_322_int_2AE0_si99[global_328_int_3100] = iBars(global_336_string_3130,MT4Period(g_signalTfPeriod));
      if ( global_119_int_2D0 >  0 && global_120_int_2D4 >= 0 )
      {
-       global_241_double_1E78_si99[global_328_int_3100] = global_123_double_2E0 * global_229_double_1E00 + (MT4FastFractalHigh(global_117_int_2C8,global_119_int_2D0,global_120_int_2D4) + global_1_double_0);
-       global_242_double_21C4_si99[global_328_int_3100] = MT4FastFractalLow(global_117_int_2C8,global_119_int_2D0,global_120_int_2D4) - global_123_double_2E0 * global_229_double_1E00;
+       global_241_double_1E78_si99[global_328_int_3100] = g_hlOffsetPips * global_229_double_1E00 + (MT4FastFractalHigh(global_117_int_2C8,global_119_int_2D0,global_120_int_2D4) + g_curSpread);
+       global_242_double_21C4_si99[global_328_int_3100] = MT4FastFractalLow(global_117_int_2C8,global_119_int_2D0,global_120_int_2D4) - g_hlOffsetPips * global_229_double_1E00;
      }
      if ( global_187_int_504 >  0 )
      {
        local_8_int=MathRand() * global_187_int_504 / 32768 + 1;
        global_15_int_78 = local_8_int ;
      }
-     if ( global_63_int_140 != 1 )
+     if ( g_profitCloseMode != 1 )
      {
        temp_int_102 = 0;
        for (temp_int_103 = MT4OrdersTotal() ; temp_int_103 >= 0 ; temp_int_103=temp_int_103 - 1)
@@ -4186,7 +4241,7 @@ g_initialLegacyRiskLotPending=true;
          }
        }
      }
-     for (local_9_int = 0 ; local_9_int < global_86_int_1C8 ; local_9_int ++)
+     for (local_9_int = 0 ; local_9_int < g_maxPendingOrders ; local_9_int ++)
      {
        ProcessStrategyEntries(); 
      }
@@ -4248,7 +4303,7 @@ g_initialLegacyRiskLotPending=true;
    if ( global_197_double_6DC_si100si3[local_1_int][1]==4.0 && MarketInfo(global_336_string_3130,MODE_ASK)<global_197_double_6DC_si100si3[local_1_int][0] - global_221_double_1A80 )
    {
      Print("Restoring pending buy-order"); 
-     global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_197_double_6DC_si100si3[local_1_int][2],global_197_double_6DC_si100si3[local_1_int][0],int(global_38_double_C0 * global_229_double_1E00),global_197_double_6DC_si100si3[local_1_int][0] - (global_100_double_230 + global_64_double_148) * global_229_double_1E00,global_101_double_238 * global_229_double_1E00 + global_197_double_6DC_si100si3[local_1_int][0],global_334_string_3120,global_93_int_1F0,global_302_datetime_2870 + 0x2A300,Green) ;
+     global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_197_double_6DC_si100si3[local_1_int][2],global_197_double_6DC_si100si3[local_1_int][0],int(g_slippagePts * global_229_double_1E00),global_197_double_6DC_si100si3[local_1_int][0] - (global_100_double_230 + global_64_double_148) * global_229_double_1E00,g_takeProfitPips * global_229_double_1E00 + global_197_double_6DC_si100si3[local_1_int][0],global_334_string_3120,global_93_int_1F0,global_302_datetime_2870 + 0x2A300,Green) ;
      global_280_bool_25FA = false ;
      temp_double_1 = global_197_double_6DC_si100si3[local_1_int][0];
      temp_long_2 = global_230_int_1E08;
@@ -4269,7 +4324,7 @@ g_initialLegacyRiskLotPending=true;
            do
            {
              Sleep(2500); 
-             global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_197_double_6DC_si100si3[local_1_int][2],global_197_double_6DC_si100si3[local_1_int][0],int(global_38_double_C0 * global_229_double_1E00),global_197_double_6DC_si100si3[local_1_int][0] - (global_100_double_230 + global_64_double_148) * global_229_double_1E00,global_101_double_238 * global_229_double_1E00 + global_197_double_6DC_si100si3[local_1_int][0],global_334_string_3120,global_93_int_1F0,global_302_datetime_2870 + 0x2A300,Green) ;
+             global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_197_double_6DC_si100si3[local_1_int][2],global_197_double_6DC_si100si3[local_1_int][0],int(g_slippagePts * global_229_double_1E00),global_197_double_6DC_si100si3[local_1_int][0] - (global_100_double_230 + global_64_double_148) * global_229_double_1E00,g_takeProfitPips * global_229_double_1E00 + global_197_double_6DC_si100si3[local_1_int][0],global_334_string_3120,global_93_int_1F0,global_302_datetime_2870 + 0x2A300,Green) ;
              global_280_bool_25FA = false ;
              temp_double_4 = global_197_double_6DC_si100si3[local_1_int][0];
              temp_long_5 = global_230_int_1E08;
@@ -4291,7 +4346,7 @@ g_initialLegacyRiskLotPending=true;
    }
    if ( !(global_197_double_6DC_si100si3[local_1_int][1]==5.0) || !(MarketInfo(global_336_string_3130,MODE_BID)>global_197_double_6DC_si100si3[local_1_int][0] + global_221_double_1A80) )   continue;
    Print("Restoring pending sell-order"); 
-   global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_197_double_6DC_si100si3[local_1_int][2],global_197_double_6DC_si100si3[local_1_int][0],int(global_38_double_C0 * global_229_double_1E00),(global_100_double_230 + global_64_double_148) * global_229_double_1E00 + global_197_double_6DC_si100si3[local_1_int][0],global_197_double_6DC_si100si3[local_1_int][0] - global_101_double_238 * global_229_double_1E00,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870 + 0x2A300,Green) ;
+   global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_197_double_6DC_si100si3[local_1_int][2],global_197_double_6DC_si100si3[local_1_int][0],int(g_slippagePts * global_229_double_1E00),(global_100_double_230 + global_64_double_148) * global_229_double_1E00 + global_197_double_6DC_si100si3[local_1_int][0],global_197_double_6DC_si100si3[local_1_int][0] - g_takeProfitPips * global_229_double_1E00,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870 + 0x2A300,Green) ;
    global_281_bool_25FB = false ;
    temp_double_7 = global_197_double_6DC_si100si3[local_1_int][0];
    temp_long_8 = global_230_int_1E08;
@@ -4312,7 +4367,7 @@ g_initialLegacyRiskLotPending=true;
        do
        {
          Sleep(2500); 
-         global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_197_double_6DC_si100si3[local_1_int][2],global_197_double_6DC_si100si3[local_1_int][0],int(global_38_double_C0 * global_229_double_1E00),(global_100_double_230 + global_64_double_148) * global_229_double_1E00 + global_197_double_6DC_si100si3[local_1_int][0],global_197_double_6DC_si100si3[local_1_int][0] - global_101_double_238 * global_229_double_1E00,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870 + 0x2A300,Green) ;
+         global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_197_double_6DC_si100si3[local_1_int][2],global_197_double_6DC_si100si3[local_1_int][0],int(g_slippagePts * global_229_double_1E00),(global_100_double_230 + global_64_double_148) * global_229_double_1E00 + global_197_double_6DC_si100si3[local_1_int][0],global_197_double_6DC_si100si3[local_1_int][0] - g_takeProfitPips * global_229_double_1E00,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870 + 0x2A300,Green) ;
          global_281_bool_25FB = false ;
          temp_double_10 = global_197_double_6DC_si100si3[local_1_int][0];
          temp_long_11 = global_230_int_1E08;
@@ -4362,13 +4417,13 @@ g_initialLegacyRiskLotPending=true;
  {
    if ( OrderSelect(local_2_int,0,0) != true )   continue;
    
-   if ( ( OrderMagicNumber() != global_93_int_1F0 && OrderMagicNumber() != global_96_int_208 ) || OrderSymbol() != global_336_string_3130 )   continue;
+   if ( ( OrderMagicNumber() != global_93_int_1F0 && OrderMagicNumber() != g_manualMagicNumber ) || OrderSymbol() != global_336_string_3130 )   continue;
    
    if ( OrderType() == 4 && OrderOpenPrice()<global_36_int_B0 * global_229_double_1E00 + MarketInfo(global_336_string_3130,MODE_ASK) && MarketInfo(global_336_string_3130,MODE_ASK)<OrderOpenPrice() - global_309_double_2898 )
    {
-     if ( global_37_double_B8>0.0 )
+     if ( g_maxSpreadPts>0.0 )
      {
-       Print("Spread too high..(" + string(global_1_double_0) + ") storing and deleting order " + string(OrderTicket())); 
+       Print("Spread too high..(" + string(g_curSpread) + ") storing and deleting order " + string(OrderTicket())); 
        for (local_3_int = 0 ; local_3_int < global_200_int_16B4 ; local_3_int ++)
        {
          if ( global_197_double_6DC_si100si3[local_3_int][0]==0.0 )
@@ -4393,7 +4448,7 @@ g_initialLegacyRiskLotPending=true;
      }
      else
      {
-       Print("Spread too high..(" + string(global_1_double_0) + ") deleting order " + string(OrderTicket())); 
+       Print("Spread too high..(" + string(g_curSpread) + ") deleting order " + string(OrderTicket())); 
        temp_long_3 = OrderTicket();
        for (temp_int_4 = 0 ; temp_int_4 < 100 ; temp_int_4=temp_int_4 + 1)
        {
@@ -4412,9 +4467,9 @@ g_initialLegacyRiskLotPending=true;
    temp_double_6 = MarketInfo(global_336_string_3130,MODE_BID);
    if ( !(temp_double_6>OrderOpenPrice() + global_309_double_2898) )   continue;
    
-   if ( global_37_double_B8>0.0 )
+   if ( g_maxSpreadPts>0.0 )
    {
-     Print("Spread too high..(" + string(global_1_double_0) + ") storing and deleting order " + string(OrderTicket())); 
+     Print("Spread too high..(" + string(g_curSpread) + ") storing and deleting order " + string(OrderTicket())); 
      for (local_4_int = 0 ; local_4_int < global_200_int_16B4 ; local_4_int ++)
      {
        if ( global_197_double_6DC_si100si3[local_4_int][0]==0.0 )
@@ -4438,7 +4493,7 @@ g_initialLegacyRiskLotPending=true;
      OrderDelete(OrderTicket(),Green); 
       continue;
    }
-   Print("Spread too high..(" + string(global_1_double_0) + ") deleting order " + string(OrderTicket())); 
+   Print("Spread too high..(" + string(g_curSpread) + ") deleting order " + string(OrderTicket())); 
    temp_long_9 = OrderTicket();
    for (temp_int_10 = 0 ; temp_int_10 < 100 ; temp_int_10=temp_int_10 + 1)
    {
@@ -4574,23 +4629,23 @@ g_initialLegacyRiskLotPending=true;
        global_397_double_6768 = 100000.0 ;
      }
      local_7_double = ConvertAccountCurrencyToUsd(global_401_double_6AD0) ;
-     if ( global_19_int_9C == 0 )
+     if ( g_tradeFrequencyMode == 0 )
      {
        global_145_int_40C = (int)(global_385_int_5DA8 / (MaxAllowedDD / 100.0)) ;
      }
-     if ( global_19_int_9C == 1 )
+     if ( g_tradeFrequencyMode == 1 )
      {
        global_145_int_40C = (int)(global_386_int_5DAC / (MaxAllowedDD / 100.0)) ;
      }
-     if ( global_19_int_9C == 2 )
+     if ( g_tradeFrequencyMode == 2 )
      {
        global_145_int_40C = (int)(global_387_int_5DB0 / (MaxAllowedDD / 100.0)) ;
      }
-     if ( global_19_int_9C == 3 )
+     if ( g_tradeFrequencyMode == 3 )
      {
        global_145_int_40C = (int)(global_388_int_5DB4 / (MaxAllowedDD / 100.0)) ;
      }
-     if ( global_19_int_9C == 4 )
+     if ( g_tradeFrequencyMode == 4 )
      {
        global_145_int_40C = (int)(global_389_int_5DB8 / (MaxAllowedDD / 100.0)) ;
      }
@@ -4619,11 +4674,11 @@ g_initialLegacyRiskLotPending=true;
  // first pending order exists.  With no variable lot adjustment they retain
  // StartLots for strategy 1, while the remaining strategies use dynamic risk.
  if ( global_328_int_3100 == 0 && (Risk == 1 || Risk == 2) &&
-      (g_initialLegacyRiskLotPending || MathAbs(global_9_double_60 - 1.0) < 0.0000001) )
+      (g_initialLegacyRiskLotPending || MathAbs(g_lotRatioInv - 1.0) < 0.0000001) )
  {
    local_2_double = g_startLots_rw ;
  }
- local_2_double = local_2_double * global_9_double_60 ;
+ local_2_double = local_2_double * g_lotRatioInv ;
  if ( local_2_double<MarketInfo(global_336_string_3130,MODE_LOTSTEP) )
  {
    local_2_double = MarketInfo(global_336_string_3130,MODE_LOTSTEP) ;
@@ -4693,16 +4748,16 @@ g_initialLegacyRiskLotPending=true;
        local_3_bool = false ;
      }
    }
-   if ( local_4_bool && local_3_bool && iHigh(global_336_string_3130,MT4Period(arg_0_int),local_5_int)>global_80_double_198 * global_229_double_1E00 + MarketInfo(global_336_string_3130,MODE_ASK) )
+   if ( local_4_bool && local_3_bool && iHigh(global_336_string_3130,MT4Period(arg_0_int),local_5_int)>g_entryBreakoutPips * global_229_double_1E00 + MarketInfo(global_336_string_3130,MODE_ASK) )
    {
      temp_double_1 = iHigh(global_336_string_3130,MT4Period(arg_0_int),local_5_int);
      temp_int_2 = local_5_int;
-     temp_double_3 = iHigh(global_336_string_3130,MT4Period(global_71_int_174),0);
+     temp_double_3 = iHigh(global_336_string_3130,MT4Period(g_entryTfPeriod),0);
      for (temp_int_4 = 1 ; temp_int_4 <= temp_int_2 ; temp_int_4=temp_int_4 + 1)
      {
-       if ( iHigh(global_336_string_3130,MT4Period(global_71_int_174),temp_int_4)>temp_double_3 )
+       if ( iHigh(global_336_string_3130,MT4Period(g_entryTfPeriod),temp_int_4)>temp_double_3 )
        {
-         temp_double_3 = iHigh(global_336_string_3130,MT4Period(global_71_int_174),temp_int_4);
+         temp_double_3 = iHigh(global_336_string_3130,MT4Period(g_entryTfPeriod),temp_int_4);
        }
      }
      if ( temp_double_1>=temp_double_3 )
@@ -4711,12 +4766,12 @@ g_initialLegacyRiskLotPending=true;
        temp_bool_7=false; 
        for (temp_int_6 = MT4OrdersTotal() ; temp_int_6 >= 0 ; temp_int_6=temp_int_6 - 1)
        {
-         if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MathAbs(OrderOpenPrice() - (global_83_double_1B0 * global_229_double_1E00 + temp_double_5))<global_88_double_1D0 * global_229_double_1E00) )   continue;
+         if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MathAbs(OrderOpenPrice() - (g_buyEntryOffsetPips * global_229_double_1E00 + temp_double_5))<global_88_double_1D0 * global_229_double_1E00) )   continue;
          temp_bool_7 = true;
           break;
          
        }
-       if ( !(temp_bool_7) && ( !(global_75_bool_184) || !(iClose(global_336_string_3130,MT4Period(arg_0_int),local_5_int - 1)>iHigh(global_336_string_3130,MT4Period(arg_0_int),local_5_int) - global_80_double_198 * global_229_double_1E00) ) )
+       if ( !(temp_bool_7) && ( !(global_75_bool_184) || !(iClose(global_336_string_3130,MT4Period(arg_0_int),local_5_int - 1)>iHigh(global_336_string_3130,MT4Period(arg_0_int),local_5_int) - g_entryBreakoutPips * global_229_double_1E00) ) )
        {
          local_2_bool = true ;
          global_262_double_2580 = NormalizeDouble(iHigh(global_336_string_3130,MT4Period(arg_0_int),local_5_int),global_190_int_518) ;
@@ -4773,16 +4828,16 @@ g_initialLegacyRiskLotPending=true;
        local_3_bool = false ;
      }
    }
-   if ( local_4_bool && local_3_bool && iLow(global_336_string_3130,MT4Period(arg_0_int),local_5_int)<MarketInfo(global_336_string_3130,MODE_BID) - global_80_double_198 * global_229_double_1E00 )
+   if ( local_4_bool && local_3_bool && iLow(global_336_string_3130,MT4Period(arg_0_int),local_5_int)<MarketInfo(global_336_string_3130,MODE_BID) - g_entryBreakoutPips * global_229_double_1E00 )
    {
      temp_double_1 = iLow(global_336_string_3130,MT4Period(arg_0_int),local_5_int);
      temp_int_2 = local_5_int;
-     temp_double_3 = iLow(global_336_string_3130,MT4Period(global_71_int_174),0);
+     temp_double_3 = iLow(global_336_string_3130,MT4Period(g_entryTfPeriod),0);
      for (temp_int_4 = 1 ; temp_int_4 <= temp_int_2 ; temp_int_4=temp_int_4 + 1)
      {
-       if ( iLow(global_336_string_3130,MT4Period(global_71_int_174),temp_int_4)<temp_double_3 )
+       if ( iLow(global_336_string_3130,MT4Period(g_entryTfPeriod),temp_int_4)<temp_double_3 )
        {
-         temp_double_3 = iLow(global_336_string_3130,MT4Period(global_71_int_174),temp_int_4);
+         temp_double_3 = iLow(global_336_string_3130,MT4Period(g_entryTfPeriod),temp_int_4);
        }
      }
      if ( temp_double_1<=temp_double_3 )
@@ -4791,12 +4846,12 @@ g_initialLegacyRiskLotPending=true;
        temp_bool_7=false; 
        for (temp_int_6 = MT4OrdersTotal() ; temp_int_6 >= 0 ; temp_int_6=temp_int_6 - 1)
        {
-         if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MathAbs(OrderOpenPrice() - (temp_double_5 - global_84_double_1B8 * global_229_double_1E00))<global_88_double_1D0 * global_229_double_1E00) )   continue;
+         if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MathAbs(OrderOpenPrice() - (temp_double_5 - g_sellEntryOffsetPips * global_229_double_1E00))<global_88_double_1D0 * global_229_double_1E00) )   continue;
          temp_bool_7 = true;
           break;
          
        }
-       if ( !(temp_bool_7) && ( !(global_75_bool_184) || !(iClose(global_336_string_3130,MT4Period(arg_0_int),local_5_int - 1)<global_80_double_198 * global_229_double_1E00 + iLow(global_336_string_3130,MT4Period(arg_0_int),local_5_int)) ) )
+       if ( !(temp_bool_7) && ( !(global_75_bool_184) || !(iClose(global_336_string_3130,MT4Period(arg_0_int),local_5_int - 1)<g_entryBreakoutPips * global_229_double_1E00 + iLow(global_336_string_3130,MT4Period(arg_0_int),local_5_int)) ) )
        {
          local_2_bool = true ;
          global_261_double_2578 = NormalizeDouble(iLow(global_336_string_3130,MT4Period(arg_0_int),local_5_int),global_190_int_518) ;
@@ -4837,7 +4892,7 @@ g_initialLegacyRiskLotPending=true;
     for(int i=candidate;i<=candidate+global_73_int_17C;i++)
       if(highs[i]>candidate_price) right_ok=false;
 
-    if(left_ok && right_ok && candidate_price>global_80_double_198*global_229_double_1E00+MarketInfo(global_336_string_3130,MODE_ASK))
+    if(left_ok && right_ok && candidate_price>g_entryBreakoutPips*global_229_double_1E00+MarketInfo(global_336_string_3130,MODE_ASK))
     {
       double range_high=highs[0];
       for(int i=1;i<=candidate;i++)
@@ -4850,11 +4905,11 @@ g_initialLegacyRiskLotPending=true;
         {
           if(OrderSelect(i,0,0)!=true || OrderMagicNumber()!=global_93_int_1F0 ||
              OrderSymbol()!=global_336_string_3130 || OrderType()!=4 ||
-             !(MathAbs(OrderOpenPrice()-(global_83_double_1B0*global_229_double_1E00+normalized))<global_88_double_1D0*global_229_double_1E00)) continue;
+             !(MathAbs(OrderOpenPrice()-(g_buyEntryOffsetPips*global_229_double_1E00+normalized))<global_88_double_1D0*global_229_double_1E00)) continue;
           duplicate=true;
           break;
         }
-        if(!duplicate && (!global_75_bool_184 || !(iClose(global_336_string_3130,tf,candidate-1)>candidate_price-global_80_double_198*global_229_double_1E00)))
+        if(!duplicate && (!global_75_bool_184 || !(iClose(global_336_string_3130,tf,candidate-1)>candidate_price-g_entryBreakoutPips*global_229_double_1E00)))
         {
           global_262_double_2580=normalized;
           global_265_int_2598=candidate;
@@ -4892,7 +4947,7 @@ g_initialLegacyRiskLotPending=true;
     for(int i=candidate;i<=candidate+global_73_int_17C;i++)
       if(lows[i]<candidate_price) right_ok=false;
 
-    if(left_ok && right_ok && candidate_price<MarketInfo(global_336_string_3130,MODE_BID)-global_80_double_198*global_229_double_1E00)
+    if(left_ok && right_ok && candidate_price<MarketInfo(global_336_string_3130,MODE_BID)-g_entryBreakoutPips*global_229_double_1E00)
     {
       double range_low=lows[0];
       for(int i=1;i<=candidate;i++)
@@ -4905,11 +4960,11 @@ g_initialLegacyRiskLotPending=true;
         {
           if(OrderSelect(i,0,0)!=true || OrderMagicNumber()!=global_93_int_1F0 ||
              OrderSymbol()!=global_336_string_3130 || OrderType()!=5 ||
-             !(MathAbs(OrderOpenPrice()-(normalized-global_84_double_1B8*global_229_double_1E00))<global_88_double_1D0*global_229_double_1E00)) continue;
+             !(MathAbs(OrderOpenPrice()-(normalized-g_sellEntryOffsetPips*global_229_double_1E00))<global_88_double_1D0*global_229_double_1E00)) continue;
           duplicate=true;
           break;
         }
-        if(!duplicate && (!global_75_bool_184 || !(iClose(global_336_string_3130,tf,candidate-1)<global_80_double_198*global_229_double_1E00+candidate_price)))
+        if(!duplicate && (!global_75_bool_184 || !(iClose(global_336_string_3130,tf,candidate-1)<g_entryBreakoutPips*global_229_double_1E00+candidate_price)))
         {
           global_261_double_2578=normalized;
           global_266_int_259C=candidate;
@@ -5101,7 +5156,7 @@ g_initialLegacyRiskLotPending=true;
  {
    global_223_double_1AC4_si99[global_328_int_3100] = global_141_double_3F8;
  }
- if ( global_89_int_1D8 >  0 )
+ if ( g_pendingExpiryHours >  0 )
  {
    global_302_datetime_2870=TimeCurrent() + global_234_int_1E20;
  }
@@ -5127,7 +5182,7 @@ g_initialLegacyRiskLotPending=true;
    temp_int_3=temp_int_3 + 1;
    
  }
- if ( temp_int_3 <  global_87_int_1CC )
+ if ( temp_int_3 <  g_maxOpenTradesPerSide )
  {
    PlaceBuyStopEntry(1); 
  }
@@ -5144,7 +5199,7 @@ g_initialLegacyRiskLotPending=true;
    {
      for (temp_int_7 = MT4OrdersTotal() ; temp_int_7 >= 0 ; temp_int_7=temp_int_7 - 1)
      {
-       if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 )   continue;
+       if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 4 )   continue;
        OrderDelete(OrderTicket(),0xFFFFFFFF); 
        
      }
@@ -5157,7 +5212,7 @@ g_initialLegacyRiskLotPending=true;
    temp_int_8=temp_int_8 + 1;
    
  }
- if ( temp_int_8 <  global_87_int_1CC )
+ if ( temp_int_8 <  g_maxOpenTradesPerSide )
  {
    PlaceSellStopEntry(1); 
    return;
@@ -5172,7 +5227,7 @@ g_initialLegacyRiskLotPending=true;
  if ( temp_int_10 != 2 )   return;
  for (temp_int_12 = MT4OrdersTotal() ; temp_int_12 >= 0 ; temp_int_12=temp_int_12 - 1)
  {
-   if ( OrderSelect(temp_int_12,0,0) != true || OrderMagicNumber() != global_96_int_208 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 )   continue;
+   if ( OrderSelect(temp_int_12,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != global_336_string_3130 || OrderType() != 5 )   continue;
    OrderDelete(OrderTicket(),0xFFFFFFFF); 
    
  }
@@ -5236,13 +5291,13 @@ g_initialLegacyRiskLotPending=true;
  }
  if ( arg_0_int == 1 )
  {
-   MT4FastEntryHigh(global_71_int_174); 
+   MT4FastEntryHigh(g_entryTfPeriod); 
    local_2_bool = false ;
    temp_double_3 = global_262_double_2580;
    temp_bool_5=false; 
    for (temp_int_4 = MT4OrdersTotal() ; temp_int_4 >= 0 ; temp_int_4=temp_int_4 - 1)
    {
-     if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MathAbs(OrderOpenPrice() - (global_83_double_1B0 * global_229_double_1E00 + temp_double_3))<global_88_double_1D0 * global_229_double_1E00) )   continue;
+     if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != global_336_string_3130 || OrderType() != 4 || !(MathAbs(OrderOpenPrice() - (g_buyEntryOffsetPips * global_229_double_1E00 + temp_double_3))<global_88_double_1D0 * global_229_double_1E00) )   continue;
      temp_bool_5 = true;
       break;
      
@@ -5256,7 +5311,7 @@ g_initialLegacyRiskLotPending=true;
        temp_int_6=temp_int_6 + 1;
        
      }
-     if ( temp_int_6 == global_86_int_1C8 )
+     if ( temp_int_6 == g_maxPendingOrders )
      {
        temp_double_8 = 9999.0;
        for (temp_int_9 = MT4OrdersTotal() ; temp_int_9 >= 0 ; temp_int_9=temp_int_9 - 1)
@@ -5281,7 +5336,7 @@ g_initialLegacyRiskLotPending=true;
    if ( local_2_bool )
    {
      global_247_double_2500 = global_129_double_318 ;
-     local_3_double = NormalizeDouble(global_83_double_1B0 * global_229_double_1E00 + global_188_double_508,global_190_int_518) ;
+     local_3_double = NormalizeDouble(g_buyEntryOffsetPips * global_229_double_1E00 + global_188_double_508,global_190_int_518) ;
      temp_double_10 = local_3_double;
      temp_bool_12=false; 
      for (temp_int_11 = MT4OrdersTotal() ; temp_int_11 >= 0 ; temp_int_11=temp_int_11 - 1)
@@ -5305,7 +5360,7 @@ g_initialLegacyRiskLotPending=true;
        }
        local_4_double = NormalizeDouble(global_15_int_78 * global_229_double_1E00 + local_3_double,global_190_int_518) ;
        local_5_double = NormalizeDouble(local_3_double - (global_100_double_230 + global_64_double_148) * global_229_double_1E00,global_190_int_518) ;
-       local_6_double = NormalizeDouble(global_101_double_238 * global_229_double_1E00 + local_3_double,global_190_int_518) ;
+       local_6_double = NormalizeDouble(g_takeProfitPips * global_229_double_1E00 + local_3_double,global_190_int_518) ;
        if ( global_223_double_1AC4_si99[global_328_int_3100]<SymbolInfoDouble(global_336_string_3130,34) )
        {
          Print("Volume is less than the minimal allowed SYMBOL_VOLUME_MIN=" + string(SymbolInfoDouble(global_336_string_3130,34))); 
@@ -5349,11 +5404,11 @@ g_initialLegacyRiskLotPending=true;
        {
          if ( !(setSL_TP_After_Entry) )
          {
-           global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(global_38_double_C0 * global_229_double_1E00),local_5_double,local_6_double,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Green) ;
+           global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(g_slippagePts * global_229_double_1E00),local_5_double,local_6_double,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Green) ;
          }
          else
          {
-           global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(global_38_double_C0 * global_229_double_1E00),0.0,0.0,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Green) ;
+           global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(g_slippagePts * global_229_double_1E00),0.0,0.0,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Green) ;
          }
          global_280_bool_25FA = false ;
          if ( global_230_int_1E08 <= 0 )
@@ -5368,12 +5423,12 @@ g_initialLegacyRiskLotPending=true;
                  Sleep(2500); 
                  if ( !(setSL_TP_After_Entry) )
                  {
-                   temp_int_16 = (int)(global_38_double_C0 * global_229_double_1E00);
+                   temp_int_16 = (int)(g_slippagePts * global_229_double_1E00);
                    global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,temp_int_16,local_5_double,local_6_double,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Green) ;
                  }
                  else
                  {
-                   global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(global_38_double_C0 * global_229_double_1E00),0.0,0.0,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Green) ;
+                   global_230_int_1E08 = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(g_slippagePts * global_229_double_1E00),0.0,0.0,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Green) ;
                  }
                  global_280_bool_25FA = false ;
                }
@@ -5462,13 +5517,13 @@ g_initialLegacyRiskLotPending=true;
  }
  if ( arg_0_int == 1 )
  {
-   MT4FastEntryLow(global_71_int_174); 
+   MT4FastEntryLow(g_entryTfPeriod); 
    local_2_bool = false ;
    temp_double_3 = global_261_double_2578;
    temp_bool_5=false; 
    for (temp_int_4 = MT4OrdersTotal() ; temp_int_4 >= 0 ; temp_int_4=temp_int_4 - 1)
    {
-     if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MathAbs(OrderOpenPrice() - (temp_double_3 - global_84_double_1B8 * global_229_double_1E00))<global_88_double_1D0 * global_229_double_1E00) )   continue;
+     if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != global_336_string_3130 || OrderType() != 5 || !(MathAbs(OrderOpenPrice() - (temp_double_3 - g_sellEntryOffsetPips * global_229_double_1E00))<global_88_double_1D0 * global_229_double_1E00) )   continue;
      temp_bool_5 = true;
       break;
      
@@ -5482,7 +5537,7 @@ g_initialLegacyRiskLotPending=true;
        temp_int_6=temp_int_6 + 1;
        
      }
-     if ( temp_int_6 == global_86_int_1C8 )
+     if ( temp_int_6 == g_maxPendingOrders )
      {
        temp_double_8 = 0.0;
        for (temp_int_9 = MT4OrdersTotal() ; temp_int_9 >= 0 ; temp_int_9=temp_int_9 - 1)
@@ -5507,7 +5562,7 @@ g_initialLegacyRiskLotPending=true;
    if ( local_2_bool )
    {
      global_247_double_2500 = global_129_double_318 ;
-     local_3_double = NormalizeDouble(global_189_double_510 - global_84_double_1B8 * global_229_double_1E00,global_190_int_518) ;
+     local_3_double = NormalizeDouble(global_189_double_510 - g_sellEntryOffsetPips * global_229_double_1E00,global_190_int_518) ;
      temp_double_10 = local_3_double;
      temp_bool_12=false; 
      for (temp_int_11 = MT4OrdersTotal() ; temp_int_11 >= 0 ; temp_int_11=temp_int_11 - 1)
@@ -5531,7 +5586,7 @@ g_initialLegacyRiskLotPending=true;
        }
        local_4_double = NormalizeDouble(local_3_double - global_15_int_78 * global_229_double_1E00,global_190_int_518) ;
        local_5_double = NormalizeDouble((global_100_double_230 + global_64_double_148) * global_229_double_1E00 + local_3_double,global_190_int_518) ;
-       local_6_double = NormalizeDouble(local_3_double - global_101_double_238 * global_229_double_1E00,global_190_int_518) ;
+       local_6_double = NormalizeDouble(local_3_double - g_takeProfitPips * global_229_double_1E00,global_190_int_518) ;
        if ( global_223_double_1AC4_si99[global_328_int_3100]<SymbolInfoDouble(global_336_string_3130,34) )
        {
          Print("Volume is less than the minimal allowed SYMBOL_VOLUME_MIN=" + string(SymbolInfoDouble(global_336_string_3130,34))); 
@@ -5575,11 +5630,11 @@ g_initialLegacyRiskLotPending=true;
        {
          if ( !(setSL_TP_After_Entry) )
          {
-           global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(global_38_double_C0 * global_229_double_1E00),local_5_double,local_6_double,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Red) ;
+           global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(g_slippagePts * global_229_double_1E00),local_5_double,local_6_double,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Red) ;
          }
          else
          {
-           global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(global_38_double_C0 * global_229_double_1E00),0.0,0.0,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Red) ;
+           global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(g_slippagePts * global_229_double_1E00),0.0,0.0,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Red) ;
          }
          global_281_bool_25FB = false ;
          if ( global_230_int_1E08 <= 0 )
@@ -5594,12 +5649,12 @@ g_initialLegacyRiskLotPending=true;
                  Sleep(2500); 
                  if ( !(setSL_TP_After_Entry) )
                  {
-                   temp_int_16 = (int)(global_38_double_C0 * global_229_double_1E00);
+                   temp_int_16 = (int)(g_slippagePts * global_229_double_1E00);
                    global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,temp_int_16,local_5_double,local_6_double,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Red) ;
                  }
                  else
                  {
-                   global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(global_38_double_C0 * global_229_double_1E00),0.0,0.0,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Red) ;
+                   global_230_int_1E08 = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_4_double,int(g_slippagePts * global_229_double_1E00),0.0,0.0,global_334_string_3120,global_93_int_1F0,global_302_datetime_2870,Red) ;
                  }
                  global_281_bool_25FB = false ;
                }
@@ -5735,7 +5790,7 @@ g_initialLegacyRiskLotPending=true;
      local_14_int = OrderType() ;
      local_15_int = OrderMagicNumber() ;
      local_16_string = OrderSymbol() ;
-     if ( ( local_14_int == 4 || local_14_int == 2 ) && global_69_int_160 == 2 && ( global_95_int_204 == 0 || (global_95_int_204 == 1 && local_16_string == global_336_string_3130) ) && ( local_15_int == global_96_int_208 || global_96_int_208 == 0 ) && ( local_11_string == global_97_string_210 || global_97_string_210 == "" ) )
+     if ( ( local_14_int == 4 || local_14_int == 2 ) && g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == global_336_string_3130) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && ( local_11_string == g_manualCommentFilter || g_manualCommentFilter == "" ) )
      {
        if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
        {
@@ -5744,11 +5799,11 @@ g_initialLegacyRiskLotPending=true;
        }
        if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
        {
-         local_8_double = NormalizeDouble(global_101_double_238 * global_229_double_1E00 + local_10_double,global_190_int_518) ;
+         local_8_double = NormalizeDouble(g_takeProfitPips * global_229_double_1E00 + local_10_double,global_190_int_518) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
      }
-     if ( local_14_int == 0 && ( ( local_15_int == global_93_int_1F0 && global_69_int_160 == 1 && local_16_string == global_336_string_3130 ) || (global_69_int_160 == 2 && ( global_95_int_204 == 0 || (global_95_int_204 == 1 && local_16_string == global_336_string_3130) ) && ( local_15_int == global_96_int_208 || global_96_int_208 == 0 ) && (local_11_string == global_97_string_210 || global_97_string_210 == "")) ) )
+     if ( local_14_int == 0 && ( ( local_15_int == global_93_int_1F0 && g_orderMgmtMode == 1 && local_16_string == global_336_string_3130 ) || (g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == global_336_string_3130) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && (local_11_string == g_manualCommentFilter || g_manualCommentFilter == "")) ) )
      {
        if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
        {
@@ -5757,10 +5812,10 @@ g_initialLegacyRiskLotPending=true;
        }
        if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
        {
-         local_8_double = NormalizeDouble(global_101_double_238 * global_229_double_1E00 + local_10_double,global_190_int_518) ;
+         local_8_double = NormalizeDouble(g_takeProfitPips * global_229_double_1E00 + local_10_double,global_190_int_518) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
-       if ( global_53_bool_11C && MT4BearishFakeout(global_52_int_118,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM1 && MT4BearishFakeout(global_52_int_118,global_51_int_114,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
@@ -5770,7 +5825,7 @@ g_initialLegacyRiskLotPending=true;
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( global_57_bool_12C && MT4BearishFakeout(global_56_int_128,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM15 && MT4BearishFakeout(global_56_int_128,global_51_int_114,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
@@ -5780,7 +5835,7 @@ g_initialLegacyRiskLotPending=true;
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( global_61_bool_13C && MT4BearishFakeout(global_60_int_138,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableH1 && MT4BearishFakeout(global_60_int_138,global_51_int_114,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
@@ -5821,7 +5876,7 @@ g_initialLegacyRiskLotPending=true;
        }
        local_18_double = local_10_double - local_17_double ;
        local_19_bool = false ;
-       if ( local_17_double>0.0 - global_85_double_1C0 * global_229_double_1E00 && local_18_double>global_38_double_C0 * global_229_double_1E00 )
+       if ( local_17_double>0.0 - global_85_double_1C0 * global_229_double_1E00 && local_18_double>g_slippagePts * global_229_double_1E00 )
        {
          local_19_bool = true ;
          if ( global_39_int_C8 == 2 )
@@ -5840,10 +5895,10 @@ g_initialLegacyRiskLotPending=true;
        }
        // EX5 behavior: maximum-loss is a virtual close boundary here.
        // Do not rewrite the broker SL on every management pass.
-       if ( MarketInfo(global_336_string_3130,MODE_BID)<local_10_double - (global_100_double_230 + global_64_double_148) * global_229_double_1E00 - global_1_double_0 )
+       if ( MarketInfo(global_336_string_3130,MODE_BID)<local_10_double - (global_100_double_230 + global_64_double_148) * global_229_double_1E00 - g_curSpread )
        {
          RefreshRates(); 
-         OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_1_double_0,Red); 
+         OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_curSpread,Red); 
          return(true); 
        }
        local_20_bool = false ;
@@ -5893,10 +5948,10 @@ g_initialLegacyRiskLotPending=true;
                  
                  if ( OrderType() == 0 )
                  {
-                   OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                   OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                  }
                  if ( OrderType() != 1 )   continue;
-                 OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                 OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                  
                }
              }
@@ -5934,10 +5989,10 @@ g_initialLegacyRiskLotPending=true;
                  
                  if ( OrderType() == 0 )
                  {
-                   OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                   OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                  }
                  if ( OrderType() != 1 )   continue;
-                 OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                 OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                  
                }
                global_194_bool_530 = false ;
@@ -5980,16 +6035,16 @@ g_initialLegacyRiskLotPending=true;
                      
                      if ( OrderType() == 0 )
                      {
-                       OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                       OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                      }
                      if ( OrderType() != 1 )   continue;
-                     OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                     OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                      
                    }
                  }
                  else
                  {
-                   OrderSend(global_336_string_3130,1,local_23_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,0.0,0.0,IntegerToString(local_9_long,0,32),global_168_int_4A8,0,Green); 
+                   OrderSend(global_336_string_3130,1,local_23_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),global_168_int_4A8,0,Green); 
                    global_192_int_528 = 1 ;
                    local_22_bool = true ;
                  }
@@ -6016,16 +6071,16 @@ g_initialLegacyRiskLotPending=true;
                      
                      if ( OrderType() == 0 )
                      {
-                       OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                       OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                      }
                      if ( OrderType() != 1 )   continue;
-                     OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                     OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                      
                    }
                  }
                  else
                  {
-                   OrderSend(global_336_string_3130,0,local_23_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,0.0,0.0,IntegerToString(local_9_long,0,32),global_168_int_4A8,0,Green); 
+                   OrderSend(global_336_string_3130,0,local_23_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),global_168_int_4A8,0,Green); 
                    global_192_int_528 = 0 ;
                    local_22_bool = true ;
                  }
@@ -6040,7 +6095,7 @@ g_initialLegacyRiskLotPending=true;
        }
        if ( !(local_20_bool) )
        {
-         if ( ( global_63_int_140 == 1 || (global_63_int_140 != 3 && global_63_int_140 != 2) ) )
+         if ( ( g_profitCloseMode == 1 || (g_profitCloseMode != 3 && g_profitCloseMode != 2) ) )
          {
            temp_long_23 = local_9_long;
            temp_double_24 = global_100_double_230;
@@ -6085,7 +6140,7 @@ g_initialLegacyRiskLotPending=true;
               Print("Virtual_SL: ",DoubleToString(local_4_double,global_190_int_518));
               Print("Last Bid: ",DoubleToString(MarketInfo(global_336_string_3130,MODE_BID),global_190_int_518));
               RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_1_double_0,0xFFFFFFFF); 
+             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
            if ( global_125_double_2F8>0.0 && TimeCurrent() >= local_13_datetime + global_304_int_287C && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble(global_126_double_300 * global_229_double_1E00 + (local_7_double + global_337_double_3140),global_190_int_518) && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 )
@@ -6101,7 +6156,7 @@ g_initialLegacyRiskLotPending=true;
                local_2_bool = true ;
              }
            }
-           if ( global_103_double_250>0.0 && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble((global_103_double_250 + global_106_double_268) * global_229_double_1E00 + (local_7_double + global_337_double_3140),global_190_int_518) && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble(global_104_double_258 * global_229_double_1E00 + local_10_double,global_190_int_518) && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 && local_7_double<NormalizeDouble(global_105_double_260 * global_229_double_1E00 + local_10_double,global_190_int_518) )
+           if ( global_103_double_250>0.0 && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble((global_103_double_250 + global_106_double_268) * global_229_double_1E00 + (local_7_double + global_337_double_3140),global_190_int_518) && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble(g_trailActivationPips * global_229_double_1E00 + local_10_double,global_190_int_518) && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 && local_7_double<NormalizeDouble(global_105_double_260 * global_229_double_1E00 + local_10_double,global_190_int_518) )
            {
              local_7_double = NormalizeDouble(MarketInfo(global_336_string_3130,MODE_BID) - global_103_double_250 * global_229_double_1E00,global_190_int_518) ;
              if ( local_7_double<MarketInfo(global_336_string_3130,MODE_BID) - global_221_double_1A80 )
@@ -6116,7 +6171,7 @@ g_initialLegacyRiskLotPending=true;
                  local_26_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[global_328_int_3100],2) ;
                  if ( local_26_double<local_12_double && local_26_double>=MarketInfo(global_336_string_3130,MODE_LOTSTEP) )
                  {
-                   OrderClose(local_9_long,local_26_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                   OrderClose(local_9_long,local_26_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                    return(true); 
                  }
                }
@@ -6138,7 +6193,7 @@ g_initialLegacyRiskLotPending=true;
                  local_27_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[global_328_int_3100],2) ;
                  if ( local_27_double<local_12_double && local_27_double>=SymbolInfoDouble(global_336_string_3130,34) )
                  {
-                   OrderClose(local_9_long,local_27_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                   OrderClose(local_9_long,local_27_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                    return(true); 
                  }
                }
@@ -6175,9 +6230,9 @@ g_initialLegacyRiskLotPending=true;
                local_2_bool = true ;
              }
            }
-           if ( global_113_double_2A8>0.0 && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble(global_113_double_2A8 * global_229_double_1E00 + local_10_double,global_190_int_518) && NormalizeDouble(global_114_double_2B0 * global_229_double_1E00 + local_10_double,global_190_int_518)>local_7_double + global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble(global_114_double_2B0 * global_229_double_1E00 + local_10_double + global_221_double_1A80,global_190_int_518) && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( global_113_double_2A8>0.0 && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble(global_113_double_2A8 * global_229_double_1E00 + local_10_double,global_190_int_518) && NormalizeDouble(g_beExtraPips * global_229_double_1E00 + local_10_double,global_190_int_518)>local_7_double + global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_BID)>NormalizeDouble(g_beExtraPips * global_229_double_1E00 + local_10_double + global_221_double_1A80,global_190_int_518) && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 )
            {
-             local_7_double = NormalizeDouble(global_114_double_2B0 * global_229_double_1E00 + local_10_double,global_190_int_518) ;
+             local_7_double = NormalizeDouble(g_beExtraPips * global_229_double_1E00 + local_10_double,global_190_int_518) ;
              if ( local_7_double<MarketInfo(global_336_string_3130,MODE_BID) - global_221_double_1A80 )
              {
                global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
@@ -6188,7 +6243,7 @@ g_initialLegacyRiskLotPending=true;
                local_2_bool = true ;
              }
            }
-           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && global_131_double_328 * global_229_double_1E00 + local_7_double<=global_132_double_330 * global_229_double_1E00 + (local_5_double + global_1_double_0)) ) )
+           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && global_131_double_328 * global_229_double_1E00 + local_7_double<=global_132_double_330 * global_229_double_1E00 + (local_5_double + g_curSpread)) ) )
            {
              global_250_int_2518 ++;
              if ( MarketInfo(global_336_string_3130,MODE_BID)>global_131_double_328 * global_229_double_1E00 + local_7_double + global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 && ( global_129_double_318==0.0 || MarketInfo(global_336_string_3130,MODE_BID)>global_247_double_2500 * global_229_double_1E00 + local_5_double ) && global_250_int_2518 >= global_130_int_320 && NormalizeDouble(global_131_double_328 * global_229_double_1E00 + local_7_double,global_190_int_518)>local_7_double )
@@ -6206,7 +6261,7 @@ g_initialLegacyRiskLotPending=true;
               Print("Virtual_SL: ",DoubleToString(local_7_double,global_190_int_518));
               Print("Last Bid: ",DoubleToString(MarketInfo(global_336_string_3130,MODE_BID),global_190_int_518));
               RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_1_double_0,0xFFFFFFFF); 
+             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
            if ( NormalizeDouble(local_4_double,global_190_int_518)!=NormalizeDouble(global_191_double_520,global_190_int_518) )
@@ -6227,7 +6282,7 @@ g_initialLegacyRiskLotPending=true;
              return(true); 
            }
          }
-         if ( ( global_63_int_140 == 2 || global_63_int_140 == 3 ) )
+         if ( ( g_profitCloseMode == 2 || g_profitCloseMode == 3 ) )
          {
            temp_long_34 = local_9_long;
            temp_double_35 = global_100_double_230;
@@ -6269,7 +6324,7 @@ g_initialLegacyRiskLotPending=true;
            if ( MarketInfo(global_336_string_3130,MODE_BID)<=local_4_double )
            {
              RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_1_double_0,0xFFFFFFFF); 
+             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
            local_28_int = (int)(TimeCurrent() - global_319_datetime_28E0) ;
@@ -6286,14 +6341,14 @@ g_initialLegacyRiskLotPending=true;
              local_2_bool = true ;
              global_191_double_520 = MarketInfo(global_336_string_3130,MODE_BID) - global_126_double_300 * global_229_double_1E00 ;
            }
-           if ( global_103_double_250>0.0 && MarketInfo(global_336_string_3130,MODE_BID)>(global_103_double_250 + global_106_double_268) * global_229_double_1E00 + (global_191_double_520 + global_337_double_3140) && MarketInfo(global_336_string_3130,MODE_BID)>global_104_double_258 * global_229_double_1E00 + local_5_double && global_191_double_520<global_105_double_260 * global_229_double_1E00 + local_10_double )
+           if ( global_103_double_250>0.0 && MarketInfo(global_336_string_3130,MODE_BID)>(global_103_double_250 + global_106_double_268) * global_229_double_1E00 + (global_191_double_520 + global_337_double_3140) && MarketInfo(global_336_string_3130,MODE_BID)>g_trailActivationPips * global_229_double_1E00 + local_5_double && global_191_double_520<global_105_double_260 * global_229_double_1E00 + local_10_double )
            {
              local_2_bool = true ;
              global_191_double_520 = MarketInfo(global_336_string_3130,MODE_BID) - global_103_double_250 * global_229_double_1E00 ;
              local_29_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[global_328_int_3100],2) ;
              if ( local_29_double<local_12_double && local_29_double>=MarketInfo(global_336_string_3130,MODE_LOTSTEP) )
              {
-               OrderClose(local_9_long,local_29_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+               OrderClose(local_9_long,local_29_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                return(true); 
              }
            }
@@ -6308,9 +6363,9 @@ g_initialLegacyRiskLotPending=true;
              global_191_double_520 = global_242_double_21C4_si99[global_328_int_3100] ;
              local_2_bool = true ;
            }
-           if ( global_113_double_2A8>0.0 && global_63_int_140 == 3 && MarketInfo(global_336_string_3130,MODE_BID)>global_113_double_2A8 * global_229_double_1E00 + local_10_double && global_114_double_2B0 * global_229_double_1E00 + local_10_double>local_7_double + global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_BID)>global_114_double_2B0 * global_229_double_1E00 + local_10_double + global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 && NormalizeDouble(global_114_double_2B0 * global_229_double_1E00 + local_10_double,global_190_int_518)>OrderStopLoss() )
+           if ( global_113_double_2A8>0.0 && g_profitCloseMode == 3 && MarketInfo(global_336_string_3130,MODE_BID)>global_113_double_2A8 * global_229_double_1E00 + local_10_double && g_beExtraPips * global_229_double_1E00 + local_10_double>local_7_double + global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_BID)>g_beExtraPips * global_229_double_1E00 + local_10_double + global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 && NormalizeDouble(g_beExtraPips * global_229_double_1E00 + local_10_double,global_190_int_518)>OrderStopLoss() )
            {
-             global_191_double_520 = NormalizeDouble(global_114_double_2B0 * global_229_double_1E00 + local_10_double,global_190_int_518) ;
+             global_191_double_520 = NormalizeDouble(g_beExtraPips * global_229_double_1E00 + local_10_double,global_190_int_518) ;
              global_230_int_1E08 = OrderModify(local_9_long,local_10_double,global_191_double_520,local_8_double,0,0xFFFFFFFF) ;
              if ( global_230_int_1E08 <= 0 )
              {
@@ -6318,12 +6373,12 @@ g_initialLegacyRiskLotPending=true;
              }
              local_2_bool = true ;
            }
-           if ( global_113_double_2A8>0.0 && global_63_int_140 == 2 && MarketInfo(global_336_string_3130,MODE_BID)>global_113_double_2A8 * global_229_double_1E00 + local_10_double && global_114_double_2B0 * global_229_double_1E00 + local_10_double>global_191_double_520 + global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_BID)>global_114_double_2B0 * global_229_double_1E00 + local_10_double + global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( global_113_double_2A8>0.0 && g_profitCloseMode == 2 && MarketInfo(global_336_string_3130,MODE_BID)>global_113_double_2A8 * global_229_double_1E00 + local_10_double && g_beExtraPips * global_229_double_1E00 + local_10_double>global_191_double_520 + global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_BID)>g_beExtraPips * global_229_double_1E00 + local_10_double + global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 )
            {
-             global_191_double_520 = global_114_double_2B0 * global_229_double_1E00 + local_10_double ;
+             global_191_double_520 = g_beExtraPips * global_229_double_1E00 + local_10_double ;
              local_2_bool = true ;
            }
-           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && global_131_double_328 * global_229_double_1E00 + global_191_double_520<=global_132_double_330 * global_229_double_1E00 + (local_5_double + global_1_double_0)) ) )
+           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && global_131_double_328 * global_229_double_1E00 + global_191_double_520<=global_132_double_330 * global_229_double_1E00 + (local_5_double + g_curSpread)) ) )
            {
              global_250_int_2518 ++;
              if ( MarketInfo(global_336_string_3130,MODE_BID)>global_131_double_328 * global_229_double_1E00 + global_191_double_520 + global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_BID)<local_8_double - global_309_double_2898 && ( global_129_double_318==0.0 || MarketInfo(global_336_string_3130,MODE_BID)>global_247_double_2500 * global_229_double_1E00 + local_5_double ) && global_250_int_2518 >= global_130_int_320 )
@@ -6336,7 +6391,7 @@ g_initialLegacyRiskLotPending=true;
            if ( MarketInfo(global_336_string_3130,MODE_BID)<=global_191_double_520 )
            {
              RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_1_double_0,0xFFFFFFFF); 
+             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
            if ( NormalizeDouble(local_4_double,global_190_int_518)!=NormalizeDouble(global_191_double_520,global_190_int_518) )
@@ -6468,7 +6523,7 @@ g_initialLegacyRiskLotPending=true;
      local_14_int = OrderType() ;
      local_15_int = OrderMagicNumber() ;
      local_16_string = OrderSymbol() ;
-     if ( ( local_14_int == 5 || local_14_int == 3 ) && global_69_int_160 == 2 && ( global_95_int_204 == 0 || (global_95_int_204 == 1 && local_16_string == global_336_string_3130) ) && ( local_15_int == global_96_int_208 || global_96_int_208 == 0 ) && ( local_11_string == global_97_string_210 || global_97_string_210 == "" ) )
+     if ( ( local_14_int == 5 || local_14_int == 3 ) && g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == global_336_string_3130) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && ( local_11_string == g_manualCommentFilter || g_manualCommentFilter == "" ) )
      {
        if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
        {
@@ -6477,11 +6532,11 @@ g_initialLegacyRiskLotPending=true;
        }
        if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
        {
-         local_8_double = NormalizeDouble(local_10_double - global_101_double_238 * global_229_double_1E00,global_190_int_518) ;
+         local_8_double = NormalizeDouble(local_10_double - g_takeProfitPips * global_229_double_1E00,global_190_int_518) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
      }
-     if ( local_14_int == 1 && ( ( local_15_int == global_93_int_1F0 && global_69_int_160 == 1 && local_16_string == global_336_string_3130 ) || (global_69_int_160 == 2 && ( global_95_int_204 == 0 || (global_95_int_204 == 1 && local_16_string == global_336_string_3130) ) && ( local_15_int == global_96_int_208 || global_96_int_208 == 0 ) && (local_11_string == global_97_string_210 || global_97_string_210 == "")) ) )
+     if ( local_14_int == 1 && ( ( local_15_int == global_93_int_1F0 && g_orderMgmtMode == 1 && local_16_string == global_336_string_3130 ) || (g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == global_336_string_3130) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && (local_11_string == g_manualCommentFilter || g_manualCommentFilter == "")) ) )
      {
        if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
        {
@@ -6490,10 +6545,10 @@ g_initialLegacyRiskLotPending=true;
        }
        if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
        {
-         local_8_double = NormalizeDouble(local_10_double - global_101_double_238 * global_229_double_1E00,global_190_int_518) ;
+         local_8_double = NormalizeDouble(local_10_double - g_takeProfitPips * global_229_double_1E00,global_190_int_518) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
-       if ( global_53_bool_11C && MT4BullishFakeout(global_52_int_118,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM1 && MT4BullishFakeout(global_52_int_118,global_51_int_114,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
@@ -6503,7 +6558,7 @@ g_initialLegacyRiskLotPending=true;
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( global_57_bool_12C && MT4BullishFakeout(global_56_int_128,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM15 && MT4BullishFakeout(global_56_int_128,global_51_int_114,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
@@ -6513,7 +6568,7 @@ g_initialLegacyRiskLotPending=true;
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( global_61_bool_13C && MT4BullishFakeout(global_60_int_138,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableH1 && MT4BullishFakeout(global_60_int_138,global_51_int_114,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
@@ -6554,7 +6609,7 @@ g_initialLegacyRiskLotPending=true;
        }
        local_18_double = local_17_double - local_10_double ;
        local_19_bool = false ;
-       if ( local_17_double>global_85_double_1C0 * global_229_double_1E00 && local_18_double>global_38_double_C0 * global_229_double_1E00 )
+       if ( local_17_double>global_85_double_1C0 * global_229_double_1E00 && local_18_double>g_slippagePts * global_229_double_1E00 )
        {
          local_19_bool = true ;
          if ( global_39_int_C8 == 2 )
@@ -6573,10 +6628,10 @@ g_initialLegacyRiskLotPending=true;
        }
        // EX5 behavior: maximum-loss is a virtual close boundary here.
        // Do not rewrite the broker SL on every management pass.
-       if ( MarketInfo(global_336_string_3130,MODE_ASK)>(global_100_double_230 + global_64_double_148) * global_229_double_1E00 + local_10_double + global_1_double_0 )
+       if ( MarketInfo(global_336_string_3130,MODE_ASK)>(global_100_double_230 + global_64_double_148) * global_229_double_1E00 + local_10_double + g_curSpread )
        {
          RefreshRates(); 
-         OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_1_double_0,Red); 
+         OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_curSpread,Red); 
          return(true); 
        }
        local_20_bool = false ;
@@ -6626,10 +6681,10 @@ g_initialLegacyRiskLotPending=true;
                  
                  if ( OrderType() == 0 )
                  {
-                   OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                   OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                  }
                  if ( OrderType() != 1 )   continue;
-                 OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                 OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                  
                }
              }
@@ -6667,10 +6722,10 @@ g_initialLegacyRiskLotPending=true;
                  
                  if ( OrderType() == 0 )
                  {
-                   OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                   OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                  }
                  if ( OrderType() != 1 )   continue;
-                 OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                 OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                  
                }
                global_195_bool_531 = false ;
@@ -6709,16 +6764,16 @@ g_initialLegacyRiskLotPending=true;
                      
                      if ( OrderType() == 0 )
                      {
-                       OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                       OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                      }
                      if ( OrderType() != 1 )   continue;
-                     OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                     OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                      
                    }
                  }
                  else
                  {
-                   OrderSend(global_336_string_3130,1,local_23_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,0.0,0.0,IntegerToString(local_9_long,0,32),global_169_int_4AC,0,Green); 
+                   OrderSend(global_336_string_3130,1,local_23_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),global_169_int_4AC,0,Green); 
                    global_193_int_52C = 1 ;
                    local_22_bool = true ;
                  }
@@ -6749,16 +6804,16 @@ g_initialLegacyRiskLotPending=true;
                      
                      if ( OrderType() == 0 )
                      {
-                       OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+                       OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                      }
                      if ( OrderType() != 1 )   continue;
-                     OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                     OrderClose(OrderTicket(),OrderLots(),MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                      
                    }
                  }
                  else
                  {
-                   OrderSend(global_336_string_3130,0,local_23_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,0.0,0.0,IntegerToString(local_9_long,0,32),global_169_int_4AC,0,Green); 
+                   OrderSend(global_336_string_3130,0,local_23_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),global_169_int_4AC,0,Green); 
                    global_193_int_52C = 0 ;
                    local_22_bool = true ;
                  }
@@ -6773,7 +6828,7 @@ g_initialLegacyRiskLotPending=true;
        }
        if ( !(local_20_bool) )
        {
-         if ( ( global_63_int_140 == 1 || (global_63_int_140 != 2 && global_63_int_140 != 3) ) )
+         if ( ( g_profitCloseMode == 1 || (g_profitCloseMode != 2 && g_profitCloseMode != 3) ) )
          {
            temp_long_23 = local_9_long;
            temp_double_24 = global_100_double_230;
@@ -6818,7 +6873,7 @@ g_initialLegacyRiskLotPending=true;
               Print("Virtual_SL: ",DoubleToString(local_4_double,global_190_int_518));
               Print("Last Ask: ",DoubleToString(MarketInfo(global_336_string_3130,MODE_ASK),global_190_int_518));
               RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)global_1_double_0,0xFFFFFFFF); 
+             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
            if ( global_125_double_2F8>0.0 && TimeCurrent() >= local_13_datetime + global_304_int_287C && MarketInfo(global_336_string_3130,MODE_ASK)<local_7_double - global_337_double_3140 - global_126_double_300 * global_229_double_1E00 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(MarketInfo(global_336_string_3130,MODE_ASK) + global_126_double_300 * global_229_double_1E00,global_190_int_518)<local_7_double )
@@ -6834,7 +6889,7 @@ g_initialLegacyRiskLotPending=true;
                local_2_bool = true ;
              }
            }
-           if ( global_103_double_250>0.0 && MarketInfo(global_336_string_3130,MODE_ASK)<local_7_double - global_337_double_3140 - (global_103_double_250 + global_106_double_268) * global_229_double_1E00 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_104_double_258 * global_229_double_1E00 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && local_7_double>local_10_double - global_105_double_260 * global_229_double_1E00 && NormalizeDouble(global_103_double_250 * global_229_double_1E00 + MarketInfo(global_336_string_3130,MODE_ASK),global_190_int_518)<local_7_double )
+           if ( global_103_double_250>0.0 && MarketInfo(global_336_string_3130,MODE_ASK)<local_7_double - global_337_double_3140 - (global_103_double_250 + global_106_double_268) * global_229_double_1E00 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - g_trailActivationPips * global_229_double_1E00 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && local_7_double>local_10_double - global_105_double_260 * global_229_double_1E00 && NormalizeDouble(global_103_double_250 * global_229_double_1E00 + MarketInfo(global_336_string_3130,MODE_ASK),global_190_int_518)<local_7_double )
            {
              local_7_double = NormalizeDouble(MarketInfo(global_336_string_3130,MODE_ASK) + global_103_double_250 * global_229_double_1E00,global_190_int_518) ;
              if ( local_7_double>MarketInfo(global_336_string_3130,MODE_ASK) + global_221_double_1A80 )
@@ -6849,7 +6904,7 @@ g_initialLegacyRiskLotPending=true;
                  local_26_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[global_328_int_3100],2) ;
                  if ( local_26_double<local_12_double && local_26_double>=MarketInfo(global_336_string_3130,MODE_LOTSTEP) )
                  {
-                   OrderClose(local_9_long,local_26_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                   OrderClose(local_9_long,local_26_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                    return(true); 
                  }
                }
@@ -6871,7 +6926,7 @@ g_initialLegacyRiskLotPending=true;
                  local_27_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[global_328_int_3100],2) ;
                  if ( local_27_double<local_12_double && local_27_double>=SymbolInfoDouble(global_336_string_3130,34) )
                  {
-                   OrderClose(local_9_long,local_27_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)global_38_double_C0,Red); 
+                   OrderClose(local_9_long,local_27_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)g_slippagePts,Red); 
                    return(true); 
                  }
                }
@@ -6908,9 +6963,9 @@ g_initialLegacyRiskLotPending=true;
                local_2_bool = true ;
              }
            }
-           if ( global_113_double_2A8>0.0 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_113_double_2A8 * global_229_double_1E00 && local_10_double - global_114_double_2B0 * global_229_double_1E00<local_7_double - global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_114_double_2B0 * global_229_double_1E00 - global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(local_10_double - global_114_double_2B0 * global_229_double_1E00,global_190_int_518)<local_7_double )
+           if ( global_113_double_2A8>0.0 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_113_double_2A8 * global_229_double_1E00 && local_10_double - g_beExtraPips * global_229_double_1E00<local_7_double - global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - g_beExtraPips * global_229_double_1E00 - global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(local_10_double - g_beExtraPips * global_229_double_1E00,global_190_int_518)<local_7_double )
            {
-             local_7_double = NormalizeDouble(local_10_double - global_114_double_2B0 * global_229_double_1E00,global_190_int_518) ;
+             local_7_double = NormalizeDouble(local_10_double - g_beExtraPips * global_229_double_1E00,global_190_int_518) ;
              if ( local_7_double>MarketInfo(global_336_string_3130,MODE_ASK) + global_221_double_1A80 )
              {
                global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
@@ -6921,7 +6976,7 @@ g_initialLegacyRiskLotPending=true;
                local_2_bool = true ;
              }
            }
-           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && local_7_double - global_131_double_328 * global_229_double_1E00>=local_5_double - global_1_double_0 - global_132_double_330 * global_229_double_1E00) ) )
+           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && local_7_double - global_131_double_328 * global_229_double_1E00>=local_5_double - g_curSpread - global_132_double_330 * global_229_double_1E00) ) )
            {
              global_250_int_2518 ++;
              if ( MarketInfo(global_336_string_3130,MODE_ASK)<local_7_double - global_131_double_328 * global_229_double_1E00 - global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && ( global_129_double_318==0.0 || MarketInfo(global_336_string_3130,MODE_ASK)<local_5_double - global_247_double_2500 * global_229_double_1E00 ) && global_250_int_2518 >= global_130_int_320 && NormalizeDouble(local_7_double - global_131_double_328 * global_229_double_1E00,global_190_int_518)<local_7_double )
@@ -6939,7 +6994,7 @@ g_initialLegacyRiskLotPending=true;
               Print("Virtual_SL: ",DoubleToString(local_7_double,global_190_int_518));
               Print("Last Ask: ",DoubleToString(MarketInfo(global_336_string_3130,MODE_ASK),global_190_int_518));
               RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)global_1_double_0,0xFFFFFFFF); 
+             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
            if ( NormalizeDouble(local_4_double,global_190_int_518)!=NormalizeDouble(global_191_double_520,global_190_int_518) )
@@ -6960,7 +7015,7 @@ g_initialLegacyRiskLotPending=true;
              return(true); 
            }
          }
-         if ( ( global_63_int_140 == 2 || global_63_int_140 == 3 ) )
+         if ( ( g_profitCloseMode == 2 || g_profitCloseMode == 3 ) )
          {
            temp_long_34 = local_9_long;
            temp_double_35 = global_100_double_230;
@@ -7002,7 +7057,7 @@ g_initialLegacyRiskLotPending=true;
            if ( MarketInfo(global_336_string_3130,MODE_ASK)>=local_4_double )
            {
              RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)global_1_double_0,0xFFFFFFFF); 
+             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
            local_28_int = (int)(TimeCurrent() - global_319_datetime_28E0) ;
@@ -7019,13 +7074,13 @@ g_initialLegacyRiskLotPending=true;
              global_191_double_520 = MarketInfo(global_336_string_3130,MODE_ASK) + global_126_double_300 * global_229_double_1E00 ;
              local_2_bool = true ;
            }
-           if ( global_103_double_250>0.0 && MarketInfo(global_336_string_3130,MODE_ASK)<global_191_double_520 - global_337_double_3140 - (global_103_double_250 + global_106_double_268) * global_229_double_1E00 && MarketInfo(global_336_string_3130,MODE_ASK)<local_5_double - global_104_double_258 * global_229_double_1E00 && global_191_double_520>local_10_double - global_105_double_260 * global_229_double_1E00 )
+           if ( global_103_double_250>0.0 && MarketInfo(global_336_string_3130,MODE_ASK)<global_191_double_520 - global_337_double_3140 - (global_103_double_250 + global_106_double_268) * global_229_double_1E00 && MarketInfo(global_336_string_3130,MODE_ASK)<local_5_double - g_trailActivationPips * global_229_double_1E00 && global_191_double_520>local_10_double - global_105_double_260 * global_229_double_1E00 )
            {
              global_191_double_520 = global_103_double_250 * global_229_double_1E00 + MarketInfo(global_336_string_3130,MODE_ASK) ;
              local_29_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[global_328_int_3100],2) ;
              if ( local_29_double<local_12_double && local_29_double>=MarketInfo(global_336_string_3130,MODE_LOTSTEP) )
              {
-               OrderClose(local_9_long,local_29_double,MarketInfo(global_336_string_3130,MODE_BID),(int)global_38_double_C0,Red); 
+               OrderClose(local_9_long,local_29_double,MarketInfo(global_336_string_3130,MODE_BID),(int)g_slippagePts,Red); 
                return(true); 
              }
              local_2_bool = true ;
@@ -7041,9 +7096,9 @@ g_initialLegacyRiskLotPending=true;
              global_191_double_520 = global_241_double_1E78_si99[global_328_int_3100] ;
              local_2_bool = true ;
            }
-           if ( global_113_double_2A8>0.0 && global_63_int_140 == 3 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_113_double_2A8 * global_229_double_1E00 && local_10_double - global_114_double_2B0 * global_229_double_1E00<local_7_double - global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_114_double_2B0 * global_229_double_1E00 - global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(local_10_double - global_114_double_2B0 * global_229_double_1E00,global_190_int_518)<global_191_double_520 )
+           if ( global_113_double_2A8>0.0 && g_profitCloseMode == 3 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_113_double_2A8 * global_229_double_1E00 && local_10_double - g_beExtraPips * global_229_double_1E00<local_7_double - global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - g_beExtraPips * global_229_double_1E00 - global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(local_10_double - g_beExtraPips * global_229_double_1E00,global_190_int_518)<global_191_double_520 )
            {
-             global_191_double_520 = NormalizeDouble(local_10_double - global_114_double_2B0 * global_229_double_1E00,global_190_int_518) ;
+             global_191_double_520 = NormalizeDouble(local_10_double - g_beExtraPips * global_229_double_1E00,global_190_int_518) ;
              global_230_int_1E08 = OrderModify(local_9_long,local_10_double,global_191_double_520,local_8_double,0,0xFFFFFFFF) ;
              if ( global_230_int_1E08 <= 0 )
              {
@@ -7051,12 +7106,12 @@ g_initialLegacyRiskLotPending=true;
              }
              local_2_bool = true ;
            }
-           if ( global_113_double_2A8>0.0 && global_63_int_140 == 2 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_113_double_2A8 * global_229_double_1E00 && local_10_double - global_114_double_2B0 * global_229_double_1E00<global_191_double_520 - global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_114_double_2B0 * global_229_double_1E00 - global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 )
+           if ( global_113_double_2A8>0.0 && g_profitCloseMode == 2 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - global_113_double_2A8 * global_229_double_1E00 && local_10_double - g_beExtraPips * global_229_double_1E00<global_191_double_520 - global_337_double_3140 && MarketInfo(global_336_string_3130,MODE_ASK)<local_10_double - g_beExtraPips * global_229_double_1E00 - global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 )
            {
-             global_191_double_520 = local_10_double - global_114_double_2B0 * global_229_double_1E00 ;
+             global_191_double_520 = local_10_double - g_beExtraPips * global_229_double_1E00 ;
              local_2_bool = true ;
            }
-           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && global_191_double_520 - global_131_double_328 * global_229_double_1E00>=local_5_double - global_1_double_0 - global_132_double_330 * global_229_double_1E00) ) )
+           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && global_191_double_520 - global_131_double_328 * global_229_double_1E00>=local_5_double - g_curSpread - global_132_double_330 * global_229_double_1E00) ) )
            {
              global_250_int_2518 ++;
              if ( MarketInfo(global_336_string_3130,MODE_ASK)<global_191_double_520 - global_131_double_328 * global_229_double_1E00 - global_221_double_1A80 && MarketInfo(global_336_string_3130,MODE_ASK)>local_8_double + global_309_double_2898 && ( global_129_double_318==0.0 || MarketInfo(global_336_string_3130,MODE_ASK)<local_5_double - global_247_double_2500 * global_229_double_1E00 ) && global_250_int_2518 >= global_130_int_320 )
@@ -7069,7 +7124,7 @@ g_initialLegacyRiskLotPending=true;
            if ( MarketInfo(global_336_string_3130,MODE_ASK)>=global_191_double_520 )
            {
              RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)global_1_double_0,0xFFFFFFFF); 
+             OrderClose(local_9_long,local_12_double,MarketInfo(global_336_string_3130,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
            if ( NormalizeDouble(local_4_double,global_190_int_518)!=NormalizeDouble(global_191_double_520,global_190_int_518) )
@@ -7679,7 +7734,7 @@ g_initialLegacyRiskLotPending=true;
      local_8_datetime = OrderExpiration() ;
      local_9_string = OrderComment() ;
      OrderDelete(local_5_long,Red); 
-     local_10_int = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_7_double,(int)global_38_double_C0,local_4_double,local_6_double,local_9_string,global_93_int_1F0,local_8_datetime,Green) ;
+     local_10_int = OrderSend(global_336_string_3130,4,global_223_double_1AC4_si99[global_328_int_3100],local_7_double,(int)g_slippagePts,local_4_double,local_6_double,local_9_string,global_93_int_1F0,local_8_datetime,Green) ;
      temp_long_1 = local_10_int;
      temp_long_2 = local_5_long;
      for (temp_int_3 = 0 ; temp_int_3 < 100 ; temp_int_3=temp_int_3 + 1)
@@ -7700,7 +7755,7 @@ g_initialLegacyRiskLotPending=true;
    local_15_datetime = OrderExpiration() ;
    local_16_string = OrderComment() ;
    OrderDelete(local_12_long,Red); 
-   local_17_int = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_14_double,(int)global_38_double_C0,local_11_double,local_13_double,local_16_string,global_93_int_1F0,local_15_datetime,Green) ;
+   local_17_int = OrderSend(global_336_string_3130,5,global_223_double_1AC4_si99[global_328_int_3100],local_14_double,(int)g_slippagePts,local_11_double,local_13_double,local_16_string,global_93_int_1F0,local_15_datetime,Green) ;
    temp_long_4 = local_17_int;
    temp_long_5 = local_12_long;
    for (temp_int_6 = 0 ; temp_int_6 < 100 ; temp_int_6=temp_int_6 + 1)
@@ -7807,31 +7862,31 @@ g_initialLegacyRiskLotPending=true;
  ObjectSetInteger(0,"lines",OBJPROP_CORNER,local_11_int); 
  ObjectSetInteger(0,"lines",OBJPROP_YDISTANCE,long(local_13_int + InfoPanelSizeAdjust * 44.0 + local_8_int)); 
  ObjectSetInteger(0,"lines",OBJPROP_XDISTANCE,local_12_int + local_7_int); 
- if ( global_19_int_9C == 1 )
+ if ( g_tradeFrequencyMode == 1 )
  {
    local_17_string = "conservative" ;
  }
  else
  {
-   if ( global_19_int_9C == 2 )
+   if ( g_tradeFrequencyMode == 2 )
    {
      local_17_string = "moderate" ;
    }
    else
    {
-     if ( global_19_int_9C == 3 )
+     if ( g_tradeFrequencyMode == 3 )
      {
        local_17_string = "intense" ;
      }
      else
      {
-       if ( global_19_int_9C == 4 )
+       if ( g_tradeFrequencyMode == 4 )
        {
          local_17_string = "extreme" ;
        }
        else
        {
-         if ( global_19_int_9C == 0 )
+         if ( g_tradeFrequencyMode == 0 )
          {
            local_17_string = "extreme conservative" ;
          }
@@ -8168,31 +8223,31 @@ g_initialLegacyRiskLotPending=true;
  ObjectSetString(0,"lineopl" + IntegerToString(0,0,32),OBJPROP_TEXT,"Open P/L: " + DoubleToString(temp_double_1,2)); 
  ObjectSetString(0,"linehb" + IntegerToString(0,0,32),OBJPROP_TEXT,"Higher Balance: " + DoubleToString(global_402_double_6AD8,2));
  ObjectSetString(0,"linea" + IntegerToString(0,0,32),OBJPROP_TEXT,"Account Balance: " + DoubleToString(AccountBalance(),2)); 
- if ( global_19_int_9C == 1 )
+ if ( g_tradeFrequencyMode == 1 )
  {
    local_1_string = "conservative" ;
  }
  else
  {
-   if ( global_19_int_9C == 2 )
+   if ( g_tradeFrequencyMode == 2 )
    {
      local_1_string = "moderate" ;
    }
    else
    {
-     if ( global_19_int_9C == 3 )
+     if ( g_tradeFrequencyMode == 3 )
      {
        local_1_string = "intense" ;
      }
      else
      {
-       if ( global_19_int_9C == 4 )
+       if ( g_tradeFrequencyMode == 4 )
        {
          local_1_string = "extreme" ;
        }
        else
        {
-         if ( global_19_int_9C == 0 )
+         if ( g_tradeFrequencyMode == 0 )
          {
            local_1_string = "extreme conservative" ;
          }
@@ -9352,14 +9407,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 16 ;
- global_4_int_14 = (int)PERIOD_D1 ;
- global_71_int_174 = (int)PERIOD_D1 ;
- global_72_int_178 = (int)PERIOD_M15 ;
+ g_atrPeriod = 16 ;
+ g_atrTimeframe = (int)PERIOD_D1 ;
+ g_entryTfPeriod = (int)PERIOD_D1 ;
+ g_signalTfPeriod = (int)PERIOD_M15 ;
  global_73_int_17C = 24 ;
  global_74_int_180 = 3 ;
  global_77_int_188 = 105 ;
- global_80_double_198 = 45.0 ;
+ g_entryBreakoutPips = 45.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -275.0;
  if ( Randomization>0.0 )
@@ -9370,7 +9425,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -160.0;
  if ( Randomization>0.0 )
  {
@@ -9380,10 +9435,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 5 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 5 ;
  global_88_double_1D0 = 30.0 ;
- global_89_int_1D8 = 35 ;
+ g_pendingExpiryHours = 35 ;
  global_99_int_22C = 1 ;
  temp_double_3 = AdjustSL + 6100.0;
  if ( Randomization>0.0 )
@@ -9404,7 +9459,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_5 = 0.0;
  }
- global_101_double_238 = temp_double_4 + temp_double_5 ;
+ g_takeProfitPips = temp_double_4 + temp_double_5 ;
  temp_double_5 = AdjustTrailSL + 1800.0;
  if ( Randomization>0.0 )
  {
@@ -9423,7 +9478,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_7 = 0.0;
  }
- global_104_double_258 = temp_double_7 + 1800.0 ;
+ g_trailActivationPips = temp_double_7 + 1800.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9453,7 +9508,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_10 = 0.0;
  }
- global_108_double_278 = temp_double_9 + temp_double_10 ;
+ g_trailTpPips = temp_double_9 + temp_double_10 ;
  if ( Randomization>0.0 )
  {
    temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9472,14 +9527,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_12 = 0.0;
  }
- global_114_double_2B0 = temp_double_11 + temp_double_12 ;
+ g_beExtraPips = temp_double_11 + temp_double_12 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 14 ;
  global_120_int_2D4 = 12 ;
  global_121_int_2D8 = 300 ;
- global_123_double_2E0 = 22.0 ;
- global_87_int_1CC = 5 ;
+ g_hlOffsetPips = 22.0 ;
+ g_maxOpenTradesPerSide = 5 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_1";
@@ -9508,14 +9563,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_13;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 16 ;
- global_4_int_14 = (int)PERIOD_D1 ;
- global_71_int_174 = (int)PERIOD_H4 ;
- global_72_int_178 = (int)PERIOD_H1 ;
+ g_atrPeriod = 16 ;
+ g_atrTimeframe = (int)PERIOD_D1 ;
+ g_entryTfPeriod = (int)PERIOD_H4 ;
+ g_signalTfPeriod = (int)PERIOD_H1 ;
  global_73_int_17C = 12 ;
  global_74_int_180 = 8 ;
  global_77_int_188 = 90 ;
- global_80_double_198 = 1050.0 ;
+ g_entryBreakoutPips = 1050.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -40.0;
  if ( Randomization>0.0 )
@@ -9526,7 +9581,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -100.0;
  if ( Randomization>0.0 )
  {
@@ -9536,10 +9591,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 2 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 2 ;
  global_88_double_1D0 = 130.0 ;
- global_89_int_1D8 = 192 ;
+ g_pendingExpiryHours = 192 ;
  global_99_int_22C = 5 ;
  if ( !(UseHL_TrailingSL) )
  {
@@ -9576,7 +9631,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_6 = 0.0;
  }
- global_101_double_238 = temp_double_5 + temp_double_6 ;
+ g_takeProfitPips = temp_double_5 + temp_double_6 ;
  temp_double_6 = AdjustTrailSL + 1300.0;
  if ( Randomization>0.0 )
  {
@@ -9595,7 +9650,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_8 = 0.0;
  }
- global_104_double_258 = temp_double_8 + 1450.0 ;
+ g_trailActivationPips = temp_double_8 + 1450.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9625,7 +9680,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_11 = 0.0;
  }
- global_108_double_278 = temp_double_10 + temp_double_11 ;
+ g_trailTpPips = temp_double_10 + temp_double_11 ;
  if ( Randomization>0.0 )
  {
    temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9644,14 +9699,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_13 = 0.0;
  }
- global_114_double_2B0 = temp_double_12 + temp_double_13 ;
+ g_beExtraPips = temp_double_12 + temp_double_13 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 14 ;
  global_120_int_2D4 = 6 ;
  global_121_int_2D8 = 400 ;
- global_123_double_2E0 = 32.0 ;
- global_87_int_1CC = 99 ;
+ g_hlOffsetPips = 32.0 ;
+ g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_4";
@@ -9682,14 +9737,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 41 ;
- global_4_int_14 = (int)PERIOD_D1 ;
- global_71_int_174 = (int)PERIOD_D1 ;
- global_72_int_178 = (int)PERIOD_H1 ;
+ g_atrPeriod = 41 ;
+ g_atrTimeframe = (int)PERIOD_D1 ;
+ g_entryTfPeriod = (int)PERIOD_D1 ;
+ g_signalTfPeriod = (int)PERIOD_H1 ;
  global_73_int_17C = 15 ;
  global_74_int_180 = 3 ;
  global_77_int_188 = 230 ;
- global_80_double_198 = 550.0 ;
+ g_entryBreakoutPips = 550.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -170.0;
  if ( Randomization>0.0 )
@@ -9700,7 +9755,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -70.0;
  if ( Randomization>0.0 )
  {
@@ -9710,10 +9765,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 1 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 1 ;
  global_88_double_1D0 = 480.0 ;
- global_89_int_1D8 = 480 ;
+ g_pendingExpiryHours = 480 ;
  global_99_int_22C = 1 ;
  temp_double_3 = AdjustSL + 1000.0;
  if ( Randomization>0.0 )
@@ -9734,7 +9789,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_5 = 0.0;
  }
- global_101_double_238 = temp_double_4 + temp_double_5 ;
+ g_takeProfitPips = temp_double_4 + temp_double_5 ;
  temp_double_5 = AdjustTrailSL + 450.0;
  if ( Randomization>0.0 )
  {
@@ -9753,7 +9808,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_7 = 0.0;
  }
- global_104_double_258 = temp_double_7 + 1400.0 ;
+ g_trailActivationPips = temp_double_7 + 1400.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9783,7 +9838,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_10 = 0.0;
  }
- global_108_double_278 = temp_double_9 + temp_double_10 ;
+ g_trailTpPips = temp_double_9 + temp_double_10 ;
  if ( Randomization>0.0 )
  {
    temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9802,14 +9857,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_12 = 0.0;
  }
- global_114_double_2B0 = temp_double_11 + temp_double_12 ;
+ g_beExtraPips = temp_double_11 + temp_double_12 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 1 ;
  global_120_int_2D4 = 5 ;
  global_121_int_2D8 = 700 ;
- global_123_double_2E0 = 22.0 ;
- global_87_int_1CC = 99 ;
+ g_hlOffsetPips = 22.0 ;
+ g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_2";
@@ -9838,14 +9893,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_13;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 5 ;
- global_4_int_14 = (int)PERIOD_D1 ;
- global_71_int_174 = (int)PERIOD_D1 ;
- global_72_int_178 = (int)PERIOD_H1 ;
+ g_atrPeriod = 5 ;
+ g_atrTimeframe = (int)PERIOD_D1 ;
+ g_entryTfPeriod = (int)PERIOD_D1 ;
+ g_signalTfPeriod = (int)PERIOD_H1 ;
  global_73_int_17C = 7 ;
  global_74_int_180 = 2 ;
  global_77_int_188 = 20 ;
- global_80_double_198 = 250.0 ;
+ g_entryBreakoutPips = 250.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -130.0;
  if ( Randomization>0.0 )
@@ -9856,7 +9911,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -120.0;
  if ( Randomization>0.0 )
  {
@@ -9866,10 +9921,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 1 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 1 ;
  global_88_double_1D0 = 980.0 ;
- global_89_int_1D8 = 432 ;
+ g_pendingExpiryHours = 432 ;
  global_99_int_22C = 1 ;
  if ( !(UseHL_TrailingSL) )
  {
@@ -9906,7 +9961,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_6 = 0.0;
  }
- global_101_double_238 = temp_double_5 + temp_double_6 ;
+ g_takeProfitPips = temp_double_5 + temp_double_6 ;
  temp_double_6 = AdjustTrailSL + 500.0;
  if ( Randomization>0.0 )
  {
@@ -9925,7 +9980,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_8 = 0.0;
  }
- global_104_double_258 = temp_double_8 + 400.0 ;
+ g_trailActivationPips = temp_double_8 + 400.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9953,7 +10008,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_11 = 0.0;
  }
- global_108_double_278 = temp_double_10 + temp_double_11 ;
+ g_trailTpPips = temp_double_10 + temp_double_11 ;
  global_106_double_268 = 0.1 ;
  global_107_double_270 = 0.0 ;
  if ( Randomization>0.0 )
@@ -9974,14 +10029,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_13 = 0.0;
  }
- global_114_double_2B0 = temp_double_12 + temp_double_13 ;
+ g_beExtraPips = temp_double_12 + temp_double_13 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 7 ;
  global_120_int_2D4 = 4 ;
  global_121_int_2D8 = 100 ;
- global_123_double_2E0 = 0.0 ;
- global_87_int_1CC = 99 ;
+ g_hlOffsetPips = 0.0 ;
+ g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_3";
@@ -10012,14 +10067,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 20 ;
- global_4_int_14 = (int)PERIOD_D1 ;
- global_71_int_174 = (int)PERIOD_H1 ;
- global_72_int_178 = (int)PERIOD_M5 ;
+ g_atrPeriod = 20 ;
+ g_atrTimeframe = (int)PERIOD_D1 ;
+ g_entryTfPeriod = (int)PERIOD_H1 ;
+ g_signalTfPeriod = (int)PERIOD_M5 ;
  global_73_int_17C = 26 ;
  global_74_int_180 = 24 ;
  global_77_int_188 = 140 ;
- global_80_double_198 = 120.0 ;
+ g_entryBreakoutPips = 120.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -115.0;
  if ( Randomization>0.0 )
@@ -10030,7 +10085,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -145.0;
  if ( Randomization>0.0 )
  {
@@ -10040,10 +10095,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 5 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 5 ;
  global_88_double_1D0 = 55.0 ;
- global_89_int_1D8 = 20 ;
+ g_pendingExpiryHours = 20 ;
  global_99_int_22C = 1 ;
  temp_double_3 = AdjustSL + 10100.0;
  if ( Randomization>0.0 )
@@ -10064,7 +10119,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_5 = 0.0;
  }
- global_101_double_238 = temp_double_4 + temp_double_5 ;
+ g_takeProfitPips = temp_double_4 + temp_double_5 ;
  temp_double_5 = AdjustTrailSL + 500.0;
  if ( Randomization>0.0 )
  {
@@ -10083,7 +10138,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_7 = 0.0;
  }
- global_104_double_258 = temp_double_7 + 1200.0 ;
+ g_trailActivationPips = temp_double_7 + 1200.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10113,7 +10168,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_10 = 0.0;
  }
- global_108_double_278 = temp_double_9 + temp_double_10 ;
+ g_trailTpPips = temp_double_9 + temp_double_10 ;
  if ( Randomization>0.0 )
  {
    temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10132,14 +10187,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_12 = 0.0;
  }
- global_114_double_2B0 = temp_double_11 + temp_double_12 ;
+ g_beExtraPips = temp_double_11 + temp_double_12 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 0 ;
  global_120_int_2D4 = 0 ;
  global_121_int_2D8 = 100 ;
- global_123_double_2E0 = 0.0 ;
- global_87_int_1CC = 5 ;
+ g_hlOffsetPips = 0.0 ;
+ g_maxOpenTradesPerSide = 5 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_6";
@@ -10167,14 +10222,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 24 ;
- global_4_int_14 = (int)PERIOD_D1 ;
- global_71_int_174 = (int)PERIOD_H1 ;
- global_72_int_178 = (int)PERIOD_M15 ;
+ g_atrPeriod = 24 ;
+ g_atrTimeframe = (int)PERIOD_D1 ;
+ g_entryTfPeriod = (int)PERIOD_H1 ;
+ g_signalTfPeriod = (int)PERIOD_M15 ;
  global_73_int_17C = 30 ;
  global_74_int_180 = 19 ;
  global_77_int_188 = 110 ;
- global_80_double_198 = 160.0 ;
+ g_entryBreakoutPips = 160.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -120.0;
  if ( Randomization>0.0 )
@@ -10185,7 +10240,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -110.0;
  if ( Randomization>0.0 )
  {
@@ -10195,10 +10250,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 3 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 3 ;
  global_88_double_1D0 = 55.0 ;
- global_89_int_1D8 = 30 ;
+ g_pendingExpiryHours = 30 ;
  global_99_int_22C = 1 ;
  temp_double_3 = AdjustSL + 5300.0;
  if ( Randomization>0.0 )
@@ -10219,7 +10274,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_5 = 0.0;
  }
- global_101_double_238 = temp_double_4 + temp_double_5 ;
+ g_takeProfitPips = temp_double_4 + temp_double_5 ;
  temp_double_5 = AdjustTrailSL + 495.0;
  if ( Randomization>0.0 )
  {
@@ -10238,7 +10293,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_7 = 0.0;
  }
- global_104_double_258 = temp_double_7 + 400.0 ;
+ g_trailActivationPips = temp_double_7 + 400.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10268,7 +10323,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_10 = 0.0;
  }
- global_108_double_278 = temp_double_9 + temp_double_10 ;
+ g_trailTpPips = temp_double_9 + temp_double_10 ;
  if ( Randomization>0.0 )
  {
    temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10287,14 +10342,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_12 = 0.0;
  }
- global_114_double_2B0 = temp_double_11 + temp_double_12 ;
+ g_beExtraPips = temp_double_11 + temp_double_12 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 0 ;
  global_120_int_2D4 = 0 ;
  global_121_int_2D8 = 100 ;
- global_123_double_2E0 = 0.0 ;
- global_87_int_1CC = 99 ;
+ g_hlOffsetPips = 0.0 ;
+ g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_5";
@@ -10322,14 +10377,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 12 ;
- global_4_int_14 = (int)PERIOD_D1 ;
- global_71_int_174 = (int)PERIOD_H1 ;
- global_72_int_178 = (int)PERIOD_M15 ;
+ g_atrPeriod = 12 ;
+ g_atrTimeframe = (int)PERIOD_D1 ;
+ g_entryTfPeriod = (int)PERIOD_H1 ;
+ g_signalTfPeriod = (int)PERIOD_M15 ;
  global_73_int_17C = 7 ;
  global_74_int_180 = 5 ;
  global_77_int_188 = 200 ;
- global_80_double_198 = 40.0 ;
+ g_entryBreakoutPips = 40.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -150.0;
  if ( Randomization>0.0 )
@@ -10340,7 +10395,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -145.0;
  if ( Randomization>0.0 )
  {
@@ -10350,10 +10405,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 3 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 3 ;
  global_88_double_1D0 = 5.0 ;
- global_89_int_1D8 = 15 ;
+ g_pendingExpiryHours = 15 ;
  global_99_int_22C = 1 ;
  temp_double_3 = AdjustSL + 3900.0;
  if ( Randomization>0.0 )
@@ -10374,7 +10429,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_5 = 0.0;
  }
- global_101_double_238 = temp_double_4 + temp_double_5 ;
+ g_takeProfitPips = temp_double_4 + temp_double_5 ;
  temp_double_5 = AdjustTrailSL + 445.0;
  if ( Randomization>0.0 )
  {
@@ -10393,7 +10448,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_7 = 0.0;
  }
- global_104_double_258 = temp_double_7 + 355.0 ;
+ g_trailActivationPips = temp_double_7 + 355.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10423,7 +10478,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_10 = 0.0;
  }
- global_108_double_278 = temp_double_9 + temp_double_10 ;
+ g_trailTpPips = temp_double_9 + temp_double_10 ;
  if ( Randomization>0.0 )
  {
    temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10442,14 +10497,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_12 = 0.0;
  }
- global_114_double_2B0 = temp_double_11 + temp_double_12 ;
+ g_beExtraPips = temp_double_11 + temp_double_12 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 1 ;
  global_120_int_2D4 = 9 ;
  global_121_int_2D8 = 1500 ;
- global_123_double_2E0 = 46.0 ;
- global_87_int_1CC = 99 ;
+ g_hlOffsetPips = 46.0 ;
+ g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_9";
@@ -10477,14 +10532,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 28 ;
- global_4_int_14 = (int)PERIOD_H1 ;
- global_71_int_174 = (int)PERIOD_H1 ;
- global_72_int_178 = (int)PERIOD_M15 ;
+ g_atrPeriod = 28 ;
+ g_atrTimeframe = (int)PERIOD_H1 ;
+ g_entryTfPeriod = (int)PERIOD_H1 ;
+ g_signalTfPeriod = (int)PERIOD_M15 ;
  global_73_int_17C = 25 ;
  global_74_int_180 = 23 ;
  global_77_int_188 = 145 ;
- global_80_double_198 = 10.0 ;
+ g_entryBreakoutPips = 10.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -10.0;
  if ( Randomization>0.0 )
@@ -10495,7 +10550,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -145.0;
  if ( Randomization>0.0 )
  {
@@ -10505,10 +10560,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 5 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 5 ;
  global_88_double_1D0 = 90.0 ;
- global_89_int_1D8 = 60 ;
+ g_pendingExpiryHours = 60 ;
  global_99_int_22C = 1 ;
  temp_double_3 = AdjustSL + 2250.0;
  if ( Randomization>0.0 )
@@ -10529,7 +10584,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_5 = 0.0;
  }
- global_101_double_238 = temp_double_4 + temp_double_5 ;
+ g_takeProfitPips = temp_double_4 + temp_double_5 ;
  temp_double_5 = AdjustTrailSL + 450.0;
  if ( Randomization>0.0 )
  {
@@ -10548,7 +10603,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_7 = 0.0;
  }
- global_104_double_258 = temp_double_7 + 900.0 ;
+ g_trailActivationPips = temp_double_7 + 900.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10578,7 +10633,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_10 = 0.0;
  }
- global_108_double_278 = temp_double_9 + temp_double_10 ;
+ g_trailTpPips = temp_double_9 + temp_double_10 ;
  if ( Randomization>0.0 )
  {
    temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10597,14 +10652,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_12 = 0.0;
  }
- global_114_double_2B0 = temp_double_11 + temp_double_12 ;
+ g_beExtraPips = temp_double_11 + temp_double_12 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 12 ;
  global_120_int_2D4 = 17 ;
  global_121_int_2D8 = 1000 ;
- global_123_double_2E0 = 45.0 ;
- global_87_int_1CC = 5 ;
+ g_hlOffsetPips = 45.0 ;
+ g_maxOpenTradesPerSide = 5 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_7";
@@ -10632,14 +10687,14 @@ g_initialLegacyRiskLotPending=true;
  double     temp_double_12;
 
  // Recovered from original MetaTester JIT dump: internal ATR readiness gate.
- global_3_int_10 = 11 ;
- global_4_int_14 = (int)PERIOD_D1 ;
- global_71_int_174 = (int)PERIOD_H1 ;
- global_72_int_178 = (int)PERIOD_M15 ;
+ g_atrPeriod = 11 ;
+ g_atrTimeframe = (int)PERIOD_D1 ;
+ g_entryTfPeriod = (int)PERIOD_H1 ;
+ g_signalTfPeriod = (int)PERIOD_M15 ;
  global_73_int_17C = 26 ;
  global_74_int_180 = 20 ;
  global_77_int_188 = 235 ;
- global_80_double_198 = 80.0 ;
+ g_entryBreakoutPips = 80.0 ;
  global_81_double_1A0 = 0.0 ;
  temp_double_1 = AdjustEntry + -140.0;
  if ( Randomization>0.0 )
@@ -10650,7 +10705,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_2 = 0.0;
  }
- global_83_double_1B0 = temp_double_1 + temp_double_2 ;
+ g_buyEntryOffsetPips = temp_double_1 + temp_double_2 ;
  temp_double_2 = AdjustEntry + -170.0;
  if ( Randomization>0.0 )
  {
@@ -10660,10 +10715,10 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_3 = 0.0;
  }
- global_84_double_1B8 = temp_double_2 + temp_double_3 ;
- global_86_int_1C8 = 5 ;
+ g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
+ g_maxPendingOrders = 5 ;
  global_88_double_1D0 = 5.0 ;
- global_89_int_1D8 = 55 ;
+ g_pendingExpiryHours = 55 ;
  global_99_int_22C = 1 ;
  temp_double_3 = AdjustSL + 1900.0;
  if ( Randomization>0.0 )
@@ -10684,7 +10739,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_5 = 0.0;
  }
- global_101_double_238 = temp_double_4 + temp_double_5 ;
+ g_takeProfitPips = temp_double_4 + temp_double_5 ;
  temp_double_5 = AdjustTrailSL + 1250.0;
  if ( Randomization>0.0 )
  {
@@ -10703,7 +10758,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_7 = 0.0;
  }
- global_104_double_258 = temp_double_7 + 650.0 ;
+ g_trailActivationPips = temp_double_7 + 650.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10733,7 +10788,7 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_10 = 0.0;
  }
- global_108_double_278 = temp_double_9 + temp_double_10 ;
+ g_trailTpPips = temp_double_9 + temp_double_10 ;
  if ( Randomization>0.0 )
  {
    temp_double_11 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10752,14 +10807,14 @@ g_initialLegacyRiskLotPending=true;
  {
    temp_double_12 = 0.0;
  }
- global_114_double_2B0 = temp_double_11 + temp_double_12 ;
+ g_beExtraPips = temp_double_11 + temp_double_12 ;
  global_117_int_2C8 = 60 ;
  global_118_int_2CC = 50 ;
  global_119_int_2D0 = 15 ;
  global_120_int_2D4 = 3 ;
  global_121_int_2D8 = 1200 ;
- global_123_double_2E0 = 16.0 ;
- global_87_int_1CC = 20 ;
+ g_hlOffsetPips = 16.0 ;
+ g_maxOpenTradesPerSide = 20 ;
  if ( !(RemoveCommentSuffix) )
  {
    global_334_string_3120=ST1_Comment + "_XAUUSD_8";

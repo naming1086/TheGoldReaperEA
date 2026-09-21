@@ -1469,10 +1469,16 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 //   验证：归一化 diff 集合包含检查——336/360 条归一化语句逐字保留，
 //   24 条未匹配行全部为预期等价变换（声明合并/case 前缀/包装行替代/条件反转）；
 //   括号平衡 1535/1535，无语句丢失。行为等价性最终以 Strategy Tester 差分回测为准。
+//
+// ---- 批次6 写而不读死存储清理（44 个变量 / 97 行，2026-09，纯删除）----
+//   44 个变量（42 个初判 + global_272/273 二级级联）在代码中只被赋值、从未被读：
+//   97 行 = 44 条声明 + 53 条死存储赋值。所有赋值 RHS 均为无副作用纯表达式
+//   （常量/变量读/iBars/iTime/TimeCurrent/AccountBalance/iFractals 查询），
+//   删除为行为中性。验证：git diff 纯删除 97 行、零新增、零意外行；
+//   删后复扫 writeOnly=0。剩余 105 个 global_* 声明全部有真实读点。
 // ============================================================================
 
   double    g_curSpread = 0.0;
-  double    global_2_double_8 = 0.0;
   int       g_atrPeriod = 30;
   int       g_atrTimeframe = (int)PERIOD_D1;
   int       g_atrHandle = 0;
@@ -1575,7 +1581,6 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   int       global_133_int_338 = 0;
   double    global_134_double_340 = 0.0;
   bool      global_135_bool_348 = false;
-  bool      global_139_bool_3EC = false;
   double    g_lotChangePctAlert = 5.0;
   double    g_maxLotCap = 99.0;
   int       global_145_int_40C = 600;
@@ -1629,76 +1634,37 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   double    g_stopOrderTicketPrice[100][2];
   int       g_virtSLCacheSize = 20;
   int       global_200_int_16B4 = 100;
-  double    global_201_double_16B8 = 0.0;
-  double    global_202_double_16C0 = 0.0;
-  double    global_209_double_16F0 = 0.0;
-  double    global_210_double_16F8 = 0.0;
   bool      g_maFilterEnabled = false;
   int       global_214_int_1714 = 1;
   datetime  global_215_datetime_174C_si99[99];
-  long      global_216_long_1A68 = 0;
   int       g_maSlowPeriod = 370;
   bool      global_218_bool_1A74 = true;
   double    g_minStopDistPrice = 4.0;
   double    global_223_double_1AC4_si99[99];
   double    g_pipSize = 0.0;
   long      global_230_int_1E08 = 0; // ticket OrderSend la 64-bit; bool OrderModify van gan duoc 0/1
-  bool      global_231_bool_1E0C = false;
   int       g_pendingExpirySecs = 0;
-  bool      global_238_bool_1E40 = false;
-  bool      global_239_bool_1E41 = false;
-  bool      global_240_bool_1E42 = false;
   double    g_sellTrailStopLevel[99];
   double    g_buyTrailStopLevel[99];
   double    g_nextOrderAnchorPrice = 0.0;
   int       global_250_int_2518 = 0;
-  double    global_251_double_2520 = 0.0;
   string    global_252_string_2528;
   string    global_253_string_2538;
   string    global_254_string_2548;
   string    global_255_string_2558;
-  bool      global_257_bool_2565 = false;
-  int       global_258_int_2568 = 0;
-  double    global_260_double_2570 = 0.0;
   double    g_entryLowPrice = 0.0;
   double    g_entryHighPrice = 0.0;
-  double    global_263_double_2588 = 0.0;
-  double    global_264_double_2590 = 0.0;
-  int       global_265_int_2598 = 0;
-  int       global_266_int_259C = 0;
   int       g_lastHour = 0;
   double    g_maFilterFast = 0.0;
   double    g_maFilterSlow = 0.0;
-  double    global_270_double_25B8 = 0.0;
-  double    global_271_double_25C0 = 0.0;
-  double    global_272_double_25C8 = 0.0;
-  double    global_273_double_25D0 = 0.0;
   int       g_tradeErrorCount = 0;
-  double    global_275_double_25E0 = 0.0;
-  bool      global_278_bool_25F8 = false;
-  bool      global_279_bool_25F9 = false;
-  bool      global_280_bool_25FA = false;
-  bool      global_281_bool_25FB = false;
-  int       global_289_int_2628 = 0;
-  int       global_290_int_262C = 0;
-  int       global_297_int_2848 = 0;
-  int       global_298_int_284C = 0;
   string    g_symbolSuffix;
-  double    global_300_double_2860 = 0.0;
-  double    global_301_double_2868 = 0.0;
   datetime  g_pendingOrderExpiry = 0;
   bool      g_marketClosedFlag = false;
   int       global_304_int_287C = 0;
   bool      g_fridayStopDone = false;
-  int       global_306_int_2884 = 0;
-  double    global_307_double_2888 = 0.0;
   double    global_309_double_2898 = 0.0;
-  double    global_310_double_28A0 = 0.0;
-  double    global_311_double_28A8 = 0.0;
   bool      g_isDemoAccount = false;
-  datetime  global_313_datetime_28B8 = 0;
-  datetime  global_314_datetime_28C0 = 0;
-  datetime  global_315_datetime_28C8 = 0;
   double    g_lastLotResizeBalance = 0.0;
   datetime  g_lastTrailOrderTime = 0;
   bool      g_nfpWindowActive = false;
@@ -1725,12 +1691,9 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   double    g_recentPLbyStrategy[99];
   double    global_354_double_5730_si99[99];
   int       global_356_int_5B14_si99[99];
-  double    global_358_double_5CA8 = 5.0;
-  double    global_359_double_5CB0 = 10.0;
   int       g_maxPanelObjects = 0;
   double    global_361_double_5CC0 = 0.0;
   double    g_panelCellHeight = 0.0;
-  int       global_363_int_5CD0 = 0;
   uint      global_364_uint_5CD4 = LightSteelBlue;
   int       g_panelFontSize = 7;
   double    g_panelWidthScale = 0.45;
@@ -2363,13 +2326,10 @@ g_initialLegacyRiskLotPending=true;
  global_382_bool_5D98 = false ;
  global_379_datetime_5D88 = 0 ;
  g_propfirmDailyDDOn = true ;
- global_358_double_5CA8 = 5.0 ;
- global_359_double_5CB0 = 10.0 ;
  global_93_int_1F0 = ST1_MagicNumber ;
  g_maxPanelObjects = 300 ;
  global_361_double_5CC0 = g_panelFontSize * 25 * g_panelWidthScale * InfoPanelSizeAdjust ;
  g_panelCellHeight = g_panelFontSize * 3.5 * global_377_double_5D78 * InfoPanelSizeAdjust ;
- global_363_int_5CD0 = 7 ;
  g_currentStrategyIndex = 0 ;
  g_chartSymbol = Symbol() ;
  g_symbolPoint = SymbolInfoDouble(g_chartSymbol,16) ;
@@ -2391,7 +2351,6 @@ g_initialLegacyRiskLotPending=true;
  {
    g_useFridayStop = true ;
  }
- global_251_double_2520 = (double)TimeCurrent() ;
  g_curSpread = MarketInfo(g_chartSymbol,MODE_ASK) - MarketInfo(g_chartSymbol,MODE_BID) ;
  global_223_double_1AC4_si99[g_currentStrategyIndex] = NormalizeDouble(MathFloor(g_startLots_rw * 100.0) / 100.0,2);
  if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
@@ -2410,12 +2369,10 @@ g_initialLegacyRiskLotPending=true;
  {
    global_223_double_1AC4_si99[g_currentStrategyIndex] = MarketInfo(g_chartSymbol,MODE_MAXLOT);
  }
- global_306_int_2884 = iBars(g_chartSymbol,MT4Period(PERIOD_CURRENT)) ;
  if ( global_131_double_328 * g_pipSize<g_symbolPoint )
  {
    global_131_double_328 = g_symbolPoint / g_pipSize ;
  }
- global_307_double_2888 = AccountBalance() ;
  g_minStopDistPrice = MarketInfo(g_chartSymbol,MODE_STOPLEVEL) * g_symbolPoint ;
  global_309_double_2898 = MarketInfo(g_chartSymbol,MODE_FREEZELEVEL) * g_symbolPoint ;
  g_symbolSuffix = StringSubstr(Symbol(),6,10) ;
@@ -2507,26 +2464,19 @@ g_initialLegacyRiskLotPending=true;
    g_pendingOrderExpiry = 0 ;
  }
  g_nfpWindowActive = false ;
- global_260_double_2570 = Seconds() ;
  g_lastTrailOrderTime = TimeCurrent() ;
  global_194_bool_530 = false ;
  global_195_bool_531 = false ;
- global_258_int_2568 = Month() ;
- global_313_datetime_28B8 = iTime(g_chartSymbol,MT4Period(PERIOD_W1),1) ;
- global_314_datetime_28C0 = iTime(g_chartSymbol,MT4Period(PERIOD_M1),1) ;
- global_315_datetime_28C8 = iTime(g_chartSymbol,MT4Period(PERIOD_M1),1) ;
  if ( g_maxSpreadPts>g_MaxSpread_rw )
  {
    g_maxSpreadPts = g_MaxSpread_rw ;
  }
- global_257_bool_2565 = false ;
  FindBuyEntryHigh(g_entryTfPeriod); 
  FindSellEntryLow(g_entryTfPeriod); 
  g_buyEntryPrice = NormalizeDouble(g_entryHighPrice,g_symbolDigits) ;
  g_sellEntryPrice = NormalizeDouble(g_entryLowPrice,g_symbolDigits) ;
  global_250_int_2518 = 0 ;
  global_304_int_287C = (int)(global_125_double_2F8 * 60.0) ;
- global_139_bool_3EC = false ;
  g_marketClosedFlag = true ;
  global_309_double_2898 = MarketInfo(g_chartSymbol,MODE_FREEZELEVEL) * g_symbolPoint ;
  if ( !(g_useTradingHours) )
@@ -2534,13 +2484,9 @@ g_initialLegacyRiskLotPending=true;
    g_marketClosedFlag = false ;
  }
  g_virtualSLPrice = 0.0 ;
- global_201_double_16B8 = 0.0 ;
- global_202_double_16C0 = 0.0 ;
- global_240_bool_1E42 = false ;
  g_symbolSuffix = StringSubstr(g_chartSymbol,6,0) ;
  if ( Risk >  0 )
  {
-   global_139_bool_3EC = true ;
  }
  if ( g_startLots_rw<0.0 )
  {
@@ -2570,31 +2516,15 @@ g_initialLegacyRiskLotPending=true;
    g_virtualPendingOrders[local_8_int][1] = 0.0;
  }
  g_fridayStopDone = false ;
- global_272_double_25C8 = iFractals(g_chartSymbol,0,1,1) ;
- global_273_double_25D0 = iFractals(g_chartSymbol,0,2,1) ;
- global_270_double_25B8 = global_272_double_25C8 ;
- global_271_double_25C0 = global_273_double_25D0 ;
- global_275_double_25E0 = 0.0 ;
- global_231_bool_1E0C = false ;
- global_290_int_262C = Hour() ;
- global_289_int_2628 = 0 ;
  global_252_string_2528=ST1_Comment + "B1";
  global_253_string_2538=ST1_Comment + "B2";
  global_254_string_2548=ST1_Comment + "S1";
  global_255_string_2558=ST1_Comment + "S2";
- global_297_int_2848 = 0 ;
- global_298_int_284C = 0 ;
  g_lastHour = Hour() ;
  if ( global_67_bool_158 )
  {
    g_maxPendingOrders = 1 ;
-   global_278_bool_25F8 = true ;
-   global_279_bool_25F9 = true ;
  }
- global_209_double_16F0 = 999.0 ;
- global_210_double_16F8 = 0.0 ;
- global_300_double_2860 = 0.0 ;
- global_301_double_2868 = 0.0 ;
  for (local_9_int = 0 ; local_9_int < 99 ; local_9_int ++)
  {
    global_322_int_2AE0_si99[local_9_int] = 0;
@@ -2604,9 +2534,6 @@ g_initialLegacyRiskLotPending=true;
    global_223_double_1AC4_si99[local_9_int] = g_startLots_rw;
    
  }
- global_216_long_1A68 = 0 ;
- global_238_bool_1E40 = false ;
- global_239_bool_1E41 = false ;
  if ( g_profitCloseMode == 1 )
  {
    global_64_double_148 = 0.0 ;
@@ -3252,7 +3179,6 @@ void OnTick()
    g_atr_checked_bars[temp_atr_index]=temp_atr_bar;
    g_atr_ready[temp_atr_index]=true;
  }
- global_2_double_8 = g_atr_cached_values[temp_atr_index];
 
  // Original JIT first derives the variable-value ratio, then selects
  // either that ratio or 1.0 according to UseVariableValues.  The 1000
@@ -4225,7 +4151,6 @@ void OnTick()
    {
      Print("Restoring pending buy-order"); 
      global_230_int_1E08 = OrderSend(g_chartSymbol,4,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),g_virtualPendingOrders[local_1_int][0] - (global_100_double_230 + global_64_double_148) * g_pipSize,g_takeProfitPips * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_orderComment,global_93_int_1F0,g_pendingOrderExpiry + 0x2A300,Green) ;
-     global_280_bool_25FA = false ;
      temp_double_1 = g_virtualPendingOrders[local_1_int][0];
      temp_long_2 = global_230_int_1E08;
      for (temp_int_3 = 0 ; temp_int_3 < 100 ; temp_int_3=temp_int_3 + 1)
@@ -4246,7 +4171,6 @@ void OnTick()
            {
              Sleep(2500); 
              global_230_int_1E08 = OrderSend(g_chartSymbol,4,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),g_virtualPendingOrders[local_1_int][0] - (global_100_double_230 + global_64_double_148) * g_pipSize,g_takeProfitPips * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_orderComment,global_93_int_1F0,g_pendingOrderExpiry + 0x2A300,Green) ;
-             global_280_bool_25FA = false ;
              temp_double_4 = g_virtualPendingOrders[local_1_int][0];
              temp_long_5 = global_230_int_1E08;
              for (temp_int_6 = 0 ; temp_int_6 < 100 ; temp_int_6=temp_int_6 + 1)
@@ -4268,7 +4192,6 @@ void OnTick()
    if ( !(g_virtualPendingOrders[local_1_int][1]==5.0) || !(MarketInfo(g_chartSymbol,MODE_BID)>g_virtualPendingOrders[local_1_int][0] + g_minStopDistPrice) )   continue;
    Print("Restoring pending sell-order"); 
    global_230_int_1E08 = OrderSend(g_chartSymbol,5,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),(global_100_double_230 + global_64_double_148) * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_virtualPendingOrders[local_1_int][0] - g_takeProfitPips * g_pipSize,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry + 0x2A300,Green) ;
-   global_281_bool_25FB = false ;
    temp_double_7 = g_virtualPendingOrders[local_1_int][0];
    temp_long_8 = global_230_int_1E08;
    for (temp_int_9 = 0 ; temp_int_9 < 100 ; temp_int_9=temp_int_9 + 1)
@@ -4289,7 +4212,6 @@ void OnTick()
        {
          Sleep(2500); 
          global_230_int_1E08 = OrderSend(g_chartSymbol,5,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),(global_100_double_230 + global_64_double_148) * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_virtualPendingOrders[local_1_int][0] - g_takeProfitPips * g_pipSize,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry + 0x2A300,Green) ;
-         global_281_bool_25FB = false ;
          temp_double_10 = g_virtualPendingOrders[local_1_int][0];
          temp_long_11 = global_230_int_1E08;
          for (temp_int_12 = 0 ; temp_int_12 < 100 ; temp_int_12=temp_int_12 + 1)
@@ -4696,7 +4618,6 @@ void OnTick()
        {
          local_2_bool = true ;
          g_entryHighPrice = NormalizeDouble(iHigh(g_chartSymbol,MT4Period(arg_0_int),local_5_int),g_symbolDigits) ;
-         global_265_int_2598 = local_5_int ;
          break;
        }
      }
@@ -4776,7 +4697,6 @@ void OnTick()
        {
          local_2_bool = true ;
          g_entryLowPrice = NormalizeDouble(iLow(g_chartSymbol,MT4Period(arg_0_int),local_5_int),g_symbolDigits) ;
-         global_266_int_259C = local_5_int ;
          break;
        }
      }
@@ -4833,7 +4753,6 @@ void OnTick()
         if(!duplicate && (!global_75_bool_184 || !(iClose(g_chartSymbol,tf,candidate-1)>candidate_price-g_entryBreakoutPips*g_pipSize)))
         {
           g_entryHighPrice=normalized;
-          global_265_int_2598=candidate;
           return(g_entryHighPrice);
         }
       }
@@ -4888,7 +4807,6 @@ void OnTick()
         if(!duplicate && (!global_75_bool_184 || !(iClose(g_chartSymbol,tf,candidate-1)<g_entryBreakoutPips*g_pipSize+candidate_price)))
         {
           g_entryLowPrice=normalized;
-          global_266_int_259C=candidate;
           return(g_entryLowPrice);
         }
       }
@@ -5246,7 +5164,6 @@ void OnTick()
          return(false); 
        }
      }
-     global_264_double_2590 = g_entryHighPrice ;
      local_2_bool = true ;
      g_buyEntryPrice = NormalizeDouble(g_entryHighPrice,g_symbolDigits) ;
    }
@@ -5271,7 +5188,6 @@ void OnTick()
      {
        return(false); 
      }
-     global_310_double_28A0 = local_3_double ;
      if ( !(global_67_bool_158) )
      {
        if ( CheckMargin && AccountFreeMarginCheck(g_chartSymbol,0,global_223_double_1AC4_si99[g_currentStrategyIndex])<=0.0 )
@@ -5331,7 +5247,6 @@ void OnTick()
          {
            global_230_int_1E08 = OrderSend(g_chartSymbol,4,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Green) ;
          }
-         global_280_bool_25FA = false ;
          if ( global_230_int_1E08 <= 0 )
          {
            temp_int_16 = MT4_LastError();
@@ -5351,7 +5266,6 @@ void OnTick()
                  {
                    global_230_int_1E08 = OrderSend(g_chartSymbol,4,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Green) ;
                  }
-                 global_280_bool_25FA = false ;
                }
                while(MT4_LastError() == 132);
                
@@ -5472,7 +5386,6 @@ void OnTick()
          return(false); 
        }
      }
-     global_263_double_2588 = g_entryLowPrice ;
      local_2_bool = true ;
      g_sellEntryPrice = NormalizeDouble(g_entryLowPrice,g_symbolDigits) ;
    }
@@ -5497,7 +5410,6 @@ void OnTick()
      {
        return(false); 
      }
-     global_311_double_28A8 = local_3_double ;
      if ( !(global_67_bool_158) )
      {
        if ( CheckMargin && AccountFreeMarginCheck(g_chartSymbol,1,global_223_double_1AC4_si99[g_currentStrategyIndex])<=0.0 )
@@ -5557,7 +5469,6 @@ void OnTick()
          {
            global_230_int_1E08 = OrderSend(g_chartSymbol,5,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Red) ;
          }
-         global_281_bool_25FB = false ;
          if ( global_230_int_1E08 <= 0 )
          {
            temp_int_16 = MT4_LastError();
@@ -5577,7 +5488,6 @@ void OnTick()
                  {
                    global_230_int_1E08 = OrderSend(g_chartSymbol,5,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Red) ;
                  }
-                 global_281_bool_25FB = false ;
                }
                while(MT4_LastError() == 132);
                

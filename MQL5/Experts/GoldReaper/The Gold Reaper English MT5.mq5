@@ -1482,6 +1482,14 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 //   global_339(排序映射表)/344(近期成交计数)/346(近期均盈亏)/354(排序权重)
 //   连同 344 守卫 if/else 整块死代码。验证：纯删除 18 行、零新增、括号平衡、
 //   代码中四者零残留（§5 表内旧名注释保留）。
+//
+// ---- 批次7 剩余 101 个变量语义命名（2026-09，纯重命名）----
+//   前述批次后仅存 101 个 global_* 声明，逐个读取全部用况后按语义命名
+//   （含手数/网格/追踪/保本/部分平仓参数、统计排名数组、面板几何、
+//   GMT/夏令时、PropFirm 日内回撤、NFP 日期表等，完整映射见 §5 对照表）。
+//   验证：token 级边界替换；新名零冲突零缺失；逆向替换逐行字节一致；
+//   删后代码中 global_* 声明与 token 均为 0（仅 §5 注释表保留旧名对照）。
+//   至此 214 个反编译残留 global_* 全部语义化或删除。
 // ============================================================================
 
   double    g_curSpread = 0.0;
@@ -1489,12 +1497,12 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   int       g_atrTimeframe = (int)PERIOD_D1;
   int       g_atrHandle = 0;
   double    g_atrBuffer[];
-  double    global_7_double_50 = 0.0;
+  double    g_varValueScalePrice = 0.0;
   double    g_variableRatio = 0.0;
   double    g_lotRatioInv = 0.0;
-  int       global_15_int_78 = 0;
+  int       g_randomEntryOffsetPips = 0;
   string    g_hdrTradingFilters = "------------------------------ trading filters ------------------------------";
-  bool      global_17_bool_8C = false;
+  bool      g_manageAllSymbols = false;
   int       g_tradeFrequencyMode = 5;
   bool      g_runStrategy1 = true;
   bool      g_runStrategy2 = true;
@@ -1505,99 +1513,99 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   bool      g_runStrategy9 = false;
   bool      g_runStrategy7 = false;
   bool      g_runStrategy8 = false;
-  bool      global_35_bool_AF = true;
-  int       global_36_int_B0 = 2;
+  bool      g_managePendingsBySpread = true;
+  int       g_pendingMinGapPips = 2;
   double    g_maxSpreadPts = 0.0;
   double    g_slippagePts = 5000.0;
-  int       global_39_int_C8 = 1;
-  double    global_40_double_D0 = 40.0;
-  double    global_41_double_D8 = 10.0;
-  double    global_42_double_E0 = 30.0;
-  bool      global_43_bool_E8 = false; // v106: marketplace trace uses actual fill as trailing-reference threshold
+  int       g_trailMode = 1;
+  double    g_trailStopBufferPips = 40.0;
+  double    g_trailDistancePips = 10.0;
+  double    g_trailCapAboveEntryPips = 30.0;
+  bool      g_trailUseFillPrice = false; // v106: marketplace trace uses actual fill as trailing-reference threshold
   string    g_hdrTimeFilters = "------------------------------ time filters ------------------------------";
   bool      g_useFridayStop = false;
-  bool      global_46_bool_FD = false;
+  bool      g_restorePendingsAfterFriday = false;
   string    g_hdrOtherFilters = "------------------------------ other filters ------------------------------";
-  int       global_51_int_114 = 1;
-  int       global_52_int_118 = 1;
+  int       g_fakeoutBarsBack = 1;
+  int       g_fakeoutTfM1 = 1;
   bool      g_fakeoutEnableM1 = false;
-  int       global_54_int_120 = 5;
-  bool      global_55_bool_124 = false;
-  int       global_56_int_128 = 15;
+  int       g_fakeoutTfM5 = 5;
+  bool      g_fakeoutEnableM5 = false;
+  int       g_fakeoutTfM15 = 15;
   bool      g_fakeoutEnableM15 = false;
-  int       global_58_int_130 = 30;
-  bool      global_59_bool_134 = false;
-  int       global_60_int_138 = 60;
+  int       g_fakeoutTfM30 = 30;
+  bool      g_fakeoutEnableM30 = false;
+  int       g_fakeoutTfH1 = 60;
   bool      g_fakeoutEnableH1 = false;
   int       g_profitCloseMode = 1;
-  double    global_64_double_148 = 0.0;
-  int       global_65_int_150 = 99;
-  bool      global_67_bool_158 = false;
+  double    g_stopExtraPips = 0.0;
+  int       g_trailModifyMinSec = 99;
+  bool      g_limitPendingToOne = false;
   int       g_orderMgmtMode = 1;
   string    g_hdrTradeEntryMgmt = "------------------------------ Trade Entry management ------------------------------";
   int       g_entryTfPeriod = 0;
   int       g_signalTfPeriod = 60;
-  int       global_73_int_17C = 10;
-  int       global_74_int_180 = 3;
-  bool      global_75_bool_184 = false;
-  int       global_77_int_188 = 120;
+  int       g_fractalRightBars = 10;
+  int       g_fractalLeftBars = 3;
+  bool      g_fractalRequireUnbrokenLevel = false;
+  int       g_fractalMinLookback = 120;
   double    g_entryBreakoutPips = 30.0;
-  double    global_81_double_1A0 = 0.0;
+  double    g_entryBreakoutPct = 0.0;
   double    g_buyEntryOffsetPips = 0.5;
   double    g_sellEntryOffsetPips = 0.0;
-  double    global_85_double_1C0 = 0.0;
+  double    g_trailRefSlippagePips = 0.0;
   int       g_maxPendingOrders = 1;
   int       g_maxOpenTradesPerSide = 99;
-  double    global_88_double_1D0 = 1.0;
+  double    g_pendingDupTolerancePips = 1.0;
   int       g_pendingExpiryHours = 24;
-  int       global_92_int_1EC = 100;
-  int       global_93_int_1F0 = 0;
+  int       g_lotScalePercent = 100;
+  int       g_curStrategyMagic = 0;
   int       g_manualSymbolMode = 1;
   int       g_manualMagicNumber = 1991199118;
   string    g_manualCommentFilter = "";
-  int       global_99_int_22C = 0;
-  double    global_100_double_230 = 20.0;
+  int       g_entryTfMinutes = 0;
+  double    g_stopLossPips = 20.0;
   double    g_takeProfitPips = 100.0;
-  double    global_103_double_250 = 10.0;
+  double    g_profitTrailDistancePips = 10.0;
   double    g_trailActivationPips = 10.0;
-  double    global_105_double_260 = 100.0;
-  double    global_106_double_268 = 0.1;
-  double    global_107_double_270 = 0.0;
+  double    g_profitTrailCapPips = 100.0;
+  double    g_profitTrailBufferPips = 0.1;
+  double    g_partialClosePct = 0.0;
   double    g_trailTpPips = 0.0;
-  double    global_109_double_280 = 0.0;
-  double    global_110_double_288 = 0.0;
-  double    global_111_double_290 = 0.0;
-  double    global_113_double_2A8 = 0.0;
+  double    g_profitTargetPips = 0.0;
+  double    g_tpTrailPips = 0.0;
+  double    g_tpTrailMinGapPips = 0.0;
+  double    g_beTriggerPips = 0.0;
   double    g_beExtraPips = 0.0;
-  bool      global_116_bool_2C4 = false;
-  int       global_117_int_2C8 = 0;
-  int       global_118_int_2CC = 0;
-  int       global_119_int_2D0 = 0;
-  int       global_120_int_2D4 = 0;
-  int       global_121_int_2D8 = 0;
-  int       global_122_int_2DC = 0;
+  bool      g_trailOnlyTighten = false;
+  int       g_hlFractalTfMinutes = 0;
+  int       g_fractalMaxShift = 0;
+  int       g_hlFractalRightBars = 0;
+  int       g_hlFractalLeftBars = 0;
+  int       g_hlTrailMinGapPips = 0;
+  int       g_hlTrailBrokerGapPips = 0;
   double    g_hlOffsetPips = 2.0;
-  double    global_125_double_2F8 = 0.0;
-  double    global_126_double_300 = 0.0;
-  int       global_128_int_314 = 0;
-  double    global_129_double_318 = 0.1;
-  int       global_130_int_320 = 1;
-  double    global_131_double_328 = 0.1;
-  double    global_132_double_330 = 1.0;
-  int       global_133_int_338 = 0;
-  double    global_134_double_340 = 0.0;
-  bool      global_135_bool_348 = false;
+  double    g_timeTrailDelayMin = 0.0;
+  double    g_timeTrailDistancePips = 0.0;
+  int       g_partialCloseMode = 0;
+  double    g_gridAnchorPips = 0.1;
+  int       g_gridMaxOrdersPerAnchor = 1;
+  double    g_gridSpacingPips = 0.1;
+  double    g_gridMaxSpacingPips = 1.0;
+  int       g_orderTimeoutMin = 0;
+  double    g_gridTimeoutAnchorPips = 0.0;
+  bool      g_returnAfterOrderModify = false;
   double    g_lotChangePctAlert = 5.0;
   double    g_maxLotCap = 99.0;
-  int       global_145_int_40C = 600;
-  double    global_146_double_410 = 1.0;
-  double    global_148_double_420 = 2.0;
+  int       g_ddTierDivisor = 600;
+  double    g_ddLotFactor = 1.0;
+  double    g_risk999BalancePct = 2.0;
   string    g_perfOverviewHeader = "==== Performance numbers overview ====";
-  int       global_151_int_438 = 1;
+  int       g_statWeightPerTrade = 1;
   int       g_rankMode = 1;
   int       g_statWindowDays = 90;
   int       g_statRecentDays = 30;
-  int       global_155_int_448 = 10;
+  int       g_statMinTrades = 10;
   string    g_zoneRecoveryHeader = "------------------------------ zone_recovery_settings ------------------------------";
   bool      g_zrEnabled = false;
   double    g_zrZoneSize = 50.0;
@@ -1612,7 +1620,7 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   string    g_tradingHoursHeader = "------------------------- Trading hours ST1 -------------------------";
   bool      g_useTradingHours = false;
   int       g_scheduleTimeBase = 2;
-  bool      global_173_bool_4C4 = false;
+  bool      g_closePendingsOnWeekend = false;
   int       g_sunStartHour = 0;
   int       g_sunEndHour = 24;
   int       g_monStartHour = 0;
@@ -1626,38 +1634,38 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   int       g_friStartHour = 0;
   int       g_friEndHour = 24;
   string    g_backtestOnlyHeader = "------------------------- use for backtesting only! -------------------------";
-  int       global_187_int_504 = 0;
+  int       g_randomEntryMaxBars = 0;
   double    g_buyEntryPrice = 0.0;
   double    g_sellEntryPrice = 0.0;
   int       g_symbolDigits = 0;
   double    g_virtualSLPrice = 0.0;
-  int       global_192_int_528 = 0;
-  int       global_193_int_52C = 0;
-  bool      global_194_bool_530 = false;
-  bool      global_195_bool_531 = false;
+  int       g_buyFirstModDone = 0;
+  int       g_sellFirstModDone = 0;
+  bool      g_buyOrderSeen = false;
+  bool      g_sellOrderSeen = false;
   double    g_virtSLCache[20][2];
   double    g_virtualPendingOrders[100][3];
   double    g_stopOrderTicketPrice[100][2];
   int       g_virtSLCacheSize = 20;
-  int       global_200_int_16B4 = 100;
+  int       g_virtualOrderSlots = 100;
   bool      g_maFilterEnabled = false;
-  int       global_214_int_1714 = 1;
-  datetime  global_215_datetime_174C_si99[99];
+  int       g_maFilterPeriod = 1;
+  datetime  g_lastEntryBarTime[99];
   int       g_maSlowPeriod = 370;
-  bool      global_218_bool_1A74 = true;
+  bool      g_allowMultipleEntries = true;
   double    g_minStopDistPrice = 4.0;
-  double    global_223_double_1AC4_si99[99];
+  double    g_strategyStartLots[99];
   double    g_pipSize = 0.0;
-  long      global_230_int_1E08 = 0; // ticket OrderSend la 64-bit; bool OrderModify van gan duoc 0/1
+  long      g_lastOrderResult = 0; // ticket OrderSend la 64-bit; bool OrderModify van gan duoc 0/1
   int       g_pendingExpirySecs = 0;
   double    g_sellTrailStopLevel[99];
   double    g_buyTrailStopLevel[99];
   double    g_nextOrderAnchorPrice = 0.0;
-  int       global_250_int_2518 = 0;
-  string    global_252_string_2528;
-  string    global_253_string_2538;
-  string    global_254_string_2548;
-  string    global_255_string_2558;
+  int       g_ordersSinceAnchor = 0;
+  string    g_commentBuy1;
+  string    g_commentBuy2;
+  string    g_commentSell1;
+  string    g_commentSell2;
   double    g_entryLowPrice = 0.0;
   double    g_entryHighPrice = 0.0;
   int       g_lastHour = 0;
@@ -1667,15 +1675,15 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   string    g_symbolSuffix;
   datetime  g_pendingOrderExpiry = 0;
   bool      g_marketClosedFlag = false;
-  int       global_304_int_287C = 0;
+  int       g_timeTrailDelaySec = 0;
   bool      g_fridayStopDone = false;
-  double    global_309_double_2898 = 0.0;
+  double    g_freezeDistPrice = 0.0;
   bool      g_isDemoAccount = false;
   double    g_lastLotResizeBalance = 0.0;
   datetime  g_lastTrailOrderTime = 0;
   bool      g_nfpWindowActive = false;
-  int       global_321_int_2920_si99[99];
-  int       global_322_int_2AE0_si99[99];
+  int       g_lastEntryBarsCount[99];
+  int       g_lastSignalBarsCount[99];
   double    g_openPLbyStrategy[30];
   double    g_winTradeCount[30];
   double    g_lossTradeCount[30];
@@ -1690,43 +1698,43 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   int       g_closedTradeCount[99];
   double    g_avgPLperTrade[99];
   string    g_strategySymbols[99]={};
-  double    global_349_double_46B4_si99[99];
+  double    g_statTotalPL[99];
   double    g_recentPLbyStrategy[99];
-  int       global_356_int_5B14_si99[99];
+  int       g_statRankScore[99];
   int       g_maxPanelObjects = 0;
-  double    global_361_double_5CC0 = 0.0;
+  double    g_panelCellWidth = 0.0;
   double    g_panelCellHeight = 0.0;
-  uint      global_364_uint_5CD4 = LightSteelBlue;
+  uint      g_panelCellBgColor = LightSteelBlue;
   int       g_panelFontSize = 7;
   double    g_panelWidthScale = 0.45;
-  double    global_377_double_5D78 = 0.6;
+  double    g_panelRowHeightFactor = 0.6;
   int       g_strategyCount = 0;
-  datetime  global_379_datetime_5D88 = 0;
+  datetime  g_lastM5BarTime = 0;
   bool      g_propfirmDailyDDOn = false;
-  int       global_381_int_5D94 = 0;
-  bool      global_382_bool_5D98 = false;
+  int       g_lotResizeTickCount = 0;
+  bool      g_propfirmDailyDDHit = false;
   int       g_lastD1BarsCount = 0;
-  double    global_384_double_5DA0 = 0.0;
+  double    g_propfirmDailyPeakEquity = 0.0;
   int       g_ddTierThreshold1 = 200;
-  int       global_386_int_5DAC = 330;
+  int       g_ddTierThreshold2Usd = 330;
   int       g_ddTierThreshold3 = 560;
-  int       global_388_int_5DB4 = 810;
+  int       g_ddTierThreshold4Usd = 810;
   int       g_ddTierThreshold5 = 1150;
   datetime  g_nfpAdjustedNow = 0;
-  datetime  global_391_datetime_5DFC_si300[300];
+  datetime  g_nfpDateTable[300];
   int       g_hardcoded_nfp_year=-1;
   int       g_hardcoded_nfp_month=-1;
   datetime  g_hardcoded_nfp_value=0;
   bool      g_isSummerTime = false;
-  bool      global_393_bool_675D = false;
+  bool      g_euDstActive = false;
   bool      g_gmtDetectDone = false;
-  int       global_395_int_6760 = 0;
+  int       g_brokerGmtOffset = 0;
   int       g_detectedGmtOffset = 0;
-  double    global_397_double_6768 = 0.0;
+  double    g_usdToAccountRate = 0.0;
   double    g_riskFactorByTier = 0.0;
-  datetime  global_399_datetime_6778 = 0;
+  datetime  g_lastH1BarTime = 0;
   double    g_histClosedPLbyStrategy[99];
-  double    global_401_double_6AD0 = 0.0;
+  double    g_effectiveBalance = 0.0;
   double    g_highestBalance = 0.0;
   bool      g_backtestSpeedFast = false;
   bool      g_backtestSpeedEnabled = false;
@@ -1805,7 +1813,7 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
   g_hardcoded_nfp_value=0;
   for(int i=0;i<300;i++)
   {
-    datetime event_time=global_391_datetime_5DFC_si300[i];
+    datetime event_time=g_nfpDateTable[i];
     if(TimeYear(event_time)!=year || TimeMonth(event_time)!=month) continue;
     g_hardcoded_nfp_value=event_time;
     break;
@@ -1920,10 +1928,10 @@ g_initialLegacyRiskLotPending=true;
  //   3) read the single terminal Global Variable "HighestBalance";
  //   4) highest = max(account value, stored value), write it back unconditionally;
  //   5) only AFTER that, ManualBalance may override the working risk balance.
- global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_BALANCE) ;
+ g_effectiveBalance = AccountInfoDouble(ACCOUNT_BALANCE) ;
  if ( UseEquity )
  {
-   global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_EQUITY) ;
+   g_effectiveBalance = AccountInfoDouble(ACCOUNT_EQUITY) ;
  }
  if ( ResetHighestBalance )
  {
@@ -1931,262 +1939,262 @@ g_initialLegacyRiskLotPending=true;
    Sleep(5000) ;
  }
  double temp_storedHighest = GlobalVariableGet("HighestBalance") ;
- if ( temp_storedHighest>global_401_double_6AD0 )
+ if ( temp_storedHighest>g_effectiveBalance )
  {
    Print("HighestBalance value found: ",temp_storedHighest) ;
    g_highestBalance = temp_storedHighest ;
  }
  else
  {
-   g_highestBalance = global_401_double_6AD0 ;
+   g_highestBalance = g_effectiveBalance ;
  }
  GlobalVariableSet("HighestBalance",g_highestBalance) ;
  if ( ManualBalance>0.0 )
  {
-   global_401_double_6AD0 = ManualBalance ;
+   g_effectiveBalance = ManualBalance ;
  }
  g_isSummerTime = false ;
- global_393_bool_675D = false ;
- global_391_datetime_5DFC_si300[0] = D'2026.12.04 12:30';
- global_391_datetime_5DFC_si300[1] = D'2026.11.06 12:30';
- global_391_datetime_5DFC_si300[2] = D'2026.10.02 12:30';
- global_391_datetime_5DFC_si300[3] = D'2026.09.04 12:30';
- global_391_datetime_5DFC_si300[4] = D'2026.08.07 12:30';
- global_391_datetime_5DFC_si300[5] = D'2026.07.02 12:30';
- global_391_datetime_5DFC_si300[6] = D'2026.06.05 12:30';
- global_391_datetime_5DFC_si300[7] = D'2026.05.08 12:30';
- global_391_datetime_5DFC_si300[8] = D'2026.04.03 12:30';
- global_391_datetime_5DFC_si300[9] = D'2026.03.06 12:30';
- global_391_datetime_5DFC_si300[10] = D'2026.02.06 12:30';
- global_391_datetime_5DFC_si300[11] = D'2026.01.09 12:30';
- global_391_datetime_5DFC_si300[12] = D'2025.12.16 12:30';
- global_391_datetime_5DFC_si300[13] = D'2025.11.07 12:30';
- global_391_datetime_5DFC_si300[14] = D'2025.10.03 12:30';
- global_391_datetime_5DFC_si300[15] = D'2025.09.05 12:30';
- global_391_datetime_5DFC_si300[16] = D'2025.08.01 12:30';
- global_391_datetime_5DFC_si300[17] = D'2025.07.03 12:30';
- global_391_datetime_5DFC_si300[18] = D'2025.06.06 12:30';
- global_391_datetime_5DFC_si300[19] = D'2025.05.02 12:30';
- global_391_datetime_5DFC_si300[20] = D'2025.04.04 12:30';
- global_391_datetime_5DFC_si300[21] = D'2025.03.07 12:30';
- global_391_datetime_5DFC_si300[22] = D'2025.02.07 12:30';
- global_391_datetime_5DFC_si300[23] = D'2025.01.10 12:30';
- global_391_datetime_5DFC_si300[24] = D'2024.12.06 12:30';
- global_391_datetime_5DFC_si300[25] = D'2024.11.01 12:30';
- global_391_datetime_5DFC_si300[26] = D'2024.10.04 12:30';
- global_391_datetime_5DFC_si300[27] = D'2024.09.06 12:30';
- global_391_datetime_5DFC_si300[28] = D'2024.08.02 12:30';
- global_391_datetime_5DFC_si300[29] = D'2024.07.05 12:30';
- global_391_datetime_5DFC_si300[30] = D'2024.06.07 12:30';
- global_391_datetime_5DFC_si300[31] = D'2024.05.03 12:30';
- global_391_datetime_5DFC_si300[32] = D'2024.04.05 12:30';
- global_391_datetime_5DFC_si300[33] = D'2024.03.08 12:30';
- global_391_datetime_5DFC_si300[34] = D'2024.02.02 12:30';
- global_391_datetime_5DFC_si300[35] = D'2024.01.05 12:30';
- global_391_datetime_5DFC_si300[36] = D'2023.12.08 12:30';
- global_391_datetime_5DFC_si300[37] = D'2023.11.03 12:30';
- global_391_datetime_5DFC_si300[38] = D'2023.10.06 12:30';
- global_391_datetime_5DFC_si300[39] = D'2023.09.01 12:30';
- global_391_datetime_5DFC_si300[40] = D'2023.08.04 12:30';
- global_391_datetime_5DFC_si300[41] = D'2023.07.07 12:30';
- global_391_datetime_5DFC_si300[42] = D'2023.06.02 12:30';
- global_391_datetime_5DFC_si300[43] = D'2023.05.05 12:30';
- global_391_datetime_5DFC_si300[44] = D'2023.04.07 12:30';
- global_391_datetime_5DFC_si300[45] = D'2023.03.10 12:30';
- global_391_datetime_5DFC_si300[46] = D'2023.02.03 12:30';
- global_391_datetime_5DFC_si300[47] = D'2023.01.06 12:30';
- global_391_datetime_5DFC_si300[48] = D'2022.12.02 12:30';
- global_391_datetime_5DFC_si300[49] = D'2022.11.04 12:30';
- global_391_datetime_5DFC_si300[50] = D'2022.10.07 12:30';
- global_391_datetime_5DFC_si300[51] = D'2022.09.02 12:30';
- global_391_datetime_5DFC_si300[52] = D'2022.08.05 12:30';
- global_391_datetime_5DFC_si300[53] = D'2022.07.08 12:30';
- global_391_datetime_5DFC_si300[54] = D'2022.06.03 12:30';
- global_391_datetime_5DFC_si300[55] = D'2022.05.06 12:30';
- global_391_datetime_5DFC_si300[56] = D'2022.04.01 12:30';
- global_391_datetime_5DFC_si300[57] = D'2022.03.04 12:30';
- global_391_datetime_5DFC_si300[58] = D'2022.02.04 12:30';
- global_391_datetime_5DFC_si300[59] = D'2022.01.07 12:30';
- global_391_datetime_5DFC_si300[60] = D'2021.12.03 12:30';
- global_391_datetime_5DFC_si300[61] = D'2021.11.05 12:30';
- global_391_datetime_5DFC_si300[62] = D'2021.10.08 12:30';
- global_391_datetime_5DFC_si300[63] = D'2021.09.03 12:30';
- global_391_datetime_5DFC_si300[64] = D'2021.08.06 12:30';
- global_391_datetime_5DFC_si300[65] = D'2021.07.02 12:30';
- global_391_datetime_5DFC_si300[66] = D'2021.06.04 12:30';
- global_391_datetime_5DFC_si300[67] = D'2021.05.07 12:30';
- global_391_datetime_5DFC_si300[68] = D'2021.04.02 12:30';
- global_391_datetime_5DFC_si300[69] = D'2021.03.05 12:30';
- global_391_datetime_5DFC_si300[70] = D'2021.02.05 12:30';
- global_391_datetime_5DFC_si300[71] = D'2021.01.08 12:30';
- global_391_datetime_5DFC_si300[72] = D'2020.12.04 12:30';
- global_391_datetime_5DFC_si300[73] = D'2020.11.06 12:30';
- global_391_datetime_5DFC_si300[74] = D'2020.10.02 12:30';
- global_391_datetime_5DFC_si300[75] = D'2020.09.04 12:30';
- global_391_datetime_5DFC_si300[76] = D'2020.08.07 12:30';
- global_391_datetime_5DFC_si300[77] = D'2020.07.02 12:30';
- global_391_datetime_5DFC_si300[78] = D'2020.06.05 12:30';
- global_391_datetime_5DFC_si300[79] = D'2020.05.08 12:30';
- global_391_datetime_5DFC_si300[80] = D'2020.04.03 12:30';
- global_391_datetime_5DFC_si300[81] = D'2020.03.06 12:30';
- global_391_datetime_5DFC_si300[82] = D'2020.02.07 12:30';
- global_391_datetime_5DFC_si300[83] = D'2020.01.10 12:30';
- global_391_datetime_5DFC_si300[84] = D'2019.12.06 12:30';
- global_391_datetime_5DFC_si300[85] = D'2019.11.01 12:30';
- global_391_datetime_5DFC_si300[86] = D'2019.10.04 12:30';
- global_391_datetime_5DFC_si300[87] = D'2019.09.06 12:30';
- global_391_datetime_5DFC_si300[88] = D'2019.08.02 12:30';
- global_391_datetime_5DFC_si300[89] = D'2019.07.05 12:30';
- global_391_datetime_5DFC_si300[90] = D'2019.06.07 12:30';
- global_391_datetime_5DFC_si300[91] = D'2019.05.03 12:30';
- global_391_datetime_5DFC_si300[92] = D'2019.04.05 12:30';
- global_391_datetime_5DFC_si300[93] = D'2019.03.08 12:30';
- global_391_datetime_5DFC_si300[94] = D'2019.02.01 12:30';
- global_391_datetime_5DFC_si300[95] = D'2019.01.04 12:30';
- global_391_datetime_5DFC_si300[96] = D'2018.12.07 12:30';
- global_391_datetime_5DFC_si300[97] = D'2018.11.02 12:30';
- global_391_datetime_5DFC_si300[98] = D'2018.10.05 12:30';
- global_391_datetime_5DFC_si300[99] = D'2018.09.07 12:30';
- global_391_datetime_5DFC_si300[100] = D'2018.08.03 12:30';
- global_391_datetime_5DFC_si300[101] = D'2018.07.06 12:30';
- global_391_datetime_5DFC_si300[102] = D'2018.06.01 12:30';
- global_391_datetime_5DFC_si300[103] = D'2018.05.04 12:30';
- global_391_datetime_5DFC_si300[104] = D'2018.04.06 12:30';
- global_391_datetime_5DFC_si300[105] = D'2018.03.09 12:30';
- global_391_datetime_5DFC_si300[106] = D'2018.02.02 12:30';
- global_391_datetime_5DFC_si300[107] = D'2018.01.05 12:30';
- global_391_datetime_5DFC_si300[108] = D'2017.12.08 12:30';
- global_391_datetime_5DFC_si300[109] = D'2017.11.03 12:30';
- global_391_datetime_5DFC_si300[110] = D'2017.10.06 12:30';
- global_391_datetime_5DFC_si300[111] = D'2017.09.01 12:30';
- global_391_datetime_5DFC_si300[112] = D'2017.08.04 12:30';
- global_391_datetime_5DFC_si300[113] = D'2017.07.07 12:30';
- global_391_datetime_5DFC_si300[114] = D'2017.06.02 12:30';
- global_391_datetime_5DFC_si300[115] = D'2017.05.05 12:30';
- global_391_datetime_5DFC_si300[116] = D'2017.04.07 12:30';
- global_391_datetime_5DFC_si300[117] = D'2017.03.10 12:30';
- global_391_datetime_5DFC_si300[118] = D'2017.02.03 12:30';
- global_391_datetime_5DFC_si300[119] = D'2017.01.06 12:30';
- global_391_datetime_5DFC_si300[120] = D'2016.12.02 12:30';
- global_391_datetime_5DFC_si300[121] = D'2016.11.04 12:30';
- global_391_datetime_5DFC_si300[122] = D'2016.10.07 12:30';
- global_391_datetime_5DFC_si300[123] = D'2016.09.02 12:30';
- global_391_datetime_5DFC_si300[124] = D'2016.08.05 12:30';
- global_391_datetime_5DFC_si300[125] = D'2016.07.08 12:30';
- global_391_datetime_5DFC_si300[126] = D'2016.06.03 12:30';
- global_391_datetime_5DFC_si300[127] = D'2016.05.06 12:30';
- global_391_datetime_5DFC_si300[128] = D'2016.04.01 12:30';
- global_391_datetime_5DFC_si300[129] = D'2016.03.04 12:30';
- global_391_datetime_5DFC_si300[130] = D'2016.02.05 12:30';
- global_391_datetime_5DFC_si300[131] = D'2016.01.08 12:30';
- global_391_datetime_5DFC_si300[132] = D'2015.12.04 12:30';
- global_391_datetime_5DFC_si300[133] = D'2015.11.06 12:30';
- global_391_datetime_5DFC_si300[134] = D'2015.10.02 12:30';
- global_391_datetime_5DFC_si300[135] = D'2015.09.04 12:30';
- global_391_datetime_5DFC_si300[136] = D'2015.08.07 12:30';
- global_391_datetime_5DFC_si300[137] = D'2015.07.02 12:30';
- global_391_datetime_5DFC_si300[138] = D'2015.06.05 12:30';
- global_391_datetime_5DFC_si300[139] = D'2015.05.08 12:30';
- global_391_datetime_5DFC_si300[140] = D'2015.04.03 12:30';
- global_391_datetime_5DFC_si300[141] = D'2015.03.06 12:30';
- global_391_datetime_5DFC_si300[142] = D'2015.02.06 12:30';
- global_391_datetime_5DFC_si300[143] = D'2015.01.09 12:30';
- global_391_datetime_5DFC_si300[144] = D'2014.12.05 12:30';
- global_391_datetime_5DFC_si300[145] = D'2014.11.07 12:30';
- global_391_datetime_5DFC_si300[146] = D'2014.10.03 12:30';
- global_391_datetime_5DFC_si300[147] = D'2014.09.05 12:30';
- global_391_datetime_5DFC_si300[148] = D'2014.08.01 12:30';
- global_391_datetime_5DFC_si300[149] = D'2014.07.03 12:30';
- global_391_datetime_5DFC_si300[150] = D'2014.06.06 12:30';
- global_391_datetime_5DFC_si300[151] = D'2014.05.02 12:30';
- global_391_datetime_5DFC_si300[152] = D'2014.04.04 12:30';
- global_391_datetime_5DFC_si300[153] = D'2014.03.07 12:30';
- global_391_datetime_5DFC_si300[154] = D'2014.02.07 12:30';
- global_391_datetime_5DFC_si300[155] = D'2014.01.10 12:30';
- global_391_datetime_5DFC_si300[156] = D'2013.12.06 12:30';
- global_391_datetime_5DFC_si300[157] = D'2013.11.08 12:30';
- global_391_datetime_5DFC_si300[158] = D'2013.10.22 12:30';
- global_391_datetime_5DFC_si300[159] = D'2013.09.06 12:30';
- global_391_datetime_5DFC_si300[160] = D'2013.08.02 12:30';
- global_391_datetime_5DFC_si300[161] = D'2013.07.05 12:30';
- global_391_datetime_5DFC_si300[162] = D'2013.06.07 12:30';
- global_391_datetime_5DFC_si300[163] = D'2013.05.03 12:30';
- global_391_datetime_5DFC_si300[164] = D'2013.04.05 12:30';
- global_391_datetime_5DFC_si300[165] = D'2013.03.08 12:30';
- global_391_datetime_5DFC_si300[166] = D'2013.02.01 12:30';
- global_391_datetime_5DFC_si300[167] = D'2013.01.04 12:30';
- global_391_datetime_5DFC_si300[168] = D'2012.12.07 12:30';
- global_391_datetime_5DFC_si300[169] = D'2012.11.02 12:30';
- global_391_datetime_5DFC_si300[170] = D'2012.10.05 12:30';
- global_391_datetime_5DFC_si300[171] = D'2012.09.07 12:30';
- global_391_datetime_5DFC_si300[172] = D'2012.08.03 12:30';
- global_391_datetime_5DFC_si300[173] = D'2012.07.06 12:30';
- global_391_datetime_5DFC_si300[174] = D'2012.06.01 12:30';
- global_391_datetime_5DFC_si300[175] = D'2012.05.04 12:30';
- global_391_datetime_5DFC_si300[176] = D'2012.04.06 12:30';
- global_391_datetime_5DFC_si300[177] = D'2012.03.09 12:30';
- global_391_datetime_5DFC_si300[178] = D'2012.02.03 12:30';
- global_391_datetime_5DFC_si300[179] = D'2012.01.06 12:30';
- global_391_datetime_5DFC_si300[180] = D'2011.12.02 12:30';
- global_391_datetime_5DFC_si300[181] = D'2011.11.04 12:30';
- global_391_datetime_5DFC_si300[182] = D'2011.10.07 12:30';
- global_391_datetime_5DFC_si300[183] = D'2011.09.02 12:30';
- global_391_datetime_5DFC_si300[184] = D'2011.08.05 12:30';
- global_391_datetime_5DFC_si300[185] = D'2011.07.08 12:30';
- global_391_datetime_5DFC_si300[186] = D'2011.06.03 12:30';
- global_391_datetime_5DFC_si300[187] = D'2011.05.06 12:30';
- global_391_datetime_5DFC_si300[188] = D'2011.04.01 12:30';
- global_391_datetime_5DFC_si300[189] = D'2011.03.04 12:30';
- global_391_datetime_5DFC_si300[190] = D'2011.02.04 12:30';
- global_391_datetime_5DFC_si300[191] = D'2011.01.07 12:30';
- global_391_datetime_5DFC_si300[192] = D'2010.12.03 12:30';
- global_391_datetime_5DFC_si300[193] = D'2010.11.05 12:30';
- global_391_datetime_5DFC_si300[194] = D'2010.10.08 12:30';
- global_391_datetime_5DFC_si300[195] = D'2010.09.03 12:30';
- global_391_datetime_5DFC_si300[196] = D'2010.08.06 12:30';
- global_391_datetime_5DFC_si300[197] = D'2010.07.02 12:30';
- global_391_datetime_5DFC_si300[198] = D'2010.06.04 12:30';
- global_391_datetime_5DFC_si300[199] = D'2010.05.07 12:30';
- global_391_datetime_5DFC_si300[200] = D'2010.04.02 12:30';
- global_391_datetime_5DFC_si300[201] = D'2010.03.05 12:30';
- global_391_datetime_5DFC_si300[202] = D'2010.02.05 12:30';
- global_391_datetime_5DFC_si300[203] = D'2010.01.08 12:30';
- global_391_datetime_5DFC_si300[204] = D'2009.12.04 12:30';
- global_391_datetime_5DFC_si300[205] = D'2009.11.06 12:30';
- global_391_datetime_5DFC_si300[206] = D'2009.10.02 12:30';
- global_391_datetime_5DFC_si300[207] = D'2009.09.04 12:30';
- global_391_datetime_5DFC_si300[208] = D'2009.08.07 12:30';
- global_391_datetime_5DFC_si300[209] = D'2009.07.02 12:30';
- global_391_datetime_5DFC_si300[210] = D'2009.06.05 12:30';
- global_391_datetime_5DFC_si300[211] = D'2009.05.08 12:30';
- global_391_datetime_5DFC_si300[212] = D'2009.04.03 12:30';
- global_391_datetime_5DFC_si300[213] = D'2009.03.06 12:30';
- global_391_datetime_5DFC_si300[214] = D'2009.02.06 12:30';
- global_391_datetime_5DFC_si300[215] = D'2009.01.09 12:30';
- global_391_datetime_5DFC_si300[216] = D'2008.12.05 12:30';
- global_391_datetime_5DFC_si300[217] = D'2008.11.07 12:30';
- global_391_datetime_5DFC_si300[218] = D'2008.10.03 12:30';
- global_391_datetime_5DFC_si300[219] = D'2008.09.05 12:30';
- global_391_datetime_5DFC_si300[220] = D'2008.08.01 12:30';
- global_391_datetime_5DFC_si300[221] = D'2008.07.03 12:30';
- global_391_datetime_5DFC_si300[222] = D'2008.06.06 12:30';
- global_391_datetime_5DFC_si300[223] = D'2008.05.02 12:30';
- global_391_datetime_5DFC_si300[224] = D'2008.04.04 12:30';
- global_391_datetime_5DFC_si300[225] = D'2008.03.07 12:30';
- global_391_datetime_5DFC_si300[226] = D'2008.02.01 12:30';
- global_391_datetime_5DFC_si300[227] = D'2008.01.04 12:30';
- global_391_datetime_5DFC_si300[228] = D'2007.12.07 12:30';
- global_391_datetime_5DFC_si300[229] = D'2007.11.02 12:30';
- global_391_datetime_5DFC_si300[230] = D'2007.10.05 12:30';
- global_391_datetime_5DFC_si300[231] = D'2007.09.07 12:30';
- global_391_datetime_5DFC_si300[232] = D'2007.08.03 12:30';
- global_391_datetime_5DFC_si300[233] = D'2007.07.06 12:30';
- global_391_datetime_5DFC_si300[234] = D'2007.06.01 12:30';
- global_391_datetime_5DFC_si300[235] = D'2007.05.04 12:30';
- global_391_datetime_5DFC_si300[236] = D'2007.04.06 12:30';
- global_391_datetime_5DFC_si300[237] = D'2007.03.09 12:30';
- global_391_datetime_5DFC_si300[238] = D'2007.02.02 12:30';
- global_391_datetime_5DFC_si300[239] = D'2007.01.05 12:30';
+ g_euDstActive = false ;
+ g_nfpDateTable[0] = D'2026.12.04 12:30';
+ g_nfpDateTable[1] = D'2026.11.06 12:30';
+ g_nfpDateTable[2] = D'2026.10.02 12:30';
+ g_nfpDateTable[3] = D'2026.09.04 12:30';
+ g_nfpDateTable[4] = D'2026.08.07 12:30';
+ g_nfpDateTable[5] = D'2026.07.02 12:30';
+ g_nfpDateTable[6] = D'2026.06.05 12:30';
+ g_nfpDateTable[7] = D'2026.05.08 12:30';
+ g_nfpDateTable[8] = D'2026.04.03 12:30';
+ g_nfpDateTable[9] = D'2026.03.06 12:30';
+ g_nfpDateTable[10] = D'2026.02.06 12:30';
+ g_nfpDateTable[11] = D'2026.01.09 12:30';
+ g_nfpDateTable[12] = D'2025.12.16 12:30';
+ g_nfpDateTable[13] = D'2025.11.07 12:30';
+ g_nfpDateTable[14] = D'2025.10.03 12:30';
+ g_nfpDateTable[15] = D'2025.09.05 12:30';
+ g_nfpDateTable[16] = D'2025.08.01 12:30';
+ g_nfpDateTable[17] = D'2025.07.03 12:30';
+ g_nfpDateTable[18] = D'2025.06.06 12:30';
+ g_nfpDateTable[19] = D'2025.05.02 12:30';
+ g_nfpDateTable[20] = D'2025.04.04 12:30';
+ g_nfpDateTable[21] = D'2025.03.07 12:30';
+ g_nfpDateTable[22] = D'2025.02.07 12:30';
+ g_nfpDateTable[23] = D'2025.01.10 12:30';
+ g_nfpDateTable[24] = D'2024.12.06 12:30';
+ g_nfpDateTable[25] = D'2024.11.01 12:30';
+ g_nfpDateTable[26] = D'2024.10.04 12:30';
+ g_nfpDateTable[27] = D'2024.09.06 12:30';
+ g_nfpDateTable[28] = D'2024.08.02 12:30';
+ g_nfpDateTable[29] = D'2024.07.05 12:30';
+ g_nfpDateTable[30] = D'2024.06.07 12:30';
+ g_nfpDateTable[31] = D'2024.05.03 12:30';
+ g_nfpDateTable[32] = D'2024.04.05 12:30';
+ g_nfpDateTable[33] = D'2024.03.08 12:30';
+ g_nfpDateTable[34] = D'2024.02.02 12:30';
+ g_nfpDateTable[35] = D'2024.01.05 12:30';
+ g_nfpDateTable[36] = D'2023.12.08 12:30';
+ g_nfpDateTable[37] = D'2023.11.03 12:30';
+ g_nfpDateTable[38] = D'2023.10.06 12:30';
+ g_nfpDateTable[39] = D'2023.09.01 12:30';
+ g_nfpDateTable[40] = D'2023.08.04 12:30';
+ g_nfpDateTable[41] = D'2023.07.07 12:30';
+ g_nfpDateTable[42] = D'2023.06.02 12:30';
+ g_nfpDateTable[43] = D'2023.05.05 12:30';
+ g_nfpDateTable[44] = D'2023.04.07 12:30';
+ g_nfpDateTable[45] = D'2023.03.10 12:30';
+ g_nfpDateTable[46] = D'2023.02.03 12:30';
+ g_nfpDateTable[47] = D'2023.01.06 12:30';
+ g_nfpDateTable[48] = D'2022.12.02 12:30';
+ g_nfpDateTable[49] = D'2022.11.04 12:30';
+ g_nfpDateTable[50] = D'2022.10.07 12:30';
+ g_nfpDateTable[51] = D'2022.09.02 12:30';
+ g_nfpDateTable[52] = D'2022.08.05 12:30';
+ g_nfpDateTable[53] = D'2022.07.08 12:30';
+ g_nfpDateTable[54] = D'2022.06.03 12:30';
+ g_nfpDateTable[55] = D'2022.05.06 12:30';
+ g_nfpDateTable[56] = D'2022.04.01 12:30';
+ g_nfpDateTable[57] = D'2022.03.04 12:30';
+ g_nfpDateTable[58] = D'2022.02.04 12:30';
+ g_nfpDateTable[59] = D'2022.01.07 12:30';
+ g_nfpDateTable[60] = D'2021.12.03 12:30';
+ g_nfpDateTable[61] = D'2021.11.05 12:30';
+ g_nfpDateTable[62] = D'2021.10.08 12:30';
+ g_nfpDateTable[63] = D'2021.09.03 12:30';
+ g_nfpDateTable[64] = D'2021.08.06 12:30';
+ g_nfpDateTable[65] = D'2021.07.02 12:30';
+ g_nfpDateTable[66] = D'2021.06.04 12:30';
+ g_nfpDateTable[67] = D'2021.05.07 12:30';
+ g_nfpDateTable[68] = D'2021.04.02 12:30';
+ g_nfpDateTable[69] = D'2021.03.05 12:30';
+ g_nfpDateTable[70] = D'2021.02.05 12:30';
+ g_nfpDateTable[71] = D'2021.01.08 12:30';
+ g_nfpDateTable[72] = D'2020.12.04 12:30';
+ g_nfpDateTable[73] = D'2020.11.06 12:30';
+ g_nfpDateTable[74] = D'2020.10.02 12:30';
+ g_nfpDateTable[75] = D'2020.09.04 12:30';
+ g_nfpDateTable[76] = D'2020.08.07 12:30';
+ g_nfpDateTable[77] = D'2020.07.02 12:30';
+ g_nfpDateTable[78] = D'2020.06.05 12:30';
+ g_nfpDateTable[79] = D'2020.05.08 12:30';
+ g_nfpDateTable[80] = D'2020.04.03 12:30';
+ g_nfpDateTable[81] = D'2020.03.06 12:30';
+ g_nfpDateTable[82] = D'2020.02.07 12:30';
+ g_nfpDateTable[83] = D'2020.01.10 12:30';
+ g_nfpDateTable[84] = D'2019.12.06 12:30';
+ g_nfpDateTable[85] = D'2019.11.01 12:30';
+ g_nfpDateTable[86] = D'2019.10.04 12:30';
+ g_nfpDateTable[87] = D'2019.09.06 12:30';
+ g_nfpDateTable[88] = D'2019.08.02 12:30';
+ g_nfpDateTable[89] = D'2019.07.05 12:30';
+ g_nfpDateTable[90] = D'2019.06.07 12:30';
+ g_nfpDateTable[91] = D'2019.05.03 12:30';
+ g_nfpDateTable[92] = D'2019.04.05 12:30';
+ g_nfpDateTable[93] = D'2019.03.08 12:30';
+ g_nfpDateTable[94] = D'2019.02.01 12:30';
+ g_nfpDateTable[95] = D'2019.01.04 12:30';
+ g_nfpDateTable[96] = D'2018.12.07 12:30';
+ g_nfpDateTable[97] = D'2018.11.02 12:30';
+ g_nfpDateTable[98] = D'2018.10.05 12:30';
+ g_nfpDateTable[99] = D'2018.09.07 12:30';
+ g_nfpDateTable[100] = D'2018.08.03 12:30';
+ g_nfpDateTable[101] = D'2018.07.06 12:30';
+ g_nfpDateTable[102] = D'2018.06.01 12:30';
+ g_nfpDateTable[103] = D'2018.05.04 12:30';
+ g_nfpDateTable[104] = D'2018.04.06 12:30';
+ g_nfpDateTable[105] = D'2018.03.09 12:30';
+ g_nfpDateTable[106] = D'2018.02.02 12:30';
+ g_nfpDateTable[107] = D'2018.01.05 12:30';
+ g_nfpDateTable[108] = D'2017.12.08 12:30';
+ g_nfpDateTable[109] = D'2017.11.03 12:30';
+ g_nfpDateTable[110] = D'2017.10.06 12:30';
+ g_nfpDateTable[111] = D'2017.09.01 12:30';
+ g_nfpDateTable[112] = D'2017.08.04 12:30';
+ g_nfpDateTable[113] = D'2017.07.07 12:30';
+ g_nfpDateTable[114] = D'2017.06.02 12:30';
+ g_nfpDateTable[115] = D'2017.05.05 12:30';
+ g_nfpDateTable[116] = D'2017.04.07 12:30';
+ g_nfpDateTable[117] = D'2017.03.10 12:30';
+ g_nfpDateTable[118] = D'2017.02.03 12:30';
+ g_nfpDateTable[119] = D'2017.01.06 12:30';
+ g_nfpDateTable[120] = D'2016.12.02 12:30';
+ g_nfpDateTable[121] = D'2016.11.04 12:30';
+ g_nfpDateTable[122] = D'2016.10.07 12:30';
+ g_nfpDateTable[123] = D'2016.09.02 12:30';
+ g_nfpDateTable[124] = D'2016.08.05 12:30';
+ g_nfpDateTable[125] = D'2016.07.08 12:30';
+ g_nfpDateTable[126] = D'2016.06.03 12:30';
+ g_nfpDateTable[127] = D'2016.05.06 12:30';
+ g_nfpDateTable[128] = D'2016.04.01 12:30';
+ g_nfpDateTable[129] = D'2016.03.04 12:30';
+ g_nfpDateTable[130] = D'2016.02.05 12:30';
+ g_nfpDateTable[131] = D'2016.01.08 12:30';
+ g_nfpDateTable[132] = D'2015.12.04 12:30';
+ g_nfpDateTable[133] = D'2015.11.06 12:30';
+ g_nfpDateTable[134] = D'2015.10.02 12:30';
+ g_nfpDateTable[135] = D'2015.09.04 12:30';
+ g_nfpDateTable[136] = D'2015.08.07 12:30';
+ g_nfpDateTable[137] = D'2015.07.02 12:30';
+ g_nfpDateTable[138] = D'2015.06.05 12:30';
+ g_nfpDateTable[139] = D'2015.05.08 12:30';
+ g_nfpDateTable[140] = D'2015.04.03 12:30';
+ g_nfpDateTable[141] = D'2015.03.06 12:30';
+ g_nfpDateTable[142] = D'2015.02.06 12:30';
+ g_nfpDateTable[143] = D'2015.01.09 12:30';
+ g_nfpDateTable[144] = D'2014.12.05 12:30';
+ g_nfpDateTable[145] = D'2014.11.07 12:30';
+ g_nfpDateTable[146] = D'2014.10.03 12:30';
+ g_nfpDateTable[147] = D'2014.09.05 12:30';
+ g_nfpDateTable[148] = D'2014.08.01 12:30';
+ g_nfpDateTable[149] = D'2014.07.03 12:30';
+ g_nfpDateTable[150] = D'2014.06.06 12:30';
+ g_nfpDateTable[151] = D'2014.05.02 12:30';
+ g_nfpDateTable[152] = D'2014.04.04 12:30';
+ g_nfpDateTable[153] = D'2014.03.07 12:30';
+ g_nfpDateTable[154] = D'2014.02.07 12:30';
+ g_nfpDateTable[155] = D'2014.01.10 12:30';
+ g_nfpDateTable[156] = D'2013.12.06 12:30';
+ g_nfpDateTable[157] = D'2013.11.08 12:30';
+ g_nfpDateTable[158] = D'2013.10.22 12:30';
+ g_nfpDateTable[159] = D'2013.09.06 12:30';
+ g_nfpDateTable[160] = D'2013.08.02 12:30';
+ g_nfpDateTable[161] = D'2013.07.05 12:30';
+ g_nfpDateTable[162] = D'2013.06.07 12:30';
+ g_nfpDateTable[163] = D'2013.05.03 12:30';
+ g_nfpDateTable[164] = D'2013.04.05 12:30';
+ g_nfpDateTable[165] = D'2013.03.08 12:30';
+ g_nfpDateTable[166] = D'2013.02.01 12:30';
+ g_nfpDateTable[167] = D'2013.01.04 12:30';
+ g_nfpDateTable[168] = D'2012.12.07 12:30';
+ g_nfpDateTable[169] = D'2012.11.02 12:30';
+ g_nfpDateTable[170] = D'2012.10.05 12:30';
+ g_nfpDateTable[171] = D'2012.09.07 12:30';
+ g_nfpDateTable[172] = D'2012.08.03 12:30';
+ g_nfpDateTable[173] = D'2012.07.06 12:30';
+ g_nfpDateTable[174] = D'2012.06.01 12:30';
+ g_nfpDateTable[175] = D'2012.05.04 12:30';
+ g_nfpDateTable[176] = D'2012.04.06 12:30';
+ g_nfpDateTable[177] = D'2012.03.09 12:30';
+ g_nfpDateTable[178] = D'2012.02.03 12:30';
+ g_nfpDateTable[179] = D'2012.01.06 12:30';
+ g_nfpDateTable[180] = D'2011.12.02 12:30';
+ g_nfpDateTable[181] = D'2011.11.04 12:30';
+ g_nfpDateTable[182] = D'2011.10.07 12:30';
+ g_nfpDateTable[183] = D'2011.09.02 12:30';
+ g_nfpDateTable[184] = D'2011.08.05 12:30';
+ g_nfpDateTable[185] = D'2011.07.08 12:30';
+ g_nfpDateTable[186] = D'2011.06.03 12:30';
+ g_nfpDateTable[187] = D'2011.05.06 12:30';
+ g_nfpDateTable[188] = D'2011.04.01 12:30';
+ g_nfpDateTable[189] = D'2011.03.04 12:30';
+ g_nfpDateTable[190] = D'2011.02.04 12:30';
+ g_nfpDateTable[191] = D'2011.01.07 12:30';
+ g_nfpDateTable[192] = D'2010.12.03 12:30';
+ g_nfpDateTable[193] = D'2010.11.05 12:30';
+ g_nfpDateTable[194] = D'2010.10.08 12:30';
+ g_nfpDateTable[195] = D'2010.09.03 12:30';
+ g_nfpDateTable[196] = D'2010.08.06 12:30';
+ g_nfpDateTable[197] = D'2010.07.02 12:30';
+ g_nfpDateTable[198] = D'2010.06.04 12:30';
+ g_nfpDateTable[199] = D'2010.05.07 12:30';
+ g_nfpDateTable[200] = D'2010.04.02 12:30';
+ g_nfpDateTable[201] = D'2010.03.05 12:30';
+ g_nfpDateTable[202] = D'2010.02.05 12:30';
+ g_nfpDateTable[203] = D'2010.01.08 12:30';
+ g_nfpDateTable[204] = D'2009.12.04 12:30';
+ g_nfpDateTable[205] = D'2009.11.06 12:30';
+ g_nfpDateTable[206] = D'2009.10.02 12:30';
+ g_nfpDateTable[207] = D'2009.09.04 12:30';
+ g_nfpDateTable[208] = D'2009.08.07 12:30';
+ g_nfpDateTable[209] = D'2009.07.02 12:30';
+ g_nfpDateTable[210] = D'2009.06.05 12:30';
+ g_nfpDateTable[211] = D'2009.05.08 12:30';
+ g_nfpDateTable[212] = D'2009.04.03 12:30';
+ g_nfpDateTable[213] = D'2009.03.06 12:30';
+ g_nfpDateTable[214] = D'2009.02.06 12:30';
+ g_nfpDateTable[215] = D'2009.01.09 12:30';
+ g_nfpDateTable[216] = D'2008.12.05 12:30';
+ g_nfpDateTable[217] = D'2008.11.07 12:30';
+ g_nfpDateTable[218] = D'2008.10.03 12:30';
+ g_nfpDateTable[219] = D'2008.09.05 12:30';
+ g_nfpDateTable[220] = D'2008.08.01 12:30';
+ g_nfpDateTable[221] = D'2008.07.03 12:30';
+ g_nfpDateTable[222] = D'2008.06.06 12:30';
+ g_nfpDateTable[223] = D'2008.05.02 12:30';
+ g_nfpDateTable[224] = D'2008.04.04 12:30';
+ g_nfpDateTable[225] = D'2008.03.07 12:30';
+ g_nfpDateTable[226] = D'2008.02.01 12:30';
+ g_nfpDateTable[227] = D'2008.01.04 12:30';
+ g_nfpDateTable[228] = D'2007.12.07 12:30';
+ g_nfpDateTable[229] = D'2007.11.02 12:30';
+ g_nfpDateTable[230] = D'2007.10.05 12:30';
+ g_nfpDateTable[231] = D'2007.09.07 12:30';
+ g_nfpDateTable[232] = D'2007.08.03 12:30';
+ g_nfpDateTable[233] = D'2007.07.06 12:30';
+ g_nfpDateTable[234] = D'2007.06.01 12:30';
+ g_nfpDateTable[235] = D'2007.05.04 12:30';
+ g_nfpDateTable[236] = D'2007.04.06 12:30';
+ g_nfpDateTable[237] = D'2007.03.09 12:30';
+ g_nfpDateTable[238] = D'2007.02.02 12:30';
+ g_nfpDateTable[239] = D'2007.01.05 12:30';
  // Original OnInit calls the calendar helper whenever the NFP filter is enabled.
  // In Strategy Tester the calendar normally returns 0; runtime then uses hardcoded dates.
  if ( EnableNFP_Filter )   g_nextNFPCalendar = GetNextNFPFromCalendar();
@@ -2199,7 +2207,7 @@ g_initialLegacyRiskLotPending=true;
  {
    local_2_double = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE)) ;
    local_3_double = MaxAllowedDD / 100.0 * local_2_double ;
-   if ( local_3_double>global_388_int_5DB4 )
+   if ( local_3_double>g_ddTierThreshold4Usd )
    {
      g_tradeFrequencyMode = 3 ;
    }
@@ -2211,7 +2219,7 @@ g_initialLegacyRiskLotPending=true;
      }
      else
      {
-       if ( local_3_double>global_386_int_5DAC )
+       if ( local_3_double>g_ddTierThreshold2Usd )
        {
          g_tradeFrequencyMode = 1 ;
        }
@@ -2324,14 +2332,14 @@ g_initialLegacyRiskLotPending=true;
    }
  }
  g_orderComment = ST1_Comment ;
- global_384_double_5DA0 = 0.0 ;
- global_382_bool_5D98 = false ;
- global_379_datetime_5D88 = 0 ;
+ g_propfirmDailyPeakEquity = 0.0 ;
+ g_propfirmDailyDDHit = false ;
+ g_lastM5BarTime = 0 ;
  g_propfirmDailyDDOn = true ;
- global_93_int_1F0 = ST1_MagicNumber ;
+ g_curStrategyMagic = ST1_MagicNumber ;
  g_maxPanelObjects = 300 ;
- global_361_double_5CC0 = g_panelFontSize * 25 * g_panelWidthScale * InfoPanelSizeAdjust ;
- g_panelCellHeight = g_panelFontSize * 3.5 * global_377_double_5D78 * InfoPanelSizeAdjust ;
+ g_panelCellWidth = g_panelFontSize * 25 * g_panelWidthScale * InfoPanelSizeAdjust ;
+ g_panelCellHeight = g_panelFontSize * 3.5 * g_panelRowHeightFactor * InfoPanelSizeAdjust ;
  g_currentStrategyIndex = 0 ;
  g_chartSymbol = Symbol() ;
  g_symbolPoint = SymbolInfoDouble(g_chartSymbol,16) ;
@@ -2354,29 +2362,29 @@ g_initialLegacyRiskLotPending=true;
    g_useFridayStop = true ;
  }
  g_curSpread = MarketInfo(g_chartSymbol,MODE_ASK) - MarketInfo(g_chartSymbol,MODE_BID) ;
- global_223_double_1AC4_si99[g_currentStrategyIndex] = NormalizeDouble(MathFloor(g_startLots_rw * 100.0) / 100.0,2);
+ g_strategyStartLots[g_currentStrategyIndex] = NormalizeDouble(MathFloor(g_startLots_rw * 100.0) / 100.0,2);
  if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
  {
-   global_223_double_1AC4_si99[g_currentStrategyIndex] = NormalizeDouble((MathFloor(g_startLots_rw * 10.0)) / 10.0,1);
-   if ( global_223_double_1AC4_si99[g_currentStrategyIndex]<0.1 )
+   g_strategyStartLots[g_currentStrategyIndex] = NormalizeDouble((MathFloor(g_startLots_rw * 10.0)) / 10.0,1);
+   if ( g_strategyStartLots[g_currentStrategyIndex]<0.1 )
    {
-     global_223_double_1AC4_si99[g_currentStrategyIndex] = 0.1;
+     g_strategyStartLots[g_currentStrategyIndex] = 0.1;
    }
  }
- if ( global_223_double_1AC4_si99[g_currentStrategyIndex]<MarketInfo(g_chartSymbol,MODE_MINLOT) )
+ if ( g_strategyStartLots[g_currentStrategyIndex]<MarketInfo(g_chartSymbol,MODE_MINLOT) )
  {
-   global_223_double_1AC4_si99[g_currentStrategyIndex] = MarketInfo(g_chartSymbol,MODE_MINLOT);
+   g_strategyStartLots[g_currentStrategyIndex] = MarketInfo(g_chartSymbol,MODE_MINLOT);
  }
- if ( global_223_double_1AC4_si99[g_currentStrategyIndex]>MarketInfo(g_chartSymbol,MODE_MAXLOT) )
+ if ( g_strategyStartLots[g_currentStrategyIndex]>MarketInfo(g_chartSymbol,MODE_MAXLOT) )
  {
-   global_223_double_1AC4_si99[g_currentStrategyIndex] = MarketInfo(g_chartSymbol,MODE_MAXLOT);
+   g_strategyStartLots[g_currentStrategyIndex] = MarketInfo(g_chartSymbol,MODE_MAXLOT);
  }
- if ( global_131_double_328 * g_pipSize<g_symbolPoint )
+ if ( g_gridSpacingPips * g_pipSize<g_symbolPoint )
  {
-   global_131_double_328 = g_symbolPoint / g_pipSize ;
+   g_gridSpacingPips = g_symbolPoint / g_pipSize ;
  }
  g_minStopDistPrice = MarketInfo(g_chartSymbol,MODE_STOPLEVEL) * g_symbolPoint ;
- global_309_double_2898 = MarketInfo(g_chartSymbol,MODE_FREEZELEVEL) * g_symbolPoint ;
+ g_freezeDistPrice = MarketInfo(g_chartSymbol,MODE_FREEZELEVEL) * g_symbolPoint ;
  g_symbolSuffix = StringSubstr(Symbol(),6,10) ;
  if ( g_symbolSuffix != "" )
  {
@@ -2396,41 +2404,41 @@ g_initialLegacyRiskLotPending=true;
    LoadStrategyRuntimeSettings(0); 
  }
  // Original dump contains no separate pair-initialisation failure message here.
- if ( global_100_double_230<=0.0 )
+ if ( g_stopLossPips<=0.0 )
  {
-   global_100_double_230 = 1.0 ;
+   g_stopLossPips = 1.0 ;
  }
  if ( g_takeProfitPips<=0.0 )
  {
    g_takeProfitPips = 1.0 ;
  }
- if ( g_beExtraPips>global_113_double_2A8 )
+ if ( g_beExtraPips>g_beTriggerPips )
  {
-   g_beExtraPips = global_113_double_2A8 + 0.1 ;
+   g_beExtraPips = g_beTriggerPips + 0.1 ;
  }
- if ( global_36_int_B0<global_309_double_2898 / g_pipSize )
+ if ( g_pendingMinGapPips<g_freezeDistPrice / g_pipSize )
  {
-   global_36_int_B0 = (int)(global_309_double_2898 / g_pipSize) ;
+   g_pendingMinGapPips = (int)(g_freezeDistPrice / g_pipSize) ;
  }
- if ( global_103_double_250!=0.0 && global_103_double_250<global_309_double_2898 / g_pipSize )
+ if ( g_profitTrailDistancePips!=0.0 && g_profitTrailDistancePips<g_freezeDistPrice / g_pipSize )
  {
-   global_103_double_250 = global_309_double_2898 / g_pipSize ;
+   g_profitTrailDistancePips = g_freezeDistPrice / g_pipSize ;
  }
- if ( global_103_double_250!=0.0 && global_103_double_250<g_minStopDistPrice / g_pipSize )
+ if ( g_profitTrailDistancePips!=0.0 && g_profitTrailDistancePips<g_minStopDistPrice / g_pipSize )
  {
-   global_103_double_250 = g_minStopDistPrice / g_pipSize ;
+   g_profitTrailDistancePips = g_minStopDistPrice / g_pipSize ;
  }
- if ( global_125_double_2F8>0.0 && global_126_double_300<global_309_double_2898 / g_pipSize )
+ if ( g_timeTrailDelayMin>0.0 && g_timeTrailDistancePips<g_freezeDistPrice / g_pipSize )
  {
-   global_126_double_300 = global_309_double_2898 / g_pipSize ;
+   g_timeTrailDistancePips = g_freezeDistPrice / g_pipSize ;
  }
- if ( global_125_double_2F8>0.0 && global_126_double_300<g_minStopDistPrice / g_pipSize )
+ if ( g_timeTrailDelayMin>0.0 && g_timeTrailDistancePips<g_minStopDistPrice / g_pipSize )
  {
-   global_126_double_300 = g_minStopDistPrice / g_pipSize ;
+   g_timeTrailDistancePips = g_minStopDistPrice / g_pipSize ;
  }
- if ( global_100_double_230<g_minStopDistPrice * 2.0 / g_pipSize )
+ if ( g_stopLossPips<g_minStopDistPrice * 2.0 / g_pipSize )
  {
-   global_100_double_230 = g_minStopDistPrice * 2.0 / g_pipSize ;
+   g_stopLossPips = g_minStopDistPrice * 2.0 / g_pipSize ;
  }
  if ( g_takeProfitPips<g_minStopDistPrice * 2.0 / g_pipSize )
  {
@@ -2440,13 +2448,13 @@ g_initialLegacyRiskLotPending=true;
  {
    g_entryBreakoutPips = g_minStopDistPrice * 2.0 / g_pipSize ;
  }
- if ( global_73_int_17C <  1 )
+ if ( g_fractalRightBars <  1 )
  {
-   global_73_int_17C = 1 ;
+   g_fractalRightBars = 1 ;
  }
- if ( global_74_int_180 <  1 )
+ if ( g_fractalLeftBars <  1 )
  {
-   global_74_int_180 = 1 ;
+   g_fractalLeftBars = 1 ;
  }
  if ( g_entryBreakoutPips<0.1 )
  {
@@ -2467,8 +2475,8 @@ g_initialLegacyRiskLotPending=true;
  }
  g_nfpWindowActive = false ;
  g_lastTrailOrderTime = TimeCurrent() ;
- global_194_bool_530 = false ;
- global_195_bool_531 = false ;
+ g_buyOrderSeen = false ;
+ g_sellOrderSeen = false ;
  if ( g_maxSpreadPts>g_MaxSpread_rw )
  {
    g_maxSpreadPts = g_MaxSpread_rw ;
@@ -2477,10 +2485,10 @@ g_initialLegacyRiskLotPending=true;
  FindSellEntryLow(g_entryTfPeriod); 
  g_buyEntryPrice = NormalizeDouble(g_entryHighPrice,g_symbolDigits) ;
  g_sellEntryPrice = NormalizeDouble(g_entryLowPrice,g_symbolDigits) ;
- global_250_int_2518 = 0 ;
- global_304_int_287C = (int)(global_125_double_2F8 * 60.0) ;
+ g_ordersSinceAnchor = 0 ;
+ g_timeTrailDelaySec = (int)(g_timeTrailDelayMin * 60.0) ;
  g_marketClosedFlag = true ;
- global_309_double_2898 = MarketInfo(g_chartSymbol,MODE_FREEZELEVEL) * g_symbolPoint ;
+ g_freezeDistPrice = MarketInfo(g_chartSymbol,MODE_FREEZELEVEL) * g_symbolPoint ;
  if ( !(g_useTradingHours) )
  {
    g_marketClosedFlag = false ;
@@ -2505,7 +2513,7 @@ g_initialLegacyRiskLotPending=true;
      g_virtSLCache[local_4_int][local_5_int] = 0.0;
    }
  }
- for (local_6_int = 0 ; local_6_int < global_200_int_16B4 ; local_6_int ++)
+ for (local_6_int = 0 ; local_6_int < g_virtualOrderSlots ; local_6_int ++)
  {
    for (local_7_int = 0 ; local_7_int < 3 ; local_7_int ++)
    {
@@ -2518,27 +2526,27 @@ g_initialLegacyRiskLotPending=true;
    g_virtualPendingOrders[local_8_int][1] = 0.0;
  }
  g_fridayStopDone = false ;
- global_252_string_2528=ST1_Comment + "B1";
- global_253_string_2538=ST1_Comment + "B2";
- global_254_string_2548=ST1_Comment + "S1";
- global_255_string_2558=ST1_Comment + "S2";
+ g_commentBuy1=ST1_Comment + "B1";
+ g_commentBuy2=ST1_Comment + "B2";
+ g_commentSell1=ST1_Comment + "S1";
+ g_commentSell2=ST1_Comment + "S2";
  g_lastHour = Hour() ;
- if ( global_67_bool_158 )
+ if ( g_limitPendingToOne )
  {
    g_maxPendingOrders = 1 ;
  }
  for (local_9_int = 0 ; local_9_int < 99 ; local_9_int ++)
  {
-   global_322_int_2AE0_si99[local_9_int] = 0;
-   global_321_int_2920_si99[local_9_int] = 0;
-   global_215_datetime_174C_si99[local_9_int] = iTime(g_chartSymbol,MT4Period(g_entryTfPeriod),1);
-   if ( !(global_223_double_1AC4_si99[local_9_int]<g_startLots_rw) )   continue;
-   global_223_double_1AC4_si99[local_9_int] = g_startLots_rw;
+   g_lastSignalBarsCount[local_9_int] = 0;
+   g_lastEntryBarsCount[local_9_int] = 0;
+   g_lastEntryBarTime[local_9_int] = iTime(g_chartSymbol,MT4Period(g_entryTfPeriod),1);
+   if ( !(g_strategyStartLots[local_9_int]<g_startLots_rw) )   continue;
+   g_strategyStartLots[local_9_int] = g_startLots_rw;
    
  }
  if ( g_profitCloseMode == 1 )
  {
-   global_64_double_148 = 0.0 ;
+   g_stopExtraPips = 0.0 ;
  }
  g_symbolDigits = (int)MarketInfo(g_chartSymbol,MODE_DIGITS) ;
  g_isDemoAccount = false ;
@@ -2631,23 +2639,23 @@ g_initialLegacyRiskLotPending=true;
 // UpdateEffectiveBalanceTracking 鈥斺€?鏈夋晥浣欓锛圤nlyUp 楂樻按浣?+ ManualBalance 瑕嗙洊锛?
 void UpdateEffectiveBalanceTracking()
 {
-  global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_BALANCE) ;
+  g_effectiveBalance = AccountInfoDouble(ACCOUNT_BALANCE) ;
   if ( UseEquity )
   {
-    global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_EQUITY) ;
+    g_effectiveBalance = AccountInfoDouble(ACCOUNT_EQUITY) ;
   }
-  if ( OnlyUp && g_highestBalance>global_401_double_6AD0 )
+  if ( OnlyUp && g_highestBalance>g_effectiveBalance )
   {
-    global_401_double_6AD0 = g_highestBalance ;
+    g_effectiveBalance = g_highestBalance ;
   }
-  if ( global_401_double_6AD0>g_highestBalance )
+  if ( g_effectiveBalance>g_highestBalance )
   {
-    g_highestBalance = global_401_double_6AD0 ;
+    g_highestBalance = g_effectiveBalance ;
     GlobalVariableSet("HighestBalance",g_highestBalance) ;
   }
   if ( ManualBalance>0.0 )
   {
-    global_401_double_6AD0 = ManualBalance ;
+    g_effectiveBalance = ManualBalance ;
   }
 }
 
@@ -2696,11 +2704,11 @@ void UpdateGmtDstDetection()
   bool   temp_dstHandled = false ;   // 鍘?local_1_bool锛氭湰娆?tick 鏄惁宸插鐞嗚繃 DST 鍒囨崲
   if ( IsAmericanDst() )
   {
-    global_395_int_6760 = Broker_GMT_OFFSET_Summer ;
+    g_brokerGmtOffset = Broker_GMT_OFFSET_Summer ;
     if ( ( !(g_isSummerTime) || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
     {
       g_isSummerTime = true ;
-      global_393_bool_675D = true ;
+      g_euDstActive = true ;
       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
       if ( g_detectedGmtOffset == 999 )
       {
@@ -2719,11 +2727,11 @@ void UpdateGmtDstDetection()
   }
   else
   {
-    global_395_int_6760 = Broker_GMT_OFFSET_Winter ;
+    g_brokerGmtOffset = Broker_GMT_OFFSET_Winter ;
     if ( ( g_isSummerTime || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
     {
       g_isSummerTime = false ;
-      global_393_bool_675D = false ;
+      g_euDstActive = false ;
       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
       if ( g_detectedGmtOffset == 999 )
       {
@@ -2743,9 +2751,9 @@ void UpdateGmtDstDetection()
   bool temp_isEuDst = MT4EuropeanDST();
   if ( temp_isEuDst )
   {
-    if ( ( !(global_393_bool_675D) || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    if ( ( !(g_euDstActive) || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
     {
-      global_393_bool_675D = true ;
+      g_euDstActive = true ;
       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
       if ( g_detectedGmtOffset == 999 )
       {
@@ -2764,9 +2772,9 @@ void UpdateGmtDstDetection()
   }
   else
   {
-    if ( ( global_393_bool_675D || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    if ( ( g_euDstActive || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
     {
-      global_393_bool_675D = false ;
+      g_euDstActive = false ;
       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
       if ( g_detectedGmtOffset == 999 )
       {
@@ -2796,7 +2804,7 @@ void UpdateGmtDstDetection()
   }
   else
   {
-    g_nfpAdjustedNow=TimeCurrent() - global_395_int_6760 * 3600;
+    g_nfpAdjustedNow=TimeCurrent() - g_brokerGmtOffset * 3600;
   }
 }
 
@@ -2840,7 +2848,7 @@ void ApplyTradeFrequencyTiers()
   {
     temp_usdBalance = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE)) ;
     temp_maxDDUsd = MaxAllowedDD / 100.0 * temp_usdBalance ;
-    if ( temp_maxDDUsd>global_388_int_5DB4 )
+    if ( temp_maxDDUsd>g_ddTierThreshold4Usd )
     {
       g_tradeFrequencyMode = 3 ;
     }
@@ -2852,7 +2860,7 @@ void ApplyTradeFrequencyTiers()
       }
       else
       {
-        if ( temp_maxDDUsd>global_386_int_5DAC )
+        if ( temp_maxDDUsd>g_ddTierThreshold2Usd )
         {
           g_tradeFrequencyMode = 1 ;
         }
@@ -2973,23 +2981,23 @@ bool CheckDailyRolloverAndPropFirmGate()
   if ( iBars(g_chartSymbol,MT4Period(PERIOD_D1)) != g_lastD1BarsCount )
   {
     g_lastD1BarsCount = iBars(g_chartSymbol,MT4Period(PERIOD_D1)) ;
-    global_382_bool_5D98 = false ;
-    global_384_double_5DA0 = 0.0 ;
+    g_propfirmDailyDDHit = false ;
+    g_propfirmDailyPeakEquity = 0.0 ;
   }
   if ( PropFirmMaxDailyDD>0.0 )
   {
     EnforcePropFirmDailyDrawdown();
   }
-  if ( global_382_bool_5D98 || !(g_propfirmDailyDDOn) )   return(false);
+  if ( g_propfirmDailyDDHit || !(g_propfirmDailyDDOn) )   return(false);
   return(true);
 }
 
 // DetectNewH1Bar 鈥斺€?H1 鏀剁洏 K 绾垮彉鍖栨娴嬶紙鍘?local_4_bool锛?
 bool DetectNewH1Bar()
 {
-  if ( global_399_datetime_6778 != iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) )
+  if ( g_lastH1BarTime != iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) )
   {
-    global_399_datetime_6778 = iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) ;
+    g_lastH1BarTime = iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) ;
     return(true);
   }
   return(false);
@@ -3035,7 +3043,7 @@ void RunStrategySlot(const int strategyIndex,const bool newH1Bar)
     if ( !( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) ) )
     {
       double temp_statsPL = 0.0;
-      MT4HistoryStats(g_chartSymbol,global_93_int_1F0,g_closedTradeCount[g_currentStrategyIndex],temp_statsPL);
+      MT4HistoryStats(g_chartSymbol,g_curStrategyMagic,g_closedTradeCount[g_currentStrategyIndex],temp_statsPL);
       temp_histPL = temp_statsPL;
     }
     g_histClosedPLbyStrategy[strategyIndex] = temp_histPL;
@@ -3073,9 +3081,9 @@ void RunAllStrategies(const bool newH1Bar)
 // UpdatePanelsOnNewM5Bar 鈥斺€?M5 鏀剁洏 K 绾垮彉鍖栨椂鍒锋柊绛栫暐/鍘嗗彶闈㈡澘琛?
 void UpdatePanelsOnNewM5Bar()
 {
-  if ( iTime(Symbol(),PERIOD_M5,1) != global_379_datetime_5D88 )
+  if ( iTime(Symbol(),PERIOD_M5,1) != g_lastM5BarTime )
   {
-    global_379_datetime_5D88 = iTime(Symbol(),PERIOD_M5,1) ;
+    g_lastM5BarTime = iTime(Symbol(),PERIOD_M5,1) ;
     UpdateStrategyPanelRows();
     UpdateHistoryPanel();
   }
@@ -3084,13 +3092,13 @@ void UpdatePanelsOnNewM5Bar()
 // FinishTickLotResizeThrottle 鈥斺€?2-tick 鑺傛祦鐨勪綑棰濆揩鐓э紙椹卞姩鎸傚崟鎵嬫暟鍐嶅钩琛★級
 void FinishTickLotResizeThrottle()
 {
-  global_381_int_5D94 ++;
-  if ( global_381_int_5D94 < 2 )
+  g_lotResizeTickCount ++;
+  if ( g_lotResizeTickCount < 2 )
   {
     return;
   }
   g_lastLotResizeBalance = AccountBalance() ; // JIT sync: original LastLotResizeBalance snapshots ACCOUNT_BALANCE
-  global_381_int_5D94 = 0 ;
+  g_lotResizeTickCount = 0 ;
 }
 
 // OnTick 鈥斺€?涓诲鐞嗗惊鐜細鍚勮繃婊ゅ櫒 -> 閫愮瓥鐣?LoadStrategyNSettings +
@@ -3187,9 +3195,9 @@ void OnTick()
  // threshold and the absence of NormalizeDouble() on entry offsets are
  // both visible in the dump (e.g. -170 -> -402.49625 at ratio 2.367625).
  double temp_variableRatio = 1.0 ;
- if ( global_7_double_50>=1000.0 )
+ if ( g_varValueScalePrice>=1000.0 )
  {
-   temp_variableRatio = iOpen(g_chartSymbol,MT4Period(PERIOD_D1),1) / global_7_double_50 ;
+   temp_variableRatio = iOpen(g_chartSymbol,MT4Period(PERIOD_D1),1) / g_varValueScalePrice ;
  }
  if ( UseVariableValues )
  {
@@ -3236,7 +3244,7 @@ void OnTick()
  g_symbolDigits = (int)MarketInfo(g_chartSymbol,MODE_DIGITS) ;
  g_curSpread = MarketInfo(g_chartSymbol,MODE_ASK) - MarketInfo(g_chartSymbol,MODE_BID) ;
  g_minStopDistPrice = MarketInfo(g_chartSymbol,MODE_STOPLEVEL) * g_symbolPoint ;
- global_309_double_2898 = MarketInfo(g_chartSymbol,MODE_FREEZELEVEL) * g_symbolPoint ;
+ g_freezeDistPrice = MarketInfo(g_chartSymbol,MODE_FREEZELEVEL) * g_symbolPoint ;
 
  // Recovered working-value transform from original JIT.  The nine strategy
  // setup functions rewrite every raw field before LoadStrategyRuntimeSettings(), so in-place use
@@ -3245,60 +3253,60 @@ void OnTick()
  g_entryBreakoutPips = g_entryBreakoutPips * g_variableRatio ;
  g_buyEntryOffsetPips = g_buyEntryOffsetPips * g_variableRatio ;
  g_sellEntryOffsetPips = g_sellEntryOffsetPips * g_variableRatio ;
- global_88_double_1D0 = global_88_double_1D0 * g_variableRatio ;
- global_100_double_230 = global_100_double_230 * g_variableRatio ;
+ g_pendingDupTolerancePips = g_pendingDupTolerancePips * g_variableRatio ;
+ g_stopLossPips = g_stopLossPips * g_variableRatio ;
  g_takeProfitPips = g_takeProfitPips * g_variableRatio ;
- global_103_double_250 = global_103_double_250 * g_variableRatio ;
+ g_profitTrailDistancePips = g_profitTrailDistancePips * g_variableRatio ;
  g_trailActivationPips = g_trailActivationPips * g_variableRatio ;
- global_105_double_260 = global_105_double_260 * g_variableRatio ;
- global_106_double_268 = global_106_double_268 * g_variableRatio ;
+ g_profitTrailCapPips = g_profitTrailCapPips * g_variableRatio ;
+ g_profitTrailBufferPips = g_profitTrailBufferPips * g_variableRatio ;
  // Original keeps raw trailing-TP settings and writes scaled shadows.
- global_110_double_288 = g_trailTpPips * g_variableRatio ;
- global_111_double_290 = global_109_double_280 * g_variableRatio ;
- global_113_double_2A8 = global_113_double_2A8 * g_variableRatio ;
+ g_tpTrailPips = g_trailTpPips * g_variableRatio ;
+ g_tpTrailMinGapPips = g_profitTargetPips * g_variableRatio ;
+ g_beTriggerPips = g_beTriggerPips * g_variableRatio ;
  g_beExtraPips = g_beExtraPips * g_variableRatio ;
 
  // These clamps are part of LoadStrategyRuntimeSettings() in the original JIT and therefore
  // must run for every strategy, not only once during OnInit().
- if ( global_100_double_230<=0.0 )
+ if ( g_stopLossPips<=0.0 )
  {
-   global_100_double_230 = 1.0 ;
+   g_stopLossPips = 1.0 ;
  }
  if ( g_takeProfitPips<=0.0 )
  {
    g_takeProfitPips = 1.0 ;
  }
- if ( g_beExtraPips>global_113_double_2A8 )
+ if ( g_beExtraPips>g_beTriggerPips )
  {
-   g_beExtraPips = global_113_double_2A8 + 0.1 ;
+   g_beExtraPips = g_beTriggerPips + 0.1 ;
  }
  if ( g_maxSpreadPts>g_MaxSpread_rw )
  {
    g_maxSpreadPts = g_MaxSpread_rw ;
  }
- if ( global_36_int_B0<global_309_double_2898 / g_pipSize )
+ if ( g_pendingMinGapPips<g_freezeDistPrice / g_pipSize )
  {
-   global_36_int_B0 = (int)(global_309_double_2898 / g_pipSize) ;
+   g_pendingMinGapPips = (int)(g_freezeDistPrice / g_pipSize) ;
  }
- if ( global_103_double_250!=0.0 && global_103_double_250<global_309_double_2898 / g_pipSize )
+ if ( g_profitTrailDistancePips!=0.0 && g_profitTrailDistancePips<g_freezeDistPrice / g_pipSize )
  {
-   global_103_double_250 = global_309_double_2898 / g_pipSize ;
+   g_profitTrailDistancePips = g_freezeDistPrice / g_pipSize ;
  }
- if ( global_103_double_250!=0.0 && global_103_double_250<g_minStopDistPrice / g_pipSize )
+ if ( g_profitTrailDistancePips!=0.0 && g_profitTrailDistancePips<g_minStopDistPrice / g_pipSize )
  {
-   global_103_double_250 = g_minStopDistPrice / g_pipSize ;
+   g_profitTrailDistancePips = g_minStopDistPrice / g_pipSize ;
  }
- if ( global_125_double_2F8>0.0 && global_126_double_300<global_309_double_2898 / g_pipSize )
+ if ( g_timeTrailDelayMin>0.0 && g_timeTrailDistancePips<g_freezeDistPrice / g_pipSize )
  {
-   global_126_double_300 = global_309_double_2898 / g_pipSize ;
+   g_timeTrailDistancePips = g_freezeDistPrice / g_pipSize ;
  }
- if ( global_125_double_2F8>0.0 && global_126_double_300<g_minStopDistPrice / g_pipSize )
+ if ( g_timeTrailDelayMin>0.0 && g_timeTrailDistancePips<g_minStopDistPrice / g_pipSize )
  {
-   global_126_double_300 = g_minStopDistPrice / g_pipSize ;
+   g_timeTrailDistancePips = g_minStopDistPrice / g_pipSize ;
  }
- if ( global_100_double_230<g_minStopDistPrice * 2.0 / g_pipSize )
+ if ( g_stopLossPips<g_minStopDistPrice * 2.0 / g_pipSize )
  {
-   global_100_double_230 = g_minStopDistPrice * 2.0 / g_pipSize ;
+   g_stopLossPips = g_minStopDistPrice * 2.0 / g_pipSize ;
  }
  if ( g_takeProfitPips<g_minStopDistPrice * 2.0 / g_pipSize )
  {
@@ -3308,13 +3316,13 @@ void OnTick()
  {
    g_entryBreakoutPips = g_minStopDistPrice * 2.0 / g_pipSize ;
  }
- if ( global_73_int_17C < 1 )
+ if ( g_fractalRightBars < 1 )
  {
-   global_73_int_17C = 1 ;
+   g_fractalRightBars = 1 ;
  }
- if ( global_74_int_180 < 1 )
+ if ( g_fractalLeftBars < 1 )
  {
-   global_74_int_180 = 1 ;
+   g_fractalLeftBars = 1 ;
  }
  if ( g_entryBreakoutPips<0.1 )
  {
@@ -3434,12 +3442,12 @@ void OnTick()
  g_currentStrategyIndex = arg_0_int ;
  local_2_bool = false ;
  
- if ( global_81_double_1A0>0.0 )
+ if ( g_entryBreakoutPct>0.0 )
  {
-   g_entryBreakoutPips = global_81_double_1A0 / 100.0 * MarketInfo(g_chartSymbol,MODE_ASK) * 10.0 ;
+   g_entryBreakoutPips = g_entryBreakoutPct / 100.0 * MarketInfo(g_chartSymbol,MODE_ASK) * 10.0 ;
  }
  bool temp_tradeAllowedForManagement = (MarketInfo(g_chartSymbol,MODE_TRADEALLOWED)!=0.0);
- if ( global_99_int_22C == 0 )
+ if ( g_entryTfMinutes == 0 )
  {
    if ( temp_tradeAllowedForManagement )
    {
@@ -3463,9 +3471,9 @@ void OnTick()
    // is still quote-only/closed.  The first trade-enabled tick must retry the
    // same bar, exactly when the original Market EA can also place pending orders.
    if ( temp_tradeAllowedForManagement &&
-        global_321_int_2920_si99[g_currentStrategyIndex] != iBars(g_chartSymbol,MT4Period(global_99_int_22C)) )
+        g_lastEntryBarsCount[g_currentStrategyIndex] != iBars(g_chartSymbol,MT4Period(g_entryTfMinutes)) )
    {
-     global_321_int_2920_si99[g_currentStrategyIndex] = iBars(g_chartSymbol,MT4Period(global_99_int_22C));
+     g_lastEntryBarsCount[g_currentStrategyIndex] = iBars(g_chartSymbol,MT4Period(g_entryTfMinutes));
      if ( ManageBuyPositions() )
      {
        local_2_bool = true ;
@@ -3489,7 +3497,7 @@ void OnTick()
  {
    if ( IsTradingScheduleOpen() && g_marketClosedFlag )
    {
-     if ( global_173_bool_4C4 )
+     if ( g_closePendingsOnWeekend )
      {
        RestoreStoredPendingOrders(); 
      }
@@ -3498,9 +3506,9 @@ void OnTick()
    if ( !(IsTradingScheduleOpen()) && !(g_marketClosedFlag) )
    {
      Print("Weekend starting! closing trades.."); 
-     if ( global_173_bool_4C4 )
+     if ( g_closePendingsOnWeekend )
      {
-       for (temp_int_1 = 0 ; temp_int_1 < global_200_int_16B4 ; temp_int_1=temp_int_1 + 1)
+       for (temp_int_1 = 0 ; temp_int_1 < g_virtualOrderSlots ; temp_int_1=temp_int_1 + 1)
        {
          for (temp_int_2 = 0 ; temp_int_2 < 2 ; temp_int_2=temp_int_2 + 1)
          {
@@ -3510,7 +3518,7 @@ void OnTick()
        temp_int_3 = 0;
        for (temp_int_4 = MT4OrdersTotal() ; temp_int_4 >= 0 ; temp_int_4=temp_int_4 - 1)
        {
-         if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol )   continue;
+         if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
          
          if ( ( OrderType() != 4 && OrderType() != 5 ) )   continue;
          Print("Storing pending order nr " + string(OrderTicket())); 
@@ -3524,7 +3532,7 @@ void OnTick()
      temp_int_5 = 1;
      for (temp_int_6 = MT4OrdersTotal() ; temp_int_6 >= 0 ; temp_int_6=temp_int_6 - 1)
      {
-       if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+       if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
        OrderDelete(OrderTicket(),0xFFFFFFFF); 
        
      }
@@ -3540,7 +3548,7 @@ void OnTick()
      temp_int_8 = 1;
      for (temp_int_9 = MT4OrdersTotal() ; temp_int_9 >= 0 ; temp_int_9=temp_int_9 - 1)
      {
-       if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+       if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
        OrderDelete(OrderTicket(),0xFFFFFFFF); 
        
      }
@@ -3558,7 +3566,7 @@ void OnTick()
      {
        do
        {
-         if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+         if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
@@ -3579,7 +3587,7 @@ void OnTick()
      {
        do
        {
-         if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+         if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
          OrderDelete(OrderTicket(),0xFFFFFFFF); 
          
        }
@@ -3629,7 +3637,7 @@ void OnTick()
          temp_int_17 = 1;
          for (temp_int_18 = MT4OrdersTotal() ; temp_int_18 >= 0 ; temp_int_18=temp_int_18 - 1)
          {
-            if ( OrderSelect(temp_int_18,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+            if ( OrderSelect(temp_int_18,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
            OrderDelete(OrderTicket(),0xFFFFFFFF); 
            
          }
@@ -3637,7 +3645,7 @@ void OnTick()
          {
            for (temp_int_19 = MT4OrdersTotal() ; temp_int_19 >= 0 ; temp_int_19=temp_int_19 - 1)
            {
-              if ( OrderSelect(temp_int_19,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_19,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3645,7 +3653,7 @@ void OnTick()
          temp_int_20 = 1;
          for (temp_int_21 = MT4OrdersTotal() ; temp_int_21 >= 0 ; temp_int_21=temp_int_21 - 1)
          {
-            if ( OrderSelect(temp_int_21,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+            if ( OrderSelect(temp_int_21,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
            OrderDelete(OrderTicket(),0xFFFFFFFF); 
            
          }
@@ -3653,7 +3661,7 @@ void OnTick()
          {
            for (temp_int_22 = MT4OrdersTotal() ; temp_int_22 >= 0 ; temp_int_22=temp_int_22 - 1)
            {
-              if ( OrderSelect(temp_int_22,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_22,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3663,7 +3671,7 @@ void OnTick()
          {
            do
            {
-             if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+             if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3674,7 +3682,7 @@ void OnTick()
          {
            for (temp_int_24 = MT4OrdersTotal() ; temp_int_24 >= 0 ; temp_int_24=temp_int_24 - 1)
            {
-              if ( OrderSelect(temp_int_24,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_24,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3684,7 +3692,7 @@ void OnTick()
          {
            do
            {
-             if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+             if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3695,7 +3703,7 @@ void OnTick()
          {
            for (temp_int_26 = MT4OrdersTotal() ; temp_int_26 >= 0 ; temp_int_26=temp_int_26 - 1)
            {
-              if ( OrderSelect(temp_int_26,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_26,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3729,7 +3737,7 @@ void OnTick()
            temp_int_44 = 1;
            for (temp_int_45 = MT4OrdersTotal() ; temp_int_45 >= 0 ; temp_int_45=temp_int_45 - 1)
            {
-              if ( OrderSelect(temp_int_45,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_45,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3737,7 +3745,7 @@ void OnTick()
            {
              for (temp_int_46 = MT4OrdersTotal() ; temp_int_46 >= 0 ; temp_int_46=temp_int_46 - 1)
              {
-                if ( OrderSelect(temp_int_46,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+                if ( OrderSelect(temp_int_46,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3745,7 +3753,7 @@ void OnTick()
            temp_int_47 = 1;
            for (temp_int_48 = MT4OrdersTotal() ; temp_int_48 >= 0 ; temp_int_48=temp_int_48 - 1)
            {
-              if ( OrderSelect(temp_int_48,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+              if ( OrderSelect(temp_int_48,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
              OrderDelete(OrderTicket(),0xFFFFFFFF); 
              
            }
@@ -3753,7 +3761,7 @@ void OnTick()
            {
              for (temp_int_49 = MT4OrdersTotal() ; temp_int_49 >= 0 ; temp_int_49=temp_int_49 - 1)
              {
-                if ( OrderSelect(temp_int_49,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+                if ( OrderSelect(temp_int_49,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3763,7 +3771,7 @@ void OnTick()
            {
              do
              {
-               if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+               if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3774,7 +3782,7 @@ void OnTick()
            {
              for (temp_int_51 = MT4OrdersTotal() ; temp_int_51 >= 0 ; temp_int_51=temp_int_51 - 1)
              {
-                if ( OrderSelect(temp_int_51,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-global_309_double_2898) )   continue;
+                if ( OrderSelect(temp_int_51,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice()-g_freezeDistPrice) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3784,7 +3792,7 @@ void OnTick()
            {
              do
              {
-               if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+               if ( OrderSelect(1,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3795,7 +3803,7 @@ void OnTick()
            {
              for (temp_int_53 = MT4OrdersTotal() ; temp_int_53 >= 0 ; temp_int_53=temp_int_53 - 1)
              {
-                if ( OrderSelect(temp_int_53,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+global_309_double_2898) )   continue;
+                if ( OrderSelect(temp_int_53,0,0) != true || OrderMagicNumber() != g_manualMagicNumber || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MarketInfo(g_chartSymbol,MODE_BID)>OrderOpenPrice()+g_freezeDistPrice) )   continue;
                OrderDelete(OrderTicket(),0xFFFFFFFF); 
                
              }
@@ -3945,7 +3953,7 @@ void OnTick()
    if ( DayOfWeek() != 5 && g_fridayStopDone == true )
    {
      g_fridayStopDone = false ;
-     if ( global_46_bool_FD )
+     if ( g_restorePendingsAfterFriday )
      {
        RestoreStoredPendingOrders(); 
        return(0); 
@@ -3953,7 +3961,7 @@ void OnTick()
    }
  }
  g_curSpread = MarketInfo(g_chartSymbol,MODE_ASK) - MarketInfo(g_chartSymbol,MODE_BID) ;
- if ( global_35_bool_AF )
+ if ( g_managePendingsBySpread )
  {
    if ( g_curSpread>g_MaxSpread_rw * g_pipSize )
    {
@@ -3970,7 +3978,7 @@ void OnTick()
    temp_int_88 = 0;
    for (temp_int_89 = MT4OrdersTotal() ; temp_int_89 >= 0 ; temp_int_89=temp_int_89 - 1)
    {
-     if ( OrderSelect(temp_int_89,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+     if ( OrderSelect(temp_int_89,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
      temp_int_88=temp_int_88 + 1;
      
    }
@@ -3980,7 +3988,7 @@ void OnTick()
      temp_long_91 = 0;
      for (temp_int_92 = MT4OrdersTotal() ; temp_int_92 >= 0 ; temp_int_92=temp_int_92 - 1)
      {
-       if ( OrderSelect(temp_int_92,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(OrderOpenPrice()>temp_double_90) )   continue;
+       if ( OrderSelect(temp_int_92,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(OrderOpenPrice()>temp_double_90) )   continue;
        temp_long_91 = OrderTicket();
        temp_double_90 = OrderOpenPrice();
        
@@ -4003,7 +4011,7 @@ void OnTick()
    temp_int_95 = 0;
    for (temp_int_96 = MT4OrdersTotal() ; temp_int_96 >= 0 ; temp_int_96=temp_int_96 - 1)
    {
-     if ( OrderSelect(temp_int_96,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+     if ( OrderSelect(temp_int_96,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
      temp_int_95=temp_int_95 + 1;
      
    }
@@ -4013,7 +4021,7 @@ void OnTick()
      temp_long_98 = 0;
      for (temp_int_99 = MT4OrdersTotal() ; temp_int_99 >= 0 ; temp_int_99=temp_int_99 - 1)
      {
-       if ( OrderSelect(temp_int_99,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(OrderOpenPrice()<temp_double_97) )   continue;
+       if ( OrderSelect(temp_int_99,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(OrderOpenPrice()<temp_double_97) )   continue;
        temp_long_98 = OrderTicket();
        temp_double_97 = OrderOpenPrice();
        
@@ -4036,25 +4044,25 @@ void OnTick()
  }
  if ( !(g_fridayStopDone) && g_orderMgmtMode == 1 && !(g_marketClosedFlag) )
  {
-   if ( ( global_322_int_2AE0_si99[g_currentStrategyIndex] != iBars(g_chartSymbol,MT4Period(g_signalTfPeriod)) || g_signalTfPeriod == 0 ) )
+   if ( ( g_lastSignalBarsCount[g_currentStrategyIndex] != iBars(g_chartSymbol,MT4Period(g_signalTfPeriod)) || g_signalTfPeriod == 0 ) )
    {
-     global_322_int_2AE0_si99[g_currentStrategyIndex] = iBars(g_chartSymbol,MT4Period(g_signalTfPeriod));
-     if ( global_119_int_2D0 >  0 && global_120_int_2D4 >= 0 )
+     g_lastSignalBarsCount[g_currentStrategyIndex] = iBars(g_chartSymbol,MT4Period(g_signalTfPeriod));
+     if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 )
      {
-       g_sellTrailStopLevel[g_currentStrategyIndex] = g_hlOffsetPips * g_pipSize + (MT4FastFractalHigh(global_117_int_2C8,global_119_int_2D0,global_120_int_2D4) + g_curSpread);
-       g_buyTrailStopLevel[g_currentStrategyIndex] = MT4FastFractalLow(global_117_int_2C8,global_119_int_2D0,global_120_int_2D4) - g_hlOffsetPips * g_pipSize;
+       g_sellTrailStopLevel[g_currentStrategyIndex] = g_hlOffsetPips * g_pipSize + (MT4FastFractalHigh(g_hlFractalTfMinutes,g_hlFractalRightBars,g_hlFractalLeftBars) + g_curSpread);
+       g_buyTrailStopLevel[g_currentStrategyIndex] = MT4FastFractalLow(g_hlFractalTfMinutes,g_hlFractalRightBars,g_hlFractalLeftBars) - g_hlOffsetPips * g_pipSize;
      }
-     if ( global_187_int_504 >  0 )
+     if ( g_randomEntryMaxBars >  0 )
      {
-       local_8_int=MathRand() * global_187_int_504 / 32768 + 1;
-       global_15_int_78 = local_8_int ;
+       local_8_int=MathRand() * g_randomEntryMaxBars / 32768 + 1;
+       g_randomEntryOffsetPips = local_8_int ;
      }
      if ( g_profitCloseMode != 1 )
      {
        temp_int_102 = 0;
        for (temp_int_103 = MT4OrdersTotal() ; temp_int_103 >= 0 ; temp_int_103=temp_int_103 - 1)
        {
-         if ( OrderSelect(temp_int_103,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 0 )   continue;
+         if ( OrderSelect(temp_int_103,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 0 )   continue;
          temp_int_102=temp_int_102 + 1;
          
        }
@@ -4063,7 +4071,7 @@ void OnTick()
          temp_int_104 = 0;
          for (temp_int_105 = MT4OrdersTotal() ; temp_int_105 >= 0 ; temp_int_105=temp_int_105 - 1)
          {
-           if ( OrderSelect(temp_int_105,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 1 )   continue;
+           if ( OrderSelect(temp_int_105,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 1 )   continue;
            temp_int_104=temp_int_104 + 1;
            
          }
@@ -4145,16 +4153,16 @@ void OnTick()
  int        temp_int_12;
  int        temp_int_13;
 
- for (local_1_int = 0 ; local_1_int < global_200_int_16B4 ; local_1_int ++)
+ for (local_1_int = 0 ; local_1_int < g_virtualOrderSlots ; local_1_int ++)
  {
    if ( !(g_virtualPendingOrders[local_1_int][0]>0.0) )   continue;
    
    if ( g_virtualPendingOrders[local_1_int][1]==4.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualPendingOrders[local_1_int][0] - g_minStopDistPrice )
    {
      Print("Restoring pending buy-order"); 
-     global_230_int_1E08 = OrderSend(g_chartSymbol,4,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),g_virtualPendingOrders[local_1_int][0] - (global_100_double_230 + global_64_double_148) * g_pipSize,g_takeProfitPips * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_orderComment,global_93_int_1F0,g_pendingOrderExpiry + 0x2A300,Green) ;
+     g_lastOrderResult = OrderSend(g_chartSymbol,4,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),g_virtualPendingOrders[local_1_int][0] - (g_stopLossPips + g_stopExtraPips) * g_pipSize,g_takeProfitPips * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry + 0x2A300,Green) ;
      temp_double_1 = g_virtualPendingOrders[local_1_int][0];
-     temp_long_2 = global_230_int_1E08;
+     temp_long_2 = g_lastOrderResult;
      for (temp_int_3 = 0 ; temp_int_3 < 100 ; temp_int_3=temp_int_3 + 1)
      {
        if ( !(g_stopOrderTicketPrice[temp_int_3][0]==0.0) )   continue;
@@ -4163,7 +4171,7 @@ void OnTick()
        break;
        
      }
-     if ( global_230_int_1E08 <= 0 )
+     if ( g_lastOrderResult <= 0 )
      {
        if ( MT4_LastError() == 132 )
        {
@@ -4172,9 +4180,9 @@ void OnTick()
            do
            {
              Sleep(2500); 
-             global_230_int_1E08 = OrderSend(g_chartSymbol,4,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),g_virtualPendingOrders[local_1_int][0] - (global_100_double_230 + global_64_double_148) * g_pipSize,g_takeProfitPips * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_orderComment,global_93_int_1F0,g_pendingOrderExpiry + 0x2A300,Green) ;
+             g_lastOrderResult = OrderSend(g_chartSymbol,4,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),g_virtualPendingOrders[local_1_int][0] - (g_stopLossPips + g_stopExtraPips) * g_pipSize,g_takeProfitPips * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry + 0x2A300,Green) ;
              temp_double_4 = g_virtualPendingOrders[local_1_int][0];
-             temp_long_5 = global_230_int_1E08;
+             temp_long_5 = g_lastOrderResult;
              for (temp_int_6 = 0 ; temp_int_6 < 100 ; temp_int_6=temp_int_6 + 1)
              {
                if ( !(g_stopOrderTicketPrice[temp_int_6][0]==0.0) )   continue;
@@ -4193,9 +4201,9 @@ void OnTick()
    }
    if ( !(g_virtualPendingOrders[local_1_int][1]==5.0) || !(MarketInfo(g_chartSymbol,MODE_BID)>g_virtualPendingOrders[local_1_int][0] + g_minStopDistPrice) )   continue;
    Print("Restoring pending sell-order"); 
-   global_230_int_1E08 = OrderSend(g_chartSymbol,5,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),(global_100_double_230 + global_64_double_148) * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_virtualPendingOrders[local_1_int][0] - g_takeProfitPips * g_pipSize,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry + 0x2A300,Green) ;
+   g_lastOrderResult = OrderSend(g_chartSymbol,5,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),(g_stopLossPips + g_stopExtraPips) * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_virtualPendingOrders[local_1_int][0] - g_takeProfitPips * g_pipSize,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry + 0x2A300,Green) ;
    temp_double_7 = g_virtualPendingOrders[local_1_int][0];
-   temp_long_8 = global_230_int_1E08;
+   temp_long_8 = g_lastOrderResult;
    for (temp_int_9 = 0 ; temp_int_9 < 100 ; temp_int_9=temp_int_9 + 1)
    {
      if ( !(g_stopOrderTicketPrice[temp_int_9][0]==0.0) )   continue;
@@ -4204,7 +4212,7 @@ void OnTick()
      break;
      
    }
-   if ( global_230_int_1E08 > 0 )   continue;
+   if ( g_lastOrderResult > 0 )   continue;
    
    if ( MT4_LastError() == 132 )
    {
@@ -4213,9 +4221,9 @@ void OnTick()
        do
        {
          Sleep(2500); 
-         global_230_int_1E08 = OrderSend(g_chartSymbol,5,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),(global_100_double_230 + global_64_double_148) * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_virtualPendingOrders[local_1_int][0] - g_takeProfitPips * g_pipSize,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry + 0x2A300,Green) ;
+         g_lastOrderResult = OrderSend(g_chartSymbol,5,g_virtualPendingOrders[local_1_int][2],g_virtualPendingOrders[local_1_int][0],int(g_slippagePts * g_pipSize),(g_stopLossPips + g_stopExtraPips) * g_pipSize + g_virtualPendingOrders[local_1_int][0],g_virtualPendingOrders[local_1_int][0] - g_takeProfitPips * g_pipSize,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry + 0x2A300,Green) ;
          temp_double_10 = g_virtualPendingOrders[local_1_int][0];
-         temp_long_11 = global_230_int_1E08;
+         temp_long_11 = g_lastOrderResult;
          for (temp_int_12 = 0 ; temp_int_12 < 100 ; temp_int_12=temp_int_12 + 1)
          {
            if ( !(g_stopOrderTicketPrice[temp_int_12][0]==0.0) )   continue;
@@ -4232,7 +4240,7 @@ void OnTick()
    Print("error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting entry order"); 
    
  }
- for (temp_int_13 = 0 ; temp_int_13 < global_200_int_16B4 ; temp_int_13=temp_int_13 + 1)
+ for (temp_int_13 = 0 ; temp_int_13 < g_virtualOrderSlots ; temp_int_13=temp_int_13 + 1)
  {
    g_virtualPendingOrders[temp_int_13][0] = 0.0;
    g_virtualPendingOrders[temp_int_13][1] = 0.0;
@@ -4262,14 +4270,14 @@ void OnTick()
  {
    if ( OrderSelect(local_2_int,0,0) != true )   continue;
    
-   if ( ( OrderMagicNumber() != global_93_int_1F0 && OrderMagicNumber() != g_manualMagicNumber ) || OrderSymbol() != g_chartSymbol )   continue;
+   if ( ( OrderMagicNumber() != g_curStrategyMagic && OrderMagicNumber() != g_manualMagicNumber ) || OrderSymbol() != g_chartSymbol )   continue;
    
-   if ( OrderType() == 4 && OrderOpenPrice()<global_36_int_B0 * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) && MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice() - global_309_double_2898 )
+   if ( OrderType() == 4 && OrderOpenPrice()<g_pendingMinGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) && MarketInfo(g_chartSymbol,MODE_ASK)<OrderOpenPrice() - g_freezeDistPrice )
    {
      if ( g_maxSpreadPts>0.0 )
      {
        Print("Spread too high..(" + string(g_curSpread) + ") storing and deleting order " + string(OrderTicket())); 
-       for (local_3_int = 0 ; local_3_int < global_200_int_16B4 ; local_3_int ++)
+       for (local_3_int = 0 ; local_3_int < g_virtualOrderSlots ; local_3_int ++)
        {
          if ( g_virtualPendingOrders[local_3_int][0]==0.0 )
          {
@@ -4308,14 +4316,14 @@ void OnTick()
    }
    if ( OrderType() != 5 )   continue;
    temp_double_5 = OrderOpenPrice();
-   if ( !(temp_double_5>MarketInfo(g_chartSymbol,MODE_BID) - global_36_int_B0 * g_pipSize) )   continue;
+   if ( !(temp_double_5>MarketInfo(g_chartSymbol,MODE_BID) - g_pendingMinGapPips * g_pipSize) )   continue;
    temp_double_6 = MarketInfo(g_chartSymbol,MODE_BID);
-   if ( !(temp_double_6>OrderOpenPrice() + global_309_double_2898) )   continue;
+   if ( !(temp_double_6>OrderOpenPrice() + g_freezeDistPrice) )   continue;
    
    if ( g_maxSpreadPts>0.0 )
    {
      Print("Spread too high..(" + string(g_curSpread) + ") storing and deleting order " + string(OrderTicket())); 
-     for (local_4_int = 0 ; local_4_int < global_200_int_16B4 ; local_4_int ++)
+     for (local_4_int = 0 ; local_4_int < g_virtualOrderSlots ; local_4_int ++)
      {
        if ( g_virtualPendingOrders[local_4_int][0]==0.0 )
        {
@@ -4372,30 +4380,30 @@ void OnTick()
  double    local_7_double;
 //----- -----
 
- local_1_double = global_223_double_1AC4_si99[g_currentStrategyIndex] ;
- local_2_double = global_223_double_1AC4_si99[g_currentStrategyIndex] ;
- global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_BALANCE) ;
+ local_1_double = g_strategyStartLots[g_currentStrategyIndex] ;
+ local_2_double = g_strategyStartLots[g_currentStrategyIndex] ;
+ g_effectiveBalance = AccountInfoDouble(ACCOUNT_BALANCE) ;
  if ( UseEquity )
  {
-   global_401_double_6AD0 = AccountInfoDouble(ACCOUNT_EQUITY) ;
+   g_effectiveBalance = AccountInfoDouble(ACCOUNT_EQUITY) ;
  }
- if ( OnlyUp && g_highestBalance>global_401_double_6AD0 )
+ if ( OnlyUp && g_highestBalance>g_effectiveBalance )
  {
-   global_401_double_6AD0 = g_highestBalance ;
+   g_effectiveBalance = g_highestBalance ;
  }
- if ( global_401_double_6AD0>g_highestBalance )
+ if ( g_effectiveBalance>g_highestBalance )
  {
-   g_highestBalance = global_401_double_6AD0 ;
+   g_highestBalance = g_effectiveBalance ;
    GlobalVariableSet("HighestBalance",g_highestBalance) ;
  }
  if ( ManualBalance>0.0 )
  {
-   global_401_double_6AD0 = ManualBalance ;
+   g_effectiveBalance = ManualBalance ;
  }
  // Original JIT 0x19aa50e89e7-0x19aa50e8a29: lot-sizing guard.
- if ( global_401_double_6AD0==0.0 )
+ if ( g_effectiveBalance==0.0 )
  {
-   global_401_double_6AD0 = 0.01 ;
+   g_effectiveBalance = 0.01 ;
  }
  local_3_double = arg_0_double ;
  if ( ( g_symbolDigits == 2 || g_symbolDigits == 4 ) )
@@ -4405,7 +4413,7 @@ void OnTick()
  if ( Risk <  999 && Risk >  0 )
  {
    local_4_double = Risk ;
-   local_5_double = local_4_double / 1000.0 * global_401_double_6AD0 ;
+   local_5_double = local_4_double / 1000.0 * g_effectiveBalance ;
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
    {
      local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_5_double / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * local_3_double) * 0.1),1) ;
@@ -4417,7 +4425,7 @@ void OnTick()
  }
  if ( Risk == 999 )
  {
-   local_6_double = global_148_double_420 / 100.0 * global_401_double_6AD0 ;
+   local_6_double = g_risk999BalancePct / 100.0 * g_effectiveBalance ;
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
    {
      local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_6_double / (MarketInfo(g_chartSymbol,MODE_TICKVALUE) * local_3_double) * 0.1),1) ;
@@ -4442,65 +4450,65 @@ void OnTick()
  {
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (global_401_double_6AD0 / global_145_int_40C * 0.01),1) ;
+     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (g_effectiveBalance / g_ddTierDivisor * 0.01),1) ;
    }
    if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.01 )
    {
-     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (global_401_double_6AD0 / global_145_int_40C * 0.01),2) ;
+     local_2_double = NormalizeDouble(arg_1_int * 0.01 * (g_effectiveBalance / g_ddTierDivisor * 0.01),2) ;
    }
  }
  if ( Risk == 1234 )
  {
   if ( UseWeightedLots )
   {
-    if ( global_397_double_6768==0.0 )
+    if ( g_usdToAccountRate==0.0 )
     {
-      global_397_double_6768 = 100000.0 ;
+      g_usdToAccountRate = 100000.0 ;
      }
-     global_146_double_410 = MaxAllowedDD / g_riskFactorByTier ;
+     g_ddLotFactor = MaxAllowedDD / g_riskFactorByTier ;
      if ( SymbolInfoDouble(g_chartSymbol,36)==0.1 )
      {
-       local_2_double = NormalizeDouble(global_146_double_410 / global_397_double_6768 * global_401_double_6AD0 / 100.0 * 0.01,1) ;
+       local_2_double = NormalizeDouble(g_ddLotFactor / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,1) ;
      }
      if ( SymbolInfoDouble(g_chartSymbol,36)==0.01 )
      {
-       local_2_double = NormalizeDouble(global_146_double_410 / global_397_double_6768 * global_401_double_6AD0 / 100.0 * 0.01,2) ;
+       local_2_double = NormalizeDouble(g_ddLotFactor / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,2) ;
      }
    }
    else
    {
-     if ( global_397_double_6768==0.0 )
+     if ( g_usdToAccountRate==0.0 )
      {
-       global_397_double_6768 = 100000.0 ;
+       g_usdToAccountRate = 100000.0 ;
      }
-     local_7_double = ConvertAccountCurrencyToUsd(global_401_double_6AD0) ;
+     local_7_double = ConvertAccountCurrencyToUsd(g_effectiveBalance) ;
      if ( g_tradeFrequencyMode == 0 )
      {
-       global_145_int_40C = (int)(g_ddTierThreshold1 / (MaxAllowedDD / 100.0)) ;
+       g_ddTierDivisor = (int)(g_ddTierThreshold1 / (MaxAllowedDD / 100.0)) ;
      }
      if ( g_tradeFrequencyMode == 1 )
      {
-       global_145_int_40C = (int)(global_386_int_5DAC / (MaxAllowedDD / 100.0)) ;
+       g_ddTierDivisor = (int)(g_ddTierThreshold2Usd / (MaxAllowedDD / 100.0)) ;
      }
      if ( g_tradeFrequencyMode == 2 )
      {
-       global_145_int_40C = (int)(g_ddTierThreshold3 / (MaxAllowedDD / 100.0)) ;
+       g_ddTierDivisor = (int)(g_ddTierThreshold3 / (MaxAllowedDD / 100.0)) ;
      }
      if ( g_tradeFrequencyMode == 3 )
      {
-       global_145_int_40C = (int)(global_388_int_5DB4 / (MaxAllowedDD / 100.0)) ;
+       g_ddTierDivisor = (int)(g_ddTierThreshold4Usd / (MaxAllowedDD / 100.0)) ;
      }
      if ( g_tradeFrequencyMode == 4 )
      {
-       global_145_int_40C = (int)(g_ddTierThreshold5 / (MaxAllowedDD / 100.0)) ;
+       g_ddTierDivisor = (int)(g_ddTierThreshold5 / (MaxAllowedDD / 100.0)) ;
      }
      if ( SymbolInfoDouble(g_chartSymbol,36)==0.1 )
      {
-       local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_7_double / global_145_int_40C * 0.01),1) ;
+       local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_7_double / g_ddTierDivisor * 0.01),1) ;
      }
      if ( SymbolInfoDouble(g_chartSymbol,36)==0.01 )
      {
-       local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_7_double / global_145_int_40C * 0.01),2) ;
+       local_2_double = NormalizeDouble(arg_1_int * 0.01 * (local_7_double / g_ddTierDivisor * 0.01),2) ;
      }
    }
  }
@@ -4508,11 +4516,11 @@ void OnTick()
  {
    if ( SymbolInfoDouble(g_chartSymbol,36)==0.1 )
    {
-     local_2_double = NormalizeDouble(MaxRiskPerStrategy_ / global_397_double_6768 * global_401_double_6AD0 / 100.0 * 0.01,1) ;
+     local_2_double = NormalizeDouble(MaxRiskPerStrategy_ / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,1) ;
    }
    if ( SymbolInfoDouble(g_chartSymbol,36)==0.01 )
    {
-     local_2_double = NormalizeDouble(MaxRiskPerStrategy_ / global_397_double_6768 * global_401_double_6AD0 / 100.0 * 0.01,2) ;
+     local_2_double = NormalizeDouble(MaxRiskPerStrategy_ / g_usdToAccountRate * g_effectiveBalance / 100.0 * 0.01,2) ;
    }
  }
  // Legacy hidden Risk values 1/2 preserve strategy 1's manual lot until its
@@ -4542,10 +4550,10 @@ void OnTick()
  }
  if ( MarketInfo(g_chartSymbol,MODE_LOTSTEP)==0.1 )
  {
-   global_223_double_1AC4_si99[g_currentStrategyIndex] = NormalizeDouble((MathFloor(local_2_double * 10.0)) / 10.0,1);
+   g_strategyStartLots[g_currentStrategyIndex] = NormalizeDouble((MathFloor(local_2_double * 10.0)) / 10.0,1);
    return;
  }
- global_223_double_1AC4_si99[g_currentStrategyIndex] = NormalizeDouble(MathFloor(local_2_double * 100.0) / 100.0,2);
+ g_strategyStartLots[g_currentStrategyIndex] = NormalizeDouble(MathFloor(local_2_double * 100.0) / 100.0,2);
  }
 //CalculateStrategyLotSize <<==--------   --------
 // ============================================================================
@@ -4574,19 +4582,19 @@ void OnTick()
  bool       temp_bool_7;
 
  local_4_bool = false ;
- local_5_int=global_74_int_180 + 1;
+ local_5_int=g_fractalLeftBars + 1;
  do
  {
    local_3_bool = true ;
    local_4_bool = true ;
-   for (local_6_int = local_5_int ; local_6_int >= local_5_int - global_74_int_180 ; local_6_int --)
+   for (local_6_int = local_5_int ; local_6_int >= local_5_int - g_fractalLeftBars ; local_6_int --)
    {
      if ( iHigh(g_chartSymbol,MT4Period(arg_0_int),local_6_int)>iHigh(g_chartSymbol,MT4Period(arg_0_int),local_5_int) )
      {
        local_4_bool = false ;
      }
    }
-   for (local_7_int = local_5_int ; local_7_int <= local_5_int + global_73_int_17C ; local_7_int ++)
+   for (local_7_int = local_5_int ; local_7_int <= local_5_int + g_fractalRightBars ; local_7_int ++)
    {
      if ( iHigh(g_chartSymbol,MT4Period(arg_0_int),local_7_int)>iHigh(g_chartSymbol,MT4Period(arg_0_int),local_5_int) )
      {
@@ -4611,12 +4619,12 @@ void OnTick()
        temp_bool_7=false; 
        for (temp_int_6 = MT4OrdersTotal() ; temp_int_6 >= 0 ; temp_int_6=temp_int_6 - 1)
        {
-         if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MathAbs(OrderOpenPrice() - (g_buyEntryOffsetPips * g_pipSize + temp_double_5))<global_88_double_1D0 * g_pipSize) )   continue;
+         if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MathAbs(OrderOpenPrice() - (g_buyEntryOffsetPips * g_pipSize + temp_double_5))<g_pendingDupTolerancePips * g_pipSize) )   continue;
          temp_bool_7 = true;
           break;
          
        }
-       if ( !(temp_bool_7) && ( !(global_75_bool_184) || !(iClose(g_chartSymbol,MT4Period(arg_0_int),local_5_int - 1)>iHigh(g_chartSymbol,MT4Period(arg_0_int),local_5_int) - g_entryBreakoutPips * g_pipSize) ) )
+       if ( !(temp_bool_7) && ( !(g_fractalRequireUnbrokenLevel) || !(iClose(g_chartSymbol,MT4Period(arg_0_int),local_5_int - 1)>iHigh(g_chartSymbol,MT4Period(arg_0_int),local_5_int) - g_entryBreakoutPips * g_pipSize) ) )
        {
          local_2_bool = true ;
          g_entryHighPrice = NormalizeDouble(iHigh(g_chartSymbol,MT4Period(arg_0_int),local_5_int),g_symbolDigits) ;
@@ -4625,7 +4633,7 @@ void OnTick()
      }
    }
    local_5_int ++;
-   if ( local_5_int <= global_77_int_188 )   continue;
+   if ( local_5_int <= g_fractalMinLookback )   continue;
    g_entryHighPrice = 0.0 ;
    break;
    
@@ -4653,19 +4661,19 @@ void OnTick()
  bool       temp_bool_7;
 
  local_4_bool = false ;
- local_5_int=global_74_int_180 + 1;
+ local_5_int=g_fractalLeftBars + 1;
  do
  {
    local_3_bool = true ;
    local_4_bool = true ;
-   for (local_6_int = local_5_int ; local_6_int >= local_5_int - global_74_int_180 ; local_6_int --)
+   for (local_6_int = local_5_int ; local_6_int >= local_5_int - g_fractalLeftBars ; local_6_int --)
    {
      if ( iLow(g_chartSymbol,MT4Period(arg_0_int),local_6_int)<iLow(g_chartSymbol,MT4Period(arg_0_int),local_5_int) )
      {
        local_4_bool = false ;
      }
    }
-   for (local_7_int = local_5_int ; local_7_int <= local_5_int + global_73_int_17C ; local_7_int ++)
+   for (local_7_int = local_5_int ; local_7_int <= local_5_int + g_fractalRightBars ; local_7_int ++)
    {
      if ( iLow(g_chartSymbol,MT4Period(arg_0_int),local_7_int)<iLow(g_chartSymbol,MT4Period(arg_0_int),local_5_int) )
      {
@@ -4690,12 +4698,12 @@ void OnTick()
        temp_bool_7=false; 
        for (temp_int_6 = MT4OrdersTotal() ; temp_int_6 >= 0 ; temp_int_6=temp_int_6 - 1)
        {
-         if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MathAbs(OrderOpenPrice() - (temp_double_5 - g_sellEntryOffsetPips * g_pipSize))<global_88_double_1D0 * g_pipSize) )   continue;
+         if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MathAbs(OrderOpenPrice() - (temp_double_5 - g_sellEntryOffsetPips * g_pipSize))<g_pendingDupTolerancePips * g_pipSize) )   continue;
          temp_bool_7 = true;
           break;
          
        }
-       if ( !(temp_bool_7) && ( !(global_75_bool_184) || !(iClose(g_chartSymbol,MT4Period(arg_0_int),local_5_int - 1)<g_entryBreakoutPips * g_pipSize + iLow(g_chartSymbol,MT4Period(arg_0_int),local_5_int)) ) )
+       if ( !(temp_bool_7) && ( !(g_fractalRequireUnbrokenLevel) || !(iClose(g_chartSymbol,MT4Period(arg_0_int),local_5_int - 1)<g_entryBreakoutPips * g_pipSize + iLow(g_chartSymbol,MT4Period(arg_0_int),local_5_int)) ) )
        {
          local_2_bool = true ;
          g_entryLowPrice = NormalizeDouble(iLow(g_chartSymbol,MT4Period(arg_0_int),local_5_int),g_symbolDigits) ;
@@ -4704,7 +4712,7 @@ void OnTick()
      }
    }
    local_5_int ++;
-   if ( local_5_int <= global_77_int_188 )   continue;
+   if ( local_5_int <= g_fractalMinLookback )   continue;
    g_entryLowPrice = 0.0 ;
    break;
    
@@ -4717,22 +4725,22 @@ void OnTick()
  double MT4FastEntryHigh(int timeframe)
  {
   ENUM_TIMEFRAMES tf=MT4Period(timeframe);
-  int side=MathMax(global_73_int_17C,global_74_int_180);
-  int count=global_77_int_188+side+2;
+  int side=MathMax(g_fractalRightBars,g_fractalLeftBars);
+  int count=g_fractalMinLookback+side+2;
   double highs[];
   ArraySetAsSeries(highs,true);
   if(CopyHigh(g_chartSymbol,tf,0,count,highs)<count)
      return(FindBuyEntryHigh(timeframe));
 
-  int candidate=global_74_int_180+1;
+  int candidate=g_fractalLeftBars+1;
   do
   {
     bool left_ok=true;
     bool right_ok=true;
     double candidate_price=highs[candidate];
-    for(int i=candidate;i>=candidate-global_74_int_180;i--)
+    for(int i=candidate;i>=candidate-g_fractalLeftBars;i--)
       if(highs[i]>candidate_price) left_ok=false;
-    for(int i=candidate;i<=candidate+global_73_int_17C;i++)
+    for(int i=candidate;i<=candidate+g_fractalRightBars;i++)
       if(highs[i]>candidate_price) right_ok=false;
 
     if(left_ok && right_ok && candidate_price>g_entryBreakoutPips*g_pipSize+MarketInfo(g_chartSymbol,MODE_ASK))
@@ -4746,13 +4754,13 @@ void OnTick()
         bool duplicate=false;
         for(int i=MT4OrdersTotal();i>=0;i--)
         {
-          if(OrderSelect(i,0,0)!=true || OrderMagicNumber()!=global_93_int_1F0 ||
+          if(OrderSelect(i,0,0)!=true || OrderMagicNumber()!=g_curStrategyMagic ||
              OrderSymbol()!=g_chartSymbol || OrderType()!=4 ||
-             !(MathAbs(OrderOpenPrice()-(g_buyEntryOffsetPips*g_pipSize+normalized))<global_88_double_1D0*g_pipSize)) continue;
+             !(MathAbs(OrderOpenPrice()-(g_buyEntryOffsetPips*g_pipSize+normalized))<g_pendingDupTolerancePips*g_pipSize)) continue;
           duplicate=true;
           break;
         }
-        if(!duplicate && (!global_75_bool_184 || !(iClose(g_chartSymbol,tf,candidate-1)>candidate_price-g_entryBreakoutPips*g_pipSize)))
+        if(!duplicate && (!g_fractalRequireUnbrokenLevel || !(iClose(g_chartSymbol,tf,candidate-1)>candidate_price-g_entryBreakoutPips*g_pipSize)))
         {
           g_entryHighPrice=normalized;
           return(g_entryHighPrice);
@@ -4760,7 +4768,7 @@ void OnTick()
       }
     }
     candidate++;
-    if(candidate<=global_77_int_188) continue;
+    if(candidate<=g_fractalMinLookback) continue;
     g_entryHighPrice=0.0;
     break;
   }
@@ -4771,22 +4779,22 @@ void OnTick()
  double MT4FastEntryLow(int timeframe)
  {
   ENUM_TIMEFRAMES tf=MT4Period(timeframe);
-  int side=MathMax(global_73_int_17C,global_74_int_180);
-  int count=global_77_int_188+side+2;
+  int side=MathMax(g_fractalRightBars,g_fractalLeftBars);
+  int count=g_fractalMinLookback+side+2;
   double lows[];
   ArraySetAsSeries(lows,true);
   if(CopyLow(g_chartSymbol,tf,0,count,lows)<count)
      return(FindSellEntryLow(timeframe));
 
-  int candidate=global_74_int_180+1;
+  int candidate=g_fractalLeftBars+1;
   do
   {
     bool left_ok=true;
     bool right_ok=true;
     double candidate_price=lows[candidate];
-    for(int i=candidate;i>=candidate-global_74_int_180;i--)
+    for(int i=candidate;i>=candidate-g_fractalLeftBars;i--)
       if(lows[i]<candidate_price) left_ok=false;
-    for(int i=candidate;i<=candidate+global_73_int_17C;i++)
+    for(int i=candidate;i<=candidate+g_fractalRightBars;i++)
       if(lows[i]<candidate_price) right_ok=false;
 
     if(left_ok && right_ok && candidate_price<MarketInfo(g_chartSymbol,MODE_BID)-g_entryBreakoutPips*g_pipSize)
@@ -4800,13 +4808,13 @@ void OnTick()
         bool duplicate=false;
         for(int i=MT4OrdersTotal();i>=0;i--)
         {
-          if(OrderSelect(i,0,0)!=true || OrderMagicNumber()!=global_93_int_1F0 ||
+          if(OrderSelect(i,0,0)!=true || OrderMagicNumber()!=g_curStrategyMagic ||
              OrderSymbol()!=g_chartSymbol || OrderType()!=5 ||
-             !(MathAbs(OrderOpenPrice()-(normalized-g_sellEntryOffsetPips*g_pipSize))<global_88_double_1D0*g_pipSize)) continue;
+             !(MathAbs(OrderOpenPrice()-(normalized-g_sellEntryOffsetPips*g_pipSize))<g_pendingDupTolerancePips*g_pipSize)) continue;
           duplicate=true;
           break;
         }
-        if(!duplicate && (!global_75_bool_184 || !(iClose(g_chartSymbol,tf,candidate-1)<g_entryBreakoutPips*g_pipSize+candidate_price)))
+        if(!duplicate && (!g_fractalRequireUnbrokenLevel || !(iClose(g_chartSymbol,tf,candidate-1)<g_entryBreakoutPips*g_pipSize+candidate_price)))
         {
           g_entryLowPrice=normalized;
           return(g_entryLowPrice);
@@ -4814,7 +4822,7 @@ void OnTick()
       }
     }
     candidate++;
-    if(candidate<=global_77_int_188) continue;
+    if(candidate<=g_fractalMinLookback) continue;
     g_entryLowPrice=0.0;
     break;
   }
@@ -4860,7 +4868,7 @@ void OnTick()
      break;
    }
    local_6_int ++;
-   if ( local_6_int <= global_118_int_2CC )   continue;
+   if ( local_6_int <= g_fractalMaxShift )   continue;
    local_3_double = 9999.0 ;
    break;
    
@@ -4908,7 +4916,7 @@ void OnTick()
      break;
    }
    local_6_int ++;
-   if ( local_6_int <= global_118_int_2CC )   continue;
+   if ( local_6_int <= g_fractalMaxShift )   continue;
    local_3_double = 0.0 ;
    break;
    
@@ -4921,12 +4929,12 @@ void OnTick()
  double MT4FastFractalHigh(int timeframe,int rightBars,int leftBars)
  {
   ENUM_TIMEFRAMES tf=MT4Period(timeframe);
-  int maxShift=global_118_int_2CC+rightBars+1;
+  int maxShift=g_fractalMaxShift+rightBars+1;
   double highs[];
   ArraySetAsSeries(highs,true);
   if(CopyHigh(g_chartSymbol,tf,0,maxShift+1,highs)<maxShift+1)
     return FindFractalHigh(timeframe,rightBars,leftBars);
-  for(int candidate=leftBars+1;candidate<=global_118_int_2CC;candidate++)
+  for(int candidate=leftBars+1;candidate<=g_fractalMaxShift;candidate++)
   {
     double px=highs[candidate];
     bool leftOk=true,rightOk=true;
@@ -4944,12 +4952,12 @@ void OnTick()
  double MT4FastFractalLow(int timeframe,int rightBars,int leftBars)
  {
   ENUM_TIMEFRAMES tf=MT4Period(timeframe);
-  int maxShift=global_118_int_2CC+rightBars+1;
+  int maxShift=g_fractalMaxShift+rightBars+1;
   double lows[];
   ArraySetAsSeries(lows,true);
   if(CopyLow(g_chartSymbol,tf,0,maxShift+1,lows)<maxShift+1)
     return FindFractalLow(timeframe,rightBars,leftBars);
-  for(int candidate=leftBars+1;candidate<=global_118_int_2CC;candidate++)
+  for(int candidate=leftBars+1;candidate<=g_fractalMaxShift;candidate++)
   {
     double px=lows[candidate];
     bool leftOk=true,rightOk=true;
@@ -4989,13 +4997,13 @@ void OnTick()
 
  if ( g_maFilterEnabled )
  {
-   g_maFilterFast = iMA(g_chartSymbol,0,global_214_int_1714,0,1,0,1) ;
+   g_maFilterFast = iMA(g_chartSymbol,0,g_maFilterPeriod,0,1,0,1) ;
    g_maFilterSlow = iMA(g_chartSymbol,0,g_maSlowPeriod,0,1,0,1) ;
  }
- CalculateStrategyLotSize(global_100_double_230,global_92_int_1EC); 
- if ( global_223_double_1AC4_si99[g_currentStrategyIndex]>g_maxLotCap )
+ CalculateStrategyLotSize(g_stopLossPips,g_lotScalePercent); 
+ if ( g_strategyStartLots[g_currentStrategyIndex]>g_maxLotCap )
  {
-   global_223_double_1AC4_si99[g_currentStrategyIndex] = g_maxLotCap;
+   g_strategyStartLots[g_currentStrategyIndex] = g_maxLotCap;
  }
  if ( g_pendingExpiryHours >  0 )
  {
@@ -5006,7 +5014,7 @@ void OnTick()
    g_pendingOrderExpiry = 0 ;
    for (local_1_int = MT4OrdersTotal() ; local_1_int >= 0 ; local_1_int --)
    {
-     if ( OrderSelect(local_1_int,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol )   continue;
+     if ( OrderSelect(local_1_int,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
      
      if ( ( OrderType() != 4 && OrderType() != 5 ) )   continue;
      temp_long_1 = TimeCurrent();
@@ -5019,7 +5027,7 @@ void OnTick()
  temp_int_3 = 0;
  for (temp_int_4 = MT4OrdersTotal() ; temp_int_4 >= 0 ; temp_int_4=temp_int_4 - 1)
  {
-   if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 0 )   continue;
+   if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 0 )   continue;
    temp_int_3=temp_int_3 + 1;
    
  }
@@ -5032,7 +5040,7 @@ void OnTick()
    temp_int_5 = 1;
    for (temp_int_6 = MT4OrdersTotal() ; temp_int_6 >= 0 ; temp_int_6=temp_int_6 - 1)
    {
-     if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+     if ( OrderSelect(temp_int_6,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
      OrderDelete(OrderTicket(),0xFFFFFFFF); 
      
    }
@@ -5049,7 +5057,7 @@ void OnTick()
  temp_int_8 = 0;
  for (temp_int_9 = MT4OrdersTotal() ; temp_int_9 >= 0 ; temp_int_9=temp_int_9 - 1)
  {
-   if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 1 )   continue;
+   if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 1 )   continue;
    temp_int_8=temp_int_8 + 1;
    
  }
@@ -5061,7 +5069,7 @@ void OnTick()
  temp_int_10 = 1;
  for (temp_int_11 = MT4OrdersTotal() ; temp_int_11 >= 0 ; temp_int_11=temp_int_11 - 1)
  {
-   if ( OrderSelect(temp_int_11,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+   if ( OrderSelect(temp_int_11,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
    OrderDelete(OrderTicket(),0xFFFFFFFF); 
    
  }
@@ -5107,7 +5115,7 @@ void OnTick()
  {
    return(false); 
  }
- if ( global_218_bool_1A74 )
+ if ( g_allowMultipleEntries )
  {
    temp_bool_1 = false;
  }
@@ -5116,7 +5124,7 @@ void OnTick()
    temp_bool_1=false; 
    for (temp_int_2 = 0 ; temp_int_2 < MT4OrdersTotal() ; temp_int_2=temp_int_2 + 1)
    {
-     if ( OrderSelect(temp_int_2,0,0) != true || OrderType() != 0 || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol )   continue;
+     if ( OrderSelect(temp_int_2,0,0) != true || OrderType() != 0 || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
      temp_bool_1 = true;
       break;
      
@@ -5138,7 +5146,7 @@ void OnTick()
    temp_bool_5=false; 
    for (temp_int_4 = MT4OrdersTotal() ; temp_int_4 >= 0 ; temp_int_4=temp_int_4 - 1)
    {
-     if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MathAbs(OrderOpenPrice() - (g_buyEntryOffsetPips * g_pipSize + temp_double_3))<global_88_double_1D0 * g_pipSize) )   continue;
+     if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(MathAbs(OrderOpenPrice() - (g_buyEntryOffsetPips * g_pipSize + temp_double_3))<g_pendingDupTolerancePips * g_pipSize) )   continue;
      temp_bool_5 = true;
       break;
      
@@ -5148,7 +5156,7 @@ void OnTick()
      temp_int_6 = 0;
      for (temp_int_7 = MT4OrdersTotal() ; temp_int_7 >= 0 ; temp_int_7=temp_int_7 - 1)
      {
-       if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
+       if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 )   continue;
        temp_int_6=temp_int_6 + 1;
        
      }
@@ -5157,7 +5165,7 @@ void OnTick()
        temp_double_8 = 9999.0;
        for (temp_int_9 = MT4OrdersTotal() ; temp_int_9 >= 0 ; temp_int_9=temp_int_9 - 1)
        {
-         if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(OrderOpenPrice()<temp_double_8) )   continue;
+         if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(OrderOpenPrice()<temp_double_8) )   continue;
          temp_double_8 = OrderOpenPrice();
          
        }
@@ -5175,13 +5183,13 @@ void OnTick()
    }
    if ( local_2_bool )
    {
-     g_nextOrderAnchorPrice = global_129_double_318 ;
+     g_nextOrderAnchorPrice = g_gridAnchorPips ;
      local_3_double = NormalizeDouble(g_buyEntryOffsetPips * g_pipSize + g_buyEntryPrice,g_symbolDigits) ;
      temp_double_10 = local_3_double;
      temp_bool_12=false; 
      for (temp_int_11 = MT4OrdersTotal() ; temp_int_11 >= 0 ; temp_int_11=temp_int_11 - 1)
      {
-       if ( OrderSelect(temp_int_11,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(OrderOpenPrice()<=temp_double_10) )   continue;
+       if ( OrderSelect(temp_int_11,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 4 || !(OrderOpenPrice()<=temp_double_10) )   continue;
        temp_bool_12 = true;
         break;
        
@@ -5190,33 +5198,33 @@ void OnTick()
      {
        return(false); 
      }
-     if ( !(global_67_bool_158) )
+     if ( !(g_limitPendingToOne) )
      {
-       if ( CheckMargin && AccountFreeMarginCheck(g_chartSymbol,0,global_223_double_1AC4_si99[g_currentStrategyIndex])<=0.0 )
+       if ( CheckMargin && AccountFreeMarginCheck(g_chartSymbol,0,g_strategyStartLots[g_currentStrategyIndex])<=0.0 )
        {
          Print("Free margin not sufficient for setting order..."); 
          return(false); 
        }
-       local_4_double = NormalizeDouble(global_15_int_78 * g_pipSize + local_3_double,g_symbolDigits) ;
-       local_5_double = NormalizeDouble(local_3_double - (global_100_double_230 + global_64_double_148) * g_pipSize,g_symbolDigits) ;
+       local_4_double = NormalizeDouble(g_randomEntryOffsetPips * g_pipSize + local_3_double,g_symbolDigits) ;
+       local_5_double = NormalizeDouble(local_3_double - (g_stopLossPips + g_stopExtraPips) * g_pipSize,g_symbolDigits) ;
        local_6_double = NormalizeDouble(g_takeProfitPips * g_pipSize + local_3_double,g_symbolDigits) ;
-       if ( global_223_double_1AC4_si99[g_currentStrategyIndex]<SymbolInfoDouble(g_chartSymbol,34) )
+       if ( g_strategyStartLots[g_currentStrategyIndex]<SymbolInfoDouble(g_chartSymbol,34) )
        {
          Print("Volume is less than the minimal allowed SYMBOL_VOLUME_MIN=" + string(SymbolInfoDouble(g_chartSymbol,34))); 
          temp_bool_13 = false;
        }
        else
        {
-         if ( global_223_double_1AC4_si99[g_currentStrategyIndex]>SymbolInfoDouble(g_chartSymbol,35) )
+         if ( g_strategyStartLots[g_currentStrategyIndex]>SymbolInfoDouble(g_chartSymbol,35) )
          {
            Print("Volume is greater than the maximal allowed SYMBOL_VOLUME_MAX=" + string(SymbolInfoDouble(g_chartSymbol,35))); 
            temp_bool_13 = false;
          }
          else
          {
-           if ( MathAbs(NormalizeDouble(global_223_double_1AC4_si99[g_currentStrategyIndex] / SymbolInfoDouble(g_chartSymbol,36),0) * SymbolInfoDouble(g_chartSymbol,36) - global_223_double_1AC4_si99[g_currentStrategyIndex])>0.0000001 )
+           if ( MathAbs(NormalizeDouble(g_strategyStartLots[g_currentStrategyIndex] / SymbolInfoDouble(g_chartSymbol,36),0) * SymbolInfoDouble(g_chartSymbol,36) - g_strategyStartLots[g_currentStrategyIndex])>0.0000001 )
            {
-             Print("Volume " + string(global_223_double_1AC4_si99[g_currentStrategyIndex]) + " is not a multiple of the minimal step SYMBOL_VOLUME_STEP=" + string(SymbolInfoDouble(g_chartSymbol,36))); 
+             Print("Volume " + string(g_strategyStartLots[g_currentStrategyIndex]) + " is not a multiple of the minimal step SYMBOL_VOLUME_STEP=" + string(SymbolInfoDouble(g_chartSymbol,36))); 
              temp_bool_13 = false;
            }
            else
@@ -5239,17 +5247,17 @@ void OnTick()
        {
          return(false); 
        }
-       if ( MarketInfo(g_chartSymbol,MODE_ASK)<local_4_double - global_309_double_2898 && MarketInfo(g_chartSymbol,MODE_ASK)<local_4_double - g_minStopDistPrice )
+       if ( MarketInfo(g_chartSymbol,MODE_ASK)<local_4_double - g_freezeDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)<local_4_double - g_minStopDistPrice )
        {
          if ( !(setSL_TP_After_Entry) )
          {
-           global_230_int_1E08 = OrderSend(g_chartSymbol,4,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),local_5_double,local_6_double,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Green) ;
+           g_lastOrderResult = OrderSend(g_chartSymbol,4,g_strategyStartLots[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),local_5_double,local_6_double,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry,Green) ;
          }
          else
          {
-           global_230_int_1E08 = OrderSend(g_chartSymbol,4,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Green) ;
+           g_lastOrderResult = OrderSend(g_chartSymbol,4,g_strategyStartLots[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry,Green) ;
          }
-         if ( global_230_int_1E08 <= 0 )
+         if ( g_lastOrderResult <= 0 )
          {
            temp_int_16 = MT4_LastError();
            if ( temp_int_16 == 132 )
@@ -5262,11 +5270,11 @@ void OnTick()
                  if ( !(setSL_TP_After_Entry) )
                  {
                    temp_int_16 = (int)(g_slippagePts * g_pipSize);
-                   global_230_int_1E08 = OrderSend(g_chartSymbol,4,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,temp_int_16,local_5_double,local_6_double,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Green) ;
+                   g_lastOrderResult = OrderSend(g_chartSymbol,4,g_strategyStartLots[g_currentStrategyIndex],local_4_double,temp_int_16,local_5_double,local_6_double,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry,Green) ;
                  }
                  else
                  {
-                   global_230_int_1E08 = OrderSend(g_chartSymbol,4,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Green) ;
+                   g_lastOrderResult = OrderSend(g_chartSymbol,4,g_strategyStartLots[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry,Green) ;
                  }
                }
                while(MT4_LastError() == 132);
@@ -5278,7 +5286,7 @@ void OnTick()
          else
          {
            temp_double_17 = local_3_double;
-           temp_long_18 = global_230_int_1E08;
+           temp_long_18 = g_lastOrderResult;
            for (temp_int_19 = 0 ; temp_int_19 < 100 ; temp_int_19=temp_int_19 + 1)
            {
              if ( !(g_stopOrderTicketPrice[temp_int_19][0]==0.0) )   continue;
@@ -5329,7 +5337,7 @@ void OnTick()
  {
    return(false); 
  }
- if ( global_218_bool_1A74 )
+ if ( g_allowMultipleEntries )
  {
    temp_bool_1 = false;
  }
@@ -5338,7 +5346,7 @@ void OnTick()
    temp_bool_1=false; 
    for (temp_int_2 = 0 ; temp_int_2 < MT4OrdersTotal() ; temp_int_2=temp_int_2 + 1)
    {
-     if ( OrderSelect(temp_int_2,0,0) != true || OrderType() != 1 || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol )   continue;
+     if ( OrderSelect(temp_int_2,0,0) != true || OrderType() != 1 || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
      temp_bool_1 = true;
       break;
      
@@ -5360,7 +5368,7 @@ void OnTick()
    temp_bool_5=false; 
    for (temp_int_4 = MT4OrdersTotal() ; temp_int_4 >= 0 ; temp_int_4=temp_int_4 - 1)
    {
-     if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MathAbs(OrderOpenPrice() - (temp_double_3 - g_sellEntryOffsetPips * g_pipSize))<global_88_double_1D0 * g_pipSize) )   continue;
+     if ( OrderSelect(temp_int_4,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(MathAbs(OrderOpenPrice() - (temp_double_3 - g_sellEntryOffsetPips * g_pipSize))<g_pendingDupTolerancePips * g_pipSize) )   continue;
      temp_bool_5 = true;
       break;
      
@@ -5370,7 +5378,7 @@ void OnTick()
      temp_int_6 = 0;
      for (temp_int_7 = MT4OrdersTotal() ; temp_int_7 >= 0 ; temp_int_7=temp_int_7 - 1)
      {
-       if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
+       if ( OrderSelect(temp_int_7,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 )   continue;
        temp_int_6=temp_int_6 + 1;
        
      }
@@ -5379,7 +5387,7 @@ void OnTick()
        temp_double_8 = 0.0;
        for (temp_int_9 = MT4OrdersTotal() ; temp_int_9 >= 0 ; temp_int_9=temp_int_9 - 1)
        {
-         if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(OrderOpenPrice()>temp_double_8) )   continue;
+         if ( OrderSelect(temp_int_9,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(OrderOpenPrice()>temp_double_8) )   continue;
          temp_double_8 = OrderOpenPrice();
          
        }
@@ -5397,13 +5405,13 @@ void OnTick()
    }
    if ( local_2_bool )
    {
-     g_nextOrderAnchorPrice = global_129_double_318 ;
+     g_nextOrderAnchorPrice = g_gridAnchorPips ;
      local_3_double = NormalizeDouble(g_sellEntryPrice - g_sellEntryOffsetPips * g_pipSize,g_symbolDigits) ;
      temp_double_10 = local_3_double;
      temp_bool_12=false; 
      for (temp_int_11 = MT4OrdersTotal() ; temp_int_11 >= 0 ; temp_int_11=temp_int_11 - 1)
      {
-       if ( OrderSelect(temp_int_11,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(OrderOpenPrice()>=temp_double_10) )   continue;
+       if ( OrderSelect(temp_int_11,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol || OrderType() != 5 || !(OrderOpenPrice()>=temp_double_10) )   continue;
        temp_bool_12 = true;
         break;
        
@@ -5412,33 +5420,33 @@ void OnTick()
      {
        return(false); 
      }
-     if ( !(global_67_bool_158) )
+     if ( !(g_limitPendingToOne) )
      {
-       if ( CheckMargin && AccountFreeMarginCheck(g_chartSymbol,1,global_223_double_1AC4_si99[g_currentStrategyIndex])<=0.0 )
+       if ( CheckMargin && AccountFreeMarginCheck(g_chartSymbol,1,g_strategyStartLots[g_currentStrategyIndex])<=0.0 )
        {
          Print("Free margin not sufficient for setting order..."); 
          return(false); 
        }
-       local_4_double = NormalizeDouble(local_3_double - global_15_int_78 * g_pipSize,g_symbolDigits) ;
-       local_5_double = NormalizeDouble((global_100_double_230 + global_64_double_148) * g_pipSize + local_3_double,g_symbolDigits) ;
+       local_4_double = NormalizeDouble(local_3_double - g_randomEntryOffsetPips * g_pipSize,g_symbolDigits) ;
+       local_5_double = NormalizeDouble((g_stopLossPips + g_stopExtraPips) * g_pipSize + local_3_double,g_symbolDigits) ;
        local_6_double = NormalizeDouble(local_3_double - g_takeProfitPips * g_pipSize,g_symbolDigits) ;
-       if ( global_223_double_1AC4_si99[g_currentStrategyIndex]<SymbolInfoDouble(g_chartSymbol,34) )
+       if ( g_strategyStartLots[g_currentStrategyIndex]<SymbolInfoDouble(g_chartSymbol,34) )
        {
          Print("Volume is less than the minimal allowed SYMBOL_VOLUME_MIN=" + string(SymbolInfoDouble(g_chartSymbol,34))); 
          temp_bool_13 = false;
        }
        else
        {
-         if ( global_223_double_1AC4_si99[g_currentStrategyIndex]>SymbolInfoDouble(g_chartSymbol,35) )
+         if ( g_strategyStartLots[g_currentStrategyIndex]>SymbolInfoDouble(g_chartSymbol,35) )
          {
            Print("Volume is greater than the maximal allowed SYMBOL_VOLUME_MAX=" + string(SymbolInfoDouble(g_chartSymbol,35))); 
            temp_bool_13 = false;
          }
          else
          {
-           if ( MathAbs(NormalizeDouble(global_223_double_1AC4_si99[g_currentStrategyIndex] / SymbolInfoDouble(g_chartSymbol,36),0) * SymbolInfoDouble(g_chartSymbol,36) - global_223_double_1AC4_si99[g_currentStrategyIndex])>0.0000001 )
+           if ( MathAbs(NormalizeDouble(g_strategyStartLots[g_currentStrategyIndex] / SymbolInfoDouble(g_chartSymbol,36),0) * SymbolInfoDouble(g_chartSymbol,36) - g_strategyStartLots[g_currentStrategyIndex])>0.0000001 )
            {
-             Print("Volume " + string(global_223_double_1AC4_si99[g_currentStrategyIndex]) + " is not a multiple of the minimal step SYMBOL_VOLUME_STEP=" + string(SymbolInfoDouble(g_chartSymbol,36))); 
+             Print("Volume " + string(g_strategyStartLots[g_currentStrategyIndex]) + " is not a multiple of the minimal step SYMBOL_VOLUME_STEP=" + string(SymbolInfoDouble(g_chartSymbol,36))); 
              temp_bool_13 = false;
            }
            else
@@ -5461,17 +5469,17 @@ void OnTick()
        {
          return(false); 
        }
-       if ( MarketInfo(g_chartSymbol,MODE_BID)>global_309_double_2898 + local_4_double && MarketInfo(g_chartSymbol,MODE_BID)>g_minStopDistPrice + local_4_double )
+       if ( MarketInfo(g_chartSymbol,MODE_BID)>g_freezeDistPrice + local_4_double && MarketInfo(g_chartSymbol,MODE_BID)>g_minStopDistPrice + local_4_double )
        {
          if ( !(setSL_TP_After_Entry) )
          {
-           global_230_int_1E08 = OrderSend(g_chartSymbol,5,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),local_5_double,local_6_double,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Red) ;
+           g_lastOrderResult = OrderSend(g_chartSymbol,5,g_strategyStartLots[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),local_5_double,local_6_double,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry,Red) ;
          }
          else
          {
-           global_230_int_1E08 = OrderSend(g_chartSymbol,5,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Red) ;
+           g_lastOrderResult = OrderSend(g_chartSymbol,5,g_strategyStartLots[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry,Red) ;
          }
-         if ( global_230_int_1E08 <= 0 )
+         if ( g_lastOrderResult <= 0 )
          {
            temp_int_16 = MT4_LastError();
            if ( temp_int_16 == 132 )
@@ -5484,11 +5492,11 @@ void OnTick()
                  if ( !(setSL_TP_After_Entry) )
                  {
                    temp_int_16 = (int)(g_slippagePts * g_pipSize);
-                   global_230_int_1E08 = OrderSend(g_chartSymbol,5,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,temp_int_16,local_5_double,local_6_double,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Red) ;
+                   g_lastOrderResult = OrderSend(g_chartSymbol,5,g_strategyStartLots[g_currentStrategyIndex],local_4_double,temp_int_16,local_5_double,local_6_double,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry,Red) ;
                  }
                  else
                  {
-                   global_230_int_1E08 = OrderSend(g_chartSymbol,5,global_223_double_1AC4_si99[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,global_93_int_1F0,g_pendingOrderExpiry,Red) ;
+                   g_lastOrderResult = OrderSend(g_chartSymbol,5,g_strategyStartLots[g_currentStrategyIndex],local_4_double,int(g_slippagePts * g_pipSize),0.0,0.0,g_orderComment,g_curStrategyMagic,g_pendingOrderExpiry,Red) ;
                  }
                }
                while(MT4_LastError() == 132);
@@ -5500,7 +5508,7 @@ void OnTick()
          else
          {
            temp_double_17 = local_3_double;
-           temp_long_18 = global_230_int_1E08;
+           temp_long_18 = g_lastOrderResult;
            for (temp_int_19 = 0 ; temp_int_19 < 100 ; temp_int_19=temp_int_19 + 1)
            {
              if ( !(g_stopOrderTicketPrice[temp_int_19][0]==0.0) )   continue;
@@ -5627,7 +5635,7 @@ void OnTick()
      {
        if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
        {
-         local_7_double = NormalizeDouble(local_10_double - global_100_double_230 * g_pipSize,g_symbolDigits) ;
+         local_7_double = NormalizeDouble(local_10_double - g_stopLossPips * g_pipSize,g_symbolDigits) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
        if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
@@ -5636,11 +5644,11 @@ void OnTick()
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
      }
-     if ( local_14_int == 0 && ( ( local_15_int == global_93_int_1F0 && g_orderMgmtMode == 1 && local_16_string == g_chartSymbol ) || (g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == g_chartSymbol) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && (local_11_string == g_manualCommentFilter || g_manualCommentFilter == "")) ) )
+     if ( local_14_int == 0 && ( ( local_15_int == g_curStrategyMagic && g_orderMgmtMode == 1 && local_16_string == g_chartSymbol ) || (g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == g_chartSymbol) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && (local_11_string == g_manualCommentFilter || g_manualCommentFilter == "")) ) )
      {
        if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
        {
-         local_7_double = NormalizeDouble(local_10_double - global_100_double_230 * g_pipSize,g_symbolDigits) ;
+         local_7_double = NormalizeDouble(local_10_double - g_stopLossPips * g_pipSize,g_symbolDigits) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
        if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
@@ -5648,35 +5656,35 @@ void OnTick()
          local_8_double = NormalizeDouble(g_takeProfitPips * g_pipSize + local_10_double,g_symbolDigits) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
-       if ( g_fakeoutEnableM1 && MT4BearishFakeout(global_52_int_118,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM1 && MT4BearishFakeout(g_fakeoutTfM1,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( global_55_bool_124 && MT4BearishFakeout(global_54_int_120,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM5 && MT4BearishFakeout(g_fakeoutTfM5,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( g_fakeoutEnableM15 && MT4BearishFakeout(global_56_int_128,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM15 && MT4BearishFakeout(g_fakeoutTfM15,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( global_59_bool_134 && MT4BearishFakeout(global_58_int_130,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM30 && MT4BearishFakeout(g_fakeoutTfM30,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( g_fakeoutEnableH1 && MT4BearishFakeout(global_60_int_138,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableH1 && MT4BearishFakeout(g_fakeoutTfH1,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_BID),0,Red); 
          Print("closing candle confirmation"); 
        }
-       g_nextOrderAnchorPrice = global_129_double_318 ;
-       if ( global_133_int_338 >  0 && TimeCurrent() >  local_13_datetime + global_133_int_338 * 60 )
+       g_nextOrderAnchorPrice = g_gridAnchorPips ;
+       if ( g_orderTimeoutMin >  0 && TimeCurrent() >  local_13_datetime + g_orderTimeoutMin * 60 )
        {
-         g_nextOrderAnchorPrice = global_134_double_340 ;
+         g_nextOrderAnchorPrice = g_gridTimeoutAnchorPips ;
        }
        temp_int_1 = g_symbolDigits;
        temp_long_2 = local_9_long;
@@ -5705,20 +5713,20 @@ void OnTick()
        }
        else
        {
-         local_17_double = local_17_double - global_85_double_1C0 * g_pipSize ;
+         local_17_double = local_17_double - g_trailRefSlippagePips * g_pipSize ;
        }
        local_18_double = local_10_double - local_17_double ;
        local_19_bool = false ;
-       if ( local_17_double>0.0 - global_85_double_1C0 * g_pipSize && local_18_double>g_slippagePts * g_pipSize )
+       if ( local_17_double>0.0 - g_trailRefSlippagePips * g_pipSize && local_18_double>g_slippagePts * g_pipSize )
        {
          local_19_bool = true ;
-         if ( global_39_int_C8 == 2 )
+         if ( g_trailMode == 2 )
          {
            g_nextOrderAnchorPrice = -1000.0 ;
            Print("Slippage control active"); 
          }
        }
-       if ( global_43_bool_E8 )
+       if ( g_trailUseFillPrice )
        {
          local_5_double = local_17_double ;
        }
@@ -5728,7 +5736,7 @@ void OnTick()
        }
        // EX5 behavior: maximum-loss is a virtual close boundary here.
        // Do not rewrite the broker SL on every management pass.
-       if ( MarketInfo(g_chartSymbol,MODE_BID)<local_10_double - (global_100_double_230 + global_64_double_148) * g_pipSize - g_curSpread )
+       if ( MarketInfo(g_chartSymbol,MODE_BID)<local_10_double - (g_stopLossPips + g_stopExtraPips) * g_pipSize - g_curSpread )
        {
          RefreshRates(); 
          OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_BID),(int)g_curSpread,Red); 
@@ -5749,24 +5757,24 @@ void OnTick()
          }
          local_21_double = temp_int_9 ;
          local_22_bool = false ;
-         if ( !(global_194_bool_530) )
+         if ( !(g_buyOrderSeen) )
          {
-           global_194_bool_530 = true ;
-           global_192_int_528 = 0 ;
+           g_buyOrderSeen = true ;
+           g_buyFirstModDone = 0 ;
          }
          if ( local_21_double==0.0 )
          {
-           global_192_int_528 = 0 ;
+           g_buyFirstModDone = 0 ;
          }
          if ( MathFloor(local_21_double / 2.0)==local_21_double / 2.0 )
          {
-           global_192_int_528 = 0 ;
+           g_buyFirstModDone = 0 ;
          }
          else
          {
-           global_192_int_528 = 1 ;
+           g_buyFirstModDone = 1 ;
          }
-         if ( global_194_bool_530 )
+         if ( g_buyOrderSeen )
          {
            if ( local_21_double>0.0 )
            {
@@ -5777,7 +5785,7 @@ void OnTick()
                {
                  if ( OrderSelect(temp_int_13,0,0) != true )   continue;
                  
-                 if ( ( OrderMagicNumber() != global_93_int_1F0 && OrderMagicNumber() != g_zrMagicSell && OrderMagicNumber() != g_zrMagicBuy ) )   continue;
+                 if ( ( OrderMagicNumber() != g_curStrategyMagic && OrderMagicNumber() != g_zrMagicSell && OrderMagicNumber() != g_zrMagicBuy ) )   continue;
                  
                  if ( OrderType() == 0 )
                  {
@@ -5812,7 +5820,7 @@ void OnTick()
                {
                  if ( OrderSelect(temp_int_19,0,0) != true )   continue;
                  
-                 if ( OrderMagicNumber() == global_93_int_1F0 && OrderTicket() == temp_long_18 )
+                 if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == temp_long_18 )
                  {
                    OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_BID),3,Red); 
                  }
@@ -5828,7 +5836,7 @@ void OnTick()
                  OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,Red); 
                  
                }
-               global_194_bool_530 = false ;
+               g_buyOrderSeen = false ;
                local_20_bool = true ;
              }
            }
@@ -5843,7 +5851,7 @@ void OnTick()
              {
                local_23_double = local_12_double * (MathPow(g_zrLotMultiplier,local_21_double + 1.0)) ;
              }
-             if ( global_192_int_528 == 0 )
+             if ( g_buyFirstModDone == 0 )
              {
                local_24_double = local_21_double * g_zrStepDist * g_pipSize + (local_17_double - g_zrZoneSize * g_pipSize) ;
                if ( local_24_double>local_17_double - g_zrMinTargetDist * g_pipSize )
@@ -5858,7 +5866,7 @@ void OnTick()
                    {
                      if ( OrderSelect(temp_int_20,0,0) != true )   continue;
                      
-                     if ( OrderMagicNumber() == global_93_int_1F0 && OrderTicket() == local_9_long )
+                     if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == local_9_long )
                      {
                        OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_BID),3,Red); 
                      }
@@ -5878,7 +5886,7 @@ void OnTick()
                  else
                  {
                    OrderSend(g_chartSymbol,1,local_23_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),g_zrMagicBuy,0,Green); 
-                   global_192_int_528 = 1 ;
+                   g_buyFirstModDone = 1 ;
                    local_22_bool = true ;
                  }
                }
@@ -5894,7 +5902,7 @@ void OnTick()
                    {
                      if ( OrderSelect(temp_int_21,0,0) != true )   continue;
                      
-                     if ( OrderMagicNumber() == global_93_int_1F0 && OrderTicket() == local_9_long )
+                     if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == local_9_long )
                      {
                        OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_BID),3,Red); 
                      }
@@ -5914,7 +5922,7 @@ void OnTick()
                  else
                  {
                    OrderSend(g_chartSymbol,0,local_23_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),g_zrMagicBuy,0,Green); 
-                   global_192_int_528 = 0 ;
+                   g_buyFirstModDone = 0 ;
                    local_22_bool = true ;
                  }
                }
@@ -5931,7 +5939,7 @@ void OnTick()
          if ( ( g_profitCloseMode == 1 || (g_profitCloseMode != 3 && g_profitCloseMode != 2) ) )
          {
            temp_long_23 = local_9_long;
-           temp_double_24 = global_100_double_230;
+           temp_double_24 = g_stopLossPips;
            temp_double_25 = local_10_double;
            temp_int_26 = 1;
            temp_double_27 = 0.0;
@@ -5976,32 +5984,32 @@ void OnTick()
              OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
-           if ( global_125_double_2F8>0.0 && TimeCurrent() >= local_13_datetime + global_304_int_287C && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(global_126_double_300 * g_pipSize + (local_7_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( g_timeTrailDelayMin>0.0 && TimeCurrent() >= local_13_datetime + g_timeTrailDelaySec && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_timeTrailDistancePips * g_pipSize + (local_7_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - global_126_double_300 * g_pipSize,g_symbolDigits) ;
+             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - g_timeTrailDistancePips * g_pipSize,g_symbolDigits) ;
              if ( local_7_double<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_TrailSL_after_X_Minutes_size_ loss.  Trying again!"); 
                }
                local_2_bool = true ;
              }
            }
-           if ( global_103_double_250>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble((global_103_double_250 + global_106_double_268) * g_pipSize + (local_7_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_trailActivationPips * g_pipSize + local_10_double,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 && local_7_double<NormalizeDouble(global_105_double_260 * g_pipSize + local_10_double,g_symbolDigits) )
+           if ( g_profitTrailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble((g_profitTrailDistancePips + g_profitTrailBufferPips) * g_pipSize + (local_7_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_trailActivationPips * g_pipSize + local_10_double,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice && local_7_double<NormalizeDouble(g_profitTrailCapPips * g_pipSize + local_10_double,g_symbolDigits) )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - global_103_double_250 * g_pipSize,g_symbolDigits) ;
+             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - g_profitTrailDistancePips * g_pipSize,g_symbolDigits) ;
              if ( local_7_double<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_stop_ loss.  Trying again!"); 
                }
                else
                {
-                 local_26_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[g_currentStrategyIndex],2) ;
+                 local_26_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
                  if ( local_26_double<local_12_double && local_26_double>=MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
                  {
                    OrderClose(local_9_long,local_26_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,Red); 
@@ -6011,19 +6019,19 @@ void OnTick()
                local_2_bool = true ;
              }
            }
-           if ( global_110_double_288>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<NormalizeDouble(local_8_double - g_symbolPoint - global_110_double_288 * g_pipSize,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_ASK)<NormalizeDouble(local_5_double - global_111_double_290 * g_pipSize,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( g_tpTrailPips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<NormalizeDouble(local_8_double - g_symbolPoint - g_tpTrailPips * g_pipSize,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_ASK)<NormalizeDouble(local_5_double - g_tpTrailMinGapPips * g_pipSize,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice )
            {
-             local_8_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) + global_110_double_288 * g_pipSize,g_symbolDigits) ;
+             local_8_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) + g_tpTrailPips * g_pipSize,g_symbolDigits) ;
              if ( local_8_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_TP.  Trying again!"); 
                }
                else
                {
-                 local_27_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[g_currentStrategyIndex],2) ;
+                 local_27_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
                  if ( local_27_double<local_12_double && local_27_double>=SymbolInfoDouble(g_chartSymbol,34) )
                  {
                    OrderClose(local_9_long,local_27_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,Red); 
@@ -6033,13 +6041,13 @@ void OnTick()
                local_2_bool = true ;
              }
            }
-           if ( local_19_bool && global_39_int_C8 == 1 && global_41_double_D8>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(global_41_double_D8 * g_pipSize + (local_7_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(global_40_double_D0 * g_pipSize + local_17_double,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 && local_7_double<NormalizeDouble(global_42_double_E0 * g_pipSize + local_10_double,g_symbolDigits) )
+           if ( local_19_bool && g_trailMode == 1 && g_trailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_trailDistancePips * g_pipSize + (local_7_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_trailStopBufferPips * g_pipSize + local_17_double,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice && local_7_double<NormalizeDouble(g_trailCapAboveEntryPips * g_pipSize + local_10_double,g_symbolDigits) )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - global_41_double_D8 * g_pipSize,g_symbolDigits) ;
+             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - g_trailDistancePips * g_pipSize,g_symbolDigits) ;
              if ( local_7_double<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting Slip TL.  Trying again!"); 
                }
@@ -6050,39 +6058,39 @@ void OnTick()
                local_2_bool = true ;
              }
            }
-           if ( global_119_int_2D0 >  0 && global_120_int_2D4 >= 0 && UseHL_TrailingSL && g_buyTrailStopLevel[g_currentStrategyIndex]>NormalizeDouble(local_7_double + g_minStopDistPrice + g_symbolPoint,g_symbolDigits) && g_buyTrailStopLevel[g_currentStrategyIndex]<MarketInfo(g_chartSymbol,MODE_BID) - global_121_int_2D8 * g_pipSize && ( g_buyTrailStopLevel[g_currentStrategyIndex]<local_10_double || !(global_116_bool_2C4) ) && g_buyTrailStopLevel[g_currentStrategyIndex]<NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - global_122_int_2DC * g_pipSize - g_minStopDistPrice - g_symbolPoint,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 && UseHL_TrailingSL && g_buyTrailStopLevel[g_currentStrategyIndex]>NormalizeDouble(local_7_double + g_minStopDistPrice + g_symbolPoint,g_symbolDigits) && g_buyTrailStopLevel[g_currentStrategyIndex]<MarketInfo(g_chartSymbol,MODE_BID) - g_hlTrailMinGapPips * g_pipSize && ( g_buyTrailStopLevel[g_currentStrategyIndex]<local_10_double || !(g_trailOnlyTighten) ) && g_buyTrailStopLevel[g_currentStrategyIndex]<NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - g_hlTrailBrokerGapPips * g_pipSize - g_minStopDistPrice - g_symbolPoint,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice )
            {
              local_7_double = NormalizeDouble(g_buyTrailStopLevel[g_currentStrategyIndex],g_symbolDigits) ;
              if ( local_7_double<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when modifying stoploss"); 
                }
                local_2_bool = true ;
              }
            }
-           if ( global_113_double_2A8>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(global_113_double_2A8 * g_pipSize + local_10_double,g_symbolDigits) && NormalizeDouble(g_beExtraPips * g_pipSize + local_10_double,g_symbolDigits)>local_7_double + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_beExtraPips * g_pipSize + local_10_double + g_minStopDistPrice,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( g_beTriggerPips>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_beTriggerPips * g_pipSize + local_10_double,g_symbolDigits) && NormalizeDouble(g_beExtraPips * g_pipSize + local_10_double,g_symbolDigits)>local_7_double + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_beExtraPips * g_pipSize + local_10_double + g_minStopDistPrice,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice )
            {
              local_7_double = NormalizeDouble(g_beExtraPips * g_pipSize + local_10_double,g_symbolDigits) ;
              if ( local_7_double<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("error when setting breakeven: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' ..\'Exit_BE_start_\' to close to \'Exit_BE_extra_pips_\' ..trying again!"); 
                }
                local_2_bool = true ;
              }
            }
-           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && global_131_double_328 * g_pipSize + local_7_double<=global_132_double_330 * g_pipSize + (local_5_double + g_curSpread)) ) )
+           if ( !(local_2_bool) && ( g_partialCloseMode == 1 || (g_partialCloseMode == 2 && g_gridSpacingPips * g_pipSize + local_7_double<=g_gridMaxSpacingPips * g_pipSize + (local_5_double + g_curSpread)) ) )
            {
-             global_250_int_2518 ++;
-             if ( MarketInfo(g_chartSymbol,MODE_BID)>global_131_double_328 * g_pipSize + local_7_double + g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 && ( global_129_double_318==0.0 || MarketInfo(g_chartSymbol,MODE_BID)>g_nextOrderAnchorPrice * g_pipSize + local_5_double ) && global_250_int_2518 >= global_130_int_320 && NormalizeDouble(global_131_double_328 * g_pipSize + local_7_double,g_symbolDigits)>local_7_double )
+             g_ordersSinceAnchor ++;
+             if ( MarketInfo(g_chartSymbol,MODE_BID)>g_gridSpacingPips * g_pipSize + local_7_double + g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice && ( g_gridAnchorPips==0.0 || MarketInfo(g_chartSymbol,MODE_BID)>g_nextOrderAnchorPrice * g_pipSize + local_5_double ) && g_ordersSinceAnchor >= g_gridMaxOrdersPerAnchor && NormalizeDouble(g_gridSpacingPips * g_pipSize + local_7_double,g_symbolDigits)>local_7_double )
              {
-               global_250_int_2518 = 0 ;
-               local_7_double = NormalizeDouble(global_131_double_328 * g_pipSize + local_7_double,g_symbolDigits) ;
+               g_ordersSinceAnchor = 0 ;
+               local_7_double = NormalizeDouble(g_gridSpacingPips * g_pipSize + local_7_double,g_symbolDigits) ;
                OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF); 
                local_2_bool = true ;
              }
@@ -6110,7 +6118,7 @@ void OnTick()
                }
              }
            }
-           if ( local_2_bool && global_135_bool_348 )
+           if ( local_2_bool && g_returnAfterOrderModify )
            {
              return(true); 
            }
@@ -6118,7 +6126,7 @@ void OnTick()
          if ( ( g_profitCloseMode == 2 || g_profitCloseMode == 3 ) )
          {
            temp_long_34 = local_9_long;
-           temp_double_35 = global_100_double_230;
+           temp_double_35 = g_stopLossPips;
            temp_double_36 = local_10_double;
            temp_int_37 = 1;
            temp_double_38 = 0.0;
@@ -6161,7 +6169,7 @@ void OnTick()
              return(true); 
            }
            local_28_int = (int)(TimeCurrent() - g_lastTrailOrderTime) ;
-           if ( local_28_int >= global_65_int_150 )
+           if ( local_28_int >= g_trailModifyMinSec )
            {
              if ( NormalizeDouble(g_virtualSLPrice,g_symbolDigits)>local_7_double + g_symbolPoint )
              {
@@ -6169,55 +6177,55 @@ void OnTick()
              }
              g_lastTrailOrderTime = TimeCurrent() ;
            }
-           if ( global_125_double_2F8>0.0 && TimeCurrent() >= local_13_datetime + global_304_int_287C && MarketInfo(g_chartSymbol,MODE_BID)>global_126_double_300 * g_pipSize + (g_virtualSLPrice + g_symbolPoint) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( g_timeTrailDelayMin>0.0 && TimeCurrent() >= local_13_datetime + g_timeTrailDelaySec && MarketInfo(g_chartSymbol,MODE_BID)>g_timeTrailDistancePips * g_pipSize + (g_virtualSLPrice + g_symbolPoint) && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice )
            {
              local_2_bool = true ;
-             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_BID) - global_126_double_300 * g_pipSize ;
+             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_BID) - g_timeTrailDistancePips * g_pipSize ;
            }
-           if ( global_103_double_250>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>(global_103_double_250 + global_106_double_268) * g_pipSize + (g_virtualSLPrice + g_symbolPoint) && MarketInfo(g_chartSymbol,MODE_BID)>g_trailActivationPips * g_pipSize + local_5_double && g_virtualSLPrice<global_105_double_260 * g_pipSize + local_10_double )
+           if ( g_profitTrailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>(g_profitTrailDistancePips + g_profitTrailBufferPips) * g_pipSize + (g_virtualSLPrice + g_symbolPoint) && MarketInfo(g_chartSymbol,MODE_BID)>g_trailActivationPips * g_pipSize + local_5_double && g_virtualSLPrice<g_profitTrailCapPips * g_pipSize + local_10_double )
            {
              local_2_bool = true ;
-             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_BID) - global_103_double_250 * g_pipSize ;
-             local_29_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[g_currentStrategyIndex],2) ;
+             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_BID) - g_profitTrailDistancePips * g_pipSize ;
+             local_29_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
              if ( local_29_double<local_12_double && local_29_double>=MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
              {
                OrderClose(local_9_long,local_29_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,Red); 
                return(true); 
              }
            }
-           if ( local_19_bool && global_39_int_C8 == 1 && global_41_double_D8>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>global_41_double_D8 * g_pipSize + (g_virtualSLPrice + g_symbolPoint) && MarketInfo(g_chartSymbol,MODE_BID)>global_40_double_D0 * g_pipSize + local_17_double && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 && g_virtualSLPrice<global_42_double_E0 * g_pipSize + local_10_double )
+           if ( local_19_bool && g_trailMode == 1 && g_trailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>g_trailDistancePips * g_pipSize + (g_virtualSLPrice + g_symbolPoint) && MarketInfo(g_chartSymbol,MODE_BID)>g_trailStopBufferPips * g_pipSize + local_17_double && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice && g_virtualSLPrice<g_trailCapAboveEntryPips * g_pipSize + local_10_double )
            {
              Print("Slippage control active"); 
              local_2_bool = true ;
-             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_BID) - global_41_double_D8 * g_pipSize ;
+             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_BID) - g_trailDistancePips * g_pipSize ;
            }
-           if ( global_119_int_2D0 >  0 && global_120_int_2D4 >= 0 && g_buyTrailStopLevel[g_currentStrategyIndex]>g_virtualSLPrice + g_minStopDistPrice + g_symbolPoint && ( g_buyTrailStopLevel[g_currentStrategyIndex]<local_10_double || !(global_116_bool_2C4) ) && g_buyTrailStopLevel[g_currentStrategyIndex]<MarketInfo(g_chartSymbol,MODE_BID) - global_122_int_2DC * g_pipSize - g_minStopDistPrice - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 && g_buyTrailStopLevel[g_currentStrategyIndex]>g_virtualSLPrice + g_minStopDistPrice + g_symbolPoint && ( g_buyTrailStopLevel[g_currentStrategyIndex]<local_10_double || !(g_trailOnlyTighten) ) && g_buyTrailStopLevel[g_currentStrategyIndex]<MarketInfo(g_chartSymbol,MODE_BID) - g_hlTrailBrokerGapPips * g_pipSize - g_minStopDistPrice - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice )
            {
              g_virtualSLPrice = g_buyTrailStopLevel[g_currentStrategyIndex] ;
              local_2_bool = true ;
            }
-           if ( global_113_double_2A8>0.0 && g_profitCloseMode == 3 && MarketInfo(g_chartSymbol,MODE_BID)>global_113_double_2A8 * g_pipSize + local_10_double && g_beExtraPips * g_pipSize + local_10_double>local_7_double + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_BID)>g_beExtraPips * g_pipSize + local_10_double + g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 && NormalizeDouble(g_beExtraPips * g_pipSize + local_10_double,g_symbolDigits)>OrderStopLoss() )
+           if ( g_beTriggerPips>0.0 && g_profitCloseMode == 3 && MarketInfo(g_chartSymbol,MODE_BID)>g_beTriggerPips * g_pipSize + local_10_double && g_beExtraPips * g_pipSize + local_10_double>local_7_double + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_BID)>g_beExtraPips * g_pipSize + local_10_double + g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice && NormalizeDouble(g_beExtraPips * g_pipSize + local_10_double,g_symbolDigits)>OrderStopLoss() )
            {
              g_virtualSLPrice = NormalizeDouble(g_beExtraPips * g_pipSize + local_10_double,g_symbolDigits) ;
-             global_230_int_1E08 = OrderModify(local_9_long,local_10_double,g_virtualSLPrice,local_8_double,0,0xFFFFFFFF) ;
-             if ( global_230_int_1E08 <= 0 )
+             g_lastOrderResult = OrderModify(local_9_long,local_10_double,g_virtualSLPrice,local_8_double,0,0xFFFFFFFF) ;
+             if ( g_lastOrderResult <= 0 )
              {
                Print("error when setting breakeven: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' ..\'Exit_BE_start_\' to close to \'Exit_BE_extra_pips_\' ..trying again!"); 
              }
              local_2_bool = true ;
            }
-           if ( global_113_double_2A8>0.0 && g_profitCloseMode == 2 && MarketInfo(g_chartSymbol,MODE_BID)>global_113_double_2A8 * g_pipSize + local_10_double && g_beExtraPips * g_pipSize + local_10_double>g_virtualSLPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_BID)>g_beExtraPips * g_pipSize + local_10_double + g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 )
+           if ( g_beTriggerPips>0.0 && g_profitCloseMode == 2 && MarketInfo(g_chartSymbol,MODE_BID)>g_beTriggerPips * g_pipSize + local_10_double && g_beExtraPips * g_pipSize + local_10_double>g_virtualSLPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_BID)>g_beExtraPips * g_pipSize + local_10_double + g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice )
            {
              g_virtualSLPrice = g_beExtraPips * g_pipSize + local_10_double ;
              local_2_bool = true ;
            }
-           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && global_131_double_328 * g_pipSize + g_virtualSLPrice<=global_132_double_330 * g_pipSize + (local_5_double + g_curSpread)) ) )
+           if ( !(local_2_bool) && ( g_partialCloseMode == 1 || (g_partialCloseMode == 2 && g_gridSpacingPips * g_pipSize + g_virtualSLPrice<=g_gridMaxSpacingPips * g_pipSize + (local_5_double + g_curSpread)) ) )
            {
-             global_250_int_2518 ++;
-             if ( MarketInfo(g_chartSymbol,MODE_BID)>global_131_double_328 * g_pipSize + g_virtualSLPrice + g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - global_309_double_2898 && ( global_129_double_318==0.0 || MarketInfo(g_chartSymbol,MODE_BID)>g_nextOrderAnchorPrice * g_pipSize + local_5_double ) && global_250_int_2518 >= global_130_int_320 )
+             g_ordersSinceAnchor ++;
+             if ( MarketInfo(g_chartSymbol,MODE_BID)>g_gridSpacingPips * g_pipSize + g_virtualSLPrice + g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_BID)<local_8_double - g_freezeDistPrice && ( g_gridAnchorPips==0.0 || MarketInfo(g_chartSymbol,MODE_BID)>g_nextOrderAnchorPrice * g_pipSize + local_5_double ) && g_ordersSinceAnchor >= g_gridMaxOrdersPerAnchor )
              {
-               global_250_int_2518 = 0 ;
-               g_virtualSLPrice = global_131_double_328 * g_pipSize + g_virtualSLPrice ;
+               g_ordersSinceAnchor = 0 ;
+               g_virtualSLPrice = g_gridSpacingPips * g_pipSize + g_virtualSLPrice ;
                local_2_bool = true ;
              }
            }
@@ -6360,7 +6368,7 @@ void OnTick()
      {
        if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
        {
-         local_7_double = NormalizeDouble(global_100_double_230 * g_pipSize + local_10_double,g_symbolDigits) ;
+         local_7_double = NormalizeDouble(g_stopLossPips * g_pipSize + local_10_double,g_symbolDigits) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
        if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
@@ -6369,11 +6377,11 @@ void OnTick()
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
      }
-     if ( local_14_int == 1 && ( ( local_15_int == global_93_int_1F0 && g_orderMgmtMode == 1 && local_16_string == g_chartSymbol ) || (g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == g_chartSymbol) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && (local_11_string == g_manualCommentFilter || g_manualCommentFilter == "")) ) )
+     if ( local_14_int == 1 && ( ( local_15_int == g_curStrategyMagic && g_orderMgmtMode == 1 && local_16_string == g_chartSymbol ) || (g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == g_chartSymbol) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && (local_11_string == g_manualCommentFilter || g_manualCommentFilter == "")) ) )
      {
        if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
        {
-         local_7_double = NormalizeDouble(global_100_double_230 * g_pipSize + local_10_double,g_symbolDigits) ;
+         local_7_double = NormalizeDouble(g_stopLossPips * g_pipSize + local_10_double,g_symbolDigits) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
        if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
@@ -6381,35 +6389,35 @@ void OnTick()
          local_8_double = NormalizeDouble(local_10_double - g_takeProfitPips * g_pipSize,g_symbolDigits) ;
          OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
        }
-       if ( g_fakeoutEnableM1 && MT4BullishFakeout(global_52_int_118,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM1 && MT4BullishFakeout(g_fakeoutTfM1,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( global_55_bool_124 && MT4BullishFakeout(global_54_int_120,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM5 && MT4BullishFakeout(g_fakeoutTfM5,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( g_fakeoutEnableM15 && MT4BullishFakeout(global_56_int_128,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM15 && MT4BullishFakeout(g_fakeoutTfM15,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( global_59_bool_134 && MT4BullishFakeout(global_58_int_130,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM30 && MT4BullishFakeout(g_fakeoutTfM30,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( g_fakeoutEnableH1 && MT4BullishFakeout(global_60_int_138,global_51_int_114,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableH1 && MT4BullishFakeout(g_fakeoutTfH1,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
        {
          OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       g_nextOrderAnchorPrice = global_129_double_318 ;
-       if ( global_133_int_338 >  0 && TimeCurrent() >  local_13_datetime + global_133_int_338 * 60 )
+       g_nextOrderAnchorPrice = g_gridAnchorPips ;
+       if ( g_orderTimeoutMin >  0 && TimeCurrent() >  local_13_datetime + g_orderTimeoutMin * 60 )
        {
-         g_nextOrderAnchorPrice = global_134_double_340 ;
+         g_nextOrderAnchorPrice = g_gridTimeoutAnchorPips ;
        }
        temp_int_1 = g_symbolDigits;
        temp_long_2 = local_9_long;
@@ -6438,20 +6446,20 @@ void OnTick()
        }
        else
        {
-         local_17_double = local_17_double - global_85_double_1C0 * g_pipSize ;
+         local_17_double = local_17_double - g_trailRefSlippagePips * g_pipSize ;
        }
        local_18_double = local_17_double - local_10_double ;
        local_19_bool = false ;
-       if ( local_17_double>global_85_double_1C0 * g_pipSize && local_18_double>g_slippagePts * g_pipSize )
+       if ( local_17_double>g_trailRefSlippagePips * g_pipSize && local_18_double>g_slippagePts * g_pipSize )
        {
          local_19_bool = true ;
-         if ( global_39_int_C8 == 2 )
+         if ( g_trailMode == 2 )
          {
            g_nextOrderAnchorPrice = -1000.0 ;
            Print("Slippage controle active"); 
          }
        }
-       if ( global_43_bool_E8 )
+       if ( g_trailUseFillPrice )
        {
          local_5_double = local_17_double ;
        }
@@ -6461,7 +6469,7 @@ void OnTick()
        }
        // EX5 behavior: maximum-loss is a virtual close boundary here.
        // Do not rewrite the broker SL on every management pass.
-       if ( MarketInfo(g_chartSymbol,MODE_ASK)>(global_100_double_230 + global_64_double_148) * g_pipSize + local_10_double + g_curSpread )
+       if ( MarketInfo(g_chartSymbol,MODE_ASK)>(g_stopLossPips + g_stopExtraPips) * g_pipSize + local_10_double + g_curSpread )
        {
          RefreshRates(); 
          OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,Red); 
@@ -6482,24 +6490,24 @@ void OnTick()
          }
          local_21_double = temp_int_9 ;
          local_22_bool = false ;
-         if ( !(global_195_bool_531) )
+         if ( !(g_sellOrderSeen) )
          {
-           global_195_bool_531 = true ;
-           global_193_int_52C = 1 ;
+           g_sellOrderSeen = true ;
+           g_sellFirstModDone = 1 ;
          }
          if ( local_21_double==0.0 )
          {
-           global_193_int_52C = 1 ;
+           g_sellFirstModDone = 1 ;
          }
          if ( MathFloor(local_21_double / 2.0)==local_21_double / 2.0 )
          {
-           global_193_int_52C = 1 ;
+           g_sellFirstModDone = 1 ;
          }
          else
          {
-           global_193_int_52C = 0 ;
+           g_sellFirstModDone = 0 ;
          }
-         if ( global_195_bool_531 )
+         if ( g_sellOrderSeen )
          {
            if ( local_21_double>0.0 )
            {
@@ -6510,7 +6518,7 @@ void OnTick()
                {
                  if ( OrderSelect(temp_int_13,0,0) != true )   continue;
                  
-                 if ( ( OrderMagicNumber() != global_93_int_1F0 && OrderMagicNumber() != g_zrMagicSell && OrderMagicNumber() != g_zrMagicBuy ) )   continue;
+                 if ( ( OrderMagicNumber() != g_curStrategyMagic && OrderMagicNumber() != g_zrMagicSell && OrderMagicNumber() != g_zrMagicBuy ) )   continue;
                  
                  if ( OrderType() == 0 )
                  {
@@ -6545,7 +6553,7 @@ void OnTick()
                {
                  if ( OrderSelect(temp_int_19,0,0) != true )   continue;
                  
-                 if ( OrderMagicNumber() == global_93_int_1F0 && OrderTicket() == temp_long_18 )
+                 if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == temp_long_18 )
                  {
                    OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),3,Red); 
                  }
@@ -6561,7 +6569,7 @@ void OnTick()
                  OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,Red); 
                  
                }
-               global_195_bool_531 = false ;
+               g_sellOrderSeen = false ;
                local_20_bool = true ;
              }
            }
@@ -6576,7 +6584,7 @@ void OnTick()
              {
                local_23_double = local_12_double * (MathPow(g_zrLotMultiplier,local_21_double + 1.0)) ;
              }
-             if ( global_193_int_52C == 0 )
+             if ( g_sellFirstModDone == 0 )
              {
                local_24_double = local_17_double ;
                if ( MarketInfo(g_chartSymbol,MODE_BID)<local_17_double )
@@ -6587,7 +6595,7 @@ void OnTick()
                    {
                      if ( OrderSelect(temp_int_20,0,0) != true )   continue;
                      
-                     if ( OrderMagicNumber() == global_93_int_1F0 && OrderTicket() == local_9_long )
+                     if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == local_9_long )
                      {
                        OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),3,Red); 
                      }
@@ -6607,7 +6615,7 @@ void OnTick()
                  else
                  {
                    OrderSend(g_chartSymbol,1,local_23_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),g_zrMagicSell,0,Green); 
-                   global_193_int_52C = 1 ;
+                   g_sellFirstModDone = 1 ;
                    local_22_bool = true ;
                  }
                }
@@ -6627,7 +6635,7 @@ void OnTick()
                    {
                      if ( OrderSelect(temp_int_21,0,0) != true )   continue;
                      
-                     if ( OrderMagicNumber() == global_93_int_1F0 && OrderTicket() == local_9_long )
+                     if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == local_9_long )
                      {
                        OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),3,Red); 
                      }
@@ -6647,7 +6655,7 @@ void OnTick()
                  else
                  {
                    OrderSend(g_chartSymbol,0,local_23_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),g_zrMagicSell,0,Green); 
-                   global_193_int_52C = 0 ;
+                   g_sellFirstModDone = 0 ;
                    local_22_bool = true ;
                  }
                }
@@ -6664,7 +6672,7 @@ void OnTick()
          if ( ( g_profitCloseMode == 1 || (g_profitCloseMode != 2 && g_profitCloseMode != 3) ) )
          {
            temp_long_23 = local_9_long;
-           temp_double_24 = global_100_double_230;
+           temp_double_24 = g_stopLossPips;
            temp_double_25 = local_10_double;
            temp_int_26 = 2;
            temp_double_27 = 0.0;
@@ -6709,32 +6717,32 @@ void OnTick()
              OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
-           if ( global_125_double_2F8>0.0 && TimeCurrent() >= local_13_datetime + global_304_int_287C && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - global_126_double_300 * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + global_126_double_300 * g_pipSize,g_symbolDigits)<local_7_double )
+           if ( g_timeTrailDelayMin>0.0 && TimeCurrent() >= local_13_datetime + g_timeTrailDelaySec && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - g_timeTrailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_timeTrailDistancePips * g_pipSize,g_symbolDigits)<local_7_double )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + global_126_double_300 * g_pipSize,g_symbolDigits) ;
+             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_timeTrailDistancePips * g_pipSize,g_symbolDigits) ;
              if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_TrailSL_after_X_Minutes_size_ loss.  Trying again!"); 
                }
                local_2_bool = true ;
              }
            }
-           if ( global_103_double_250>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - (global_103_double_250 + global_106_double_268) * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_trailActivationPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && local_7_double>local_10_double - global_105_double_260 * g_pipSize && NormalizeDouble(global_103_double_250 * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK),g_symbolDigits)<local_7_double )
+           if ( g_profitTrailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - (g_profitTrailDistancePips + g_profitTrailBufferPips) * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_trailActivationPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && local_7_double>local_10_double - g_profitTrailCapPips * g_pipSize && NormalizeDouble(g_profitTrailDistancePips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK),g_symbolDigits)<local_7_double )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + global_103_double_250 * g_pipSize,g_symbolDigits) ;
+             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_profitTrailDistancePips * g_pipSize,g_symbolDigits) ;
              if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_stop_ loss.  Trying again!"); 
                }
                else
                {
-                 local_26_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[g_currentStrategyIndex],2) ;
+                 local_26_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
                  if ( local_26_double<local_12_double && local_26_double>=MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
                  {
                    OrderClose(local_9_long,local_26_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,Red); 
@@ -6744,19 +6752,19 @@ void OnTick()
                local_2_bool = true ;
              }
            }
-           if ( global_110_double_288>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(global_110_double_288 * g_pipSize + (local_8_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(global_111_double_290 * g_pipSize + local_5_double,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>local_8_double + global_309_double_2898 )
+           if ( g_tpTrailPips>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_tpTrailPips * g_pipSize + (local_8_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_tpTrailMinGapPips * g_pipSize + local_5_double,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>local_8_double + g_freezeDistPrice )
            {
-             local_8_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - global_110_double_288 * g_pipSize,g_symbolDigits) ;
+             local_8_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - g_tpTrailPips * g_pipSize,g_symbolDigits) ;
              if ( local_8_double<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_TP.  Trying again!"); 
                }
                else
                {
-                 local_27_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[g_currentStrategyIndex],2) ;
+                 local_27_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
                  if ( local_27_double<local_12_double && local_27_double>=SymbolInfoDouble(g_chartSymbol,34) )
                  {
                    OrderClose(local_9_long,local_27_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,Red); 
@@ -6766,13 +6774,13 @@ void OnTick()
                local_2_bool = true ;
              }
            }
-           if ( local_19_bool && global_39_int_C8 == 1 && global_41_double_D8>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - global_41_double_D8 * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_17_double - global_40_double_D0 * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && local_7_double>local_10_double - global_42_double_E0 * g_pipSize && NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + global_41_double_D8 * g_pipSize,g_symbolDigits)<local_7_double )
+           if ( local_19_bool && g_trailMode == 1 && g_trailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - g_trailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_17_double - g_trailStopBufferPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && local_7_double>local_10_double - g_trailCapAboveEntryPips * g_pipSize && NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_trailDistancePips * g_pipSize,g_symbolDigits)<local_7_double )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + global_41_double_D8 * g_pipSize,g_symbolDigits) ;
+             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_trailDistancePips * g_pipSize,g_symbolDigits) ;
              if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting Slip TL.  Trying again!"); 
                }
@@ -6783,39 +6791,39 @@ void OnTick()
                local_2_bool = true ;
              }
            }
-           if ( global_119_int_2D0 >  0 && global_120_int_2D4 >= 0 && UseHL_TrailingSL && g_sellTrailStopLevel[g_currentStrategyIndex]<local_7_double - g_minStopDistPrice - g_symbolPoint && g_sellTrailStopLevel[g_currentStrategyIndex]>global_121_int_2D8 * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) && ( g_sellTrailStopLevel[g_currentStrategyIndex]>local_10_double || !(global_116_bool_2C4) ) && g_sellTrailStopLevel[g_currentStrategyIndex]>global_122_int_2DC * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(g_sellTrailStopLevel[g_currentStrategyIndex],g_symbolDigits)<local_7_double )
+           if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 && UseHL_TrailingSL && g_sellTrailStopLevel[g_currentStrategyIndex]<local_7_double - g_minStopDistPrice - g_symbolPoint && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailMinGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) && ( g_sellTrailStopLevel[g_currentStrategyIndex]>local_10_double || !(g_trailOnlyTighten) ) && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailBrokerGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && NormalizeDouble(g_sellTrailStopLevel[g_currentStrategyIndex],g_symbolDigits)<local_7_double )
            {
              local_7_double = NormalizeDouble(g_sellTrailStopLevel[g_currentStrategyIndex],g_symbolDigits) ;
              if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when modifying stoploss"); 
                }
                local_2_bool = true ;
              }
            }
-           if ( global_113_double_2A8>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - global_113_double_2A8 * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<local_7_double - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits)<local_7_double )
+           if ( g_beTriggerPips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beTriggerPips * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<local_7_double - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits)<local_7_double )
            {
              local_7_double = NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits) ;
              if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               global_230_int_1E08 = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
-               if ( global_230_int_1E08 <= 0 )
+               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               if ( g_lastOrderResult <= 0 )
                {
                  Print("error when setting breakeven: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' ..\'Exit_BE_start_\' to close to \'Exit_BE_extra_pips_\' ..trying again!"); 
                }
                local_2_bool = true ;
              }
            }
-           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && local_7_double - global_131_double_328 * g_pipSize>=local_5_double - g_curSpread - global_132_double_330 * g_pipSize) ) )
+           if ( !(local_2_bool) && ( g_partialCloseMode == 1 || (g_partialCloseMode == 2 && local_7_double - g_gridSpacingPips * g_pipSize>=local_5_double - g_curSpread - g_gridMaxSpacingPips * g_pipSize) ) )
            {
-             global_250_int_2518 ++;
-             if ( MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - global_131_double_328 * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && ( global_129_double_318==0.0 || MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_nextOrderAnchorPrice * g_pipSize ) && global_250_int_2518 >= global_130_int_320 && NormalizeDouble(local_7_double - global_131_double_328 * g_pipSize,g_symbolDigits)<local_7_double )
+             g_ordersSinceAnchor ++;
+             if ( MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_gridSpacingPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && ( g_gridAnchorPips==0.0 || MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_nextOrderAnchorPrice * g_pipSize ) && g_ordersSinceAnchor >= g_gridMaxOrdersPerAnchor && NormalizeDouble(local_7_double - g_gridSpacingPips * g_pipSize,g_symbolDigits)<local_7_double )
              {
-               global_250_int_2518 = 0 ;
-               local_7_double = NormalizeDouble(local_7_double - global_131_double_328 * g_pipSize,g_symbolDigits) ;
+               g_ordersSinceAnchor = 0 ;
+               local_7_double = NormalizeDouble(local_7_double - g_gridSpacingPips * g_pipSize,g_symbolDigits) ;
                OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF); 
                local_2_bool = true ;
              }
@@ -6843,7 +6851,7 @@ void OnTick()
                }
              }
            }
-           if ( local_2_bool && global_135_bool_348 )
+           if ( local_2_bool && g_returnAfterOrderModify )
            {
              return(true); 
            }
@@ -6851,7 +6859,7 @@ void OnTick()
          if ( ( g_profitCloseMode == 2 || g_profitCloseMode == 3 ) )
          {
            temp_long_34 = local_9_long;
-           temp_double_35 = global_100_double_230;
+           temp_double_35 = g_stopLossPips;
            temp_double_36 = local_10_double;
            temp_int_37 = 2;
            temp_double_38 = 0.0;
@@ -6894,7 +6902,7 @@ void OnTick()
              return(true); 
            }
            local_28_int = (int)(TimeCurrent() - g_lastTrailOrderTime) ;
-           if ( local_28_int >= global_65_int_150 )
+           if ( local_28_int >= g_trailModifyMinSec )
            {
              if ( NormalizeDouble(g_virtualSLPrice,g_symbolDigits)<local_7_double - g_symbolPoint )
              {
@@ -6902,15 +6910,15 @@ void OnTick()
              }
              g_lastTrailOrderTime = TimeCurrent() ;
            }
-           if ( global_125_double_2F8>0.0 && TimeCurrent() >= local_13_datetime + global_304_int_287C && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - global_126_double_300 * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 )
+           if ( g_timeTrailDelayMin>0.0 && TimeCurrent() >= local_13_datetime + g_timeTrailDelaySec && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - g_timeTrailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice )
            {
-             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_ASK) + global_126_double_300 * g_pipSize ;
+             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_ASK) + g_timeTrailDistancePips * g_pipSize ;
              local_2_bool = true ;
            }
-           if ( global_103_double_250>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - (global_103_double_250 + global_106_double_268) * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_trailActivationPips * g_pipSize && g_virtualSLPrice>local_10_double - global_105_double_260 * g_pipSize )
+           if ( g_profitTrailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - (g_profitTrailDistancePips + g_profitTrailBufferPips) * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_trailActivationPips * g_pipSize && g_virtualSLPrice>local_10_double - g_profitTrailCapPips * g_pipSize )
            {
-             g_virtualSLPrice = global_103_double_250 * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) ;
-             local_29_double = NormalizeDouble(global_107_double_270 / 100.0 * global_223_double_1AC4_si99[g_currentStrategyIndex],2) ;
+             g_virtualSLPrice = g_profitTrailDistancePips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) ;
+             local_29_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
              if ( local_29_double<local_12_double && local_29_double>=MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
              {
                OrderClose(local_9_long,local_29_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,Red); 
@@ -6918,39 +6926,39 @@ void OnTick()
              }
              local_2_bool = true ;
            }
-           if ( local_19_bool && global_39_int_C8 == 1 && global_41_double_D8>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - global_41_double_D8 * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_17_double - global_40_double_D0 * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && g_virtualSLPrice>local_10_double - global_42_double_E0 * g_pipSize )
+           if ( local_19_bool && g_trailMode == 1 && g_trailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - g_trailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_17_double - g_trailStopBufferPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && g_virtualSLPrice>local_10_double - g_trailCapAboveEntryPips * g_pipSize )
            {
              Print("Slippage controle active"); 
              local_2_bool = true ;
-             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_ASK) + global_41_double_D8 * g_pipSize ;
+             g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_ASK) + g_trailDistancePips * g_pipSize ;
            }
-           if ( global_119_int_2D0 >  0 && global_120_int_2D4 >= 0 && g_sellTrailStopLevel[g_currentStrategyIndex]<g_virtualSLPrice - g_minStopDistPrice - g_symbolPoint && ( g_sellTrailStopLevel[g_currentStrategyIndex]>local_10_double || !(global_116_bool_2C4) ) && g_sellTrailStopLevel[g_currentStrategyIndex]>global_122_int_2DC * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 )
+           if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 && g_sellTrailStopLevel[g_currentStrategyIndex]<g_virtualSLPrice - g_minStopDistPrice - g_symbolPoint && ( g_sellTrailStopLevel[g_currentStrategyIndex]>local_10_double || !(g_trailOnlyTighten) ) && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailBrokerGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice )
            {
              g_virtualSLPrice = g_sellTrailStopLevel[g_currentStrategyIndex] ;
              local_2_bool = true ;
            }
-           if ( global_113_double_2A8>0.0 && g_profitCloseMode == 3 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - global_113_double_2A8 * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<local_7_double - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits)<g_virtualSLPrice )
+           if ( g_beTriggerPips>0.0 && g_profitCloseMode == 3 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beTriggerPips * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<local_7_double - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits)<g_virtualSLPrice )
            {
              g_virtualSLPrice = NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits) ;
-             global_230_int_1E08 = OrderModify(local_9_long,local_10_double,g_virtualSLPrice,local_8_double,0,0xFFFFFFFF) ;
-             if ( global_230_int_1E08 <= 0 )
+             g_lastOrderResult = OrderModify(local_9_long,local_10_double,g_virtualSLPrice,local_8_double,0,0xFFFFFFFF) ;
+             if ( g_lastOrderResult <= 0 )
              {
                Print("error when setting breakeven: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' ..\'Exit_BE_start_\' to close to \'Exit_BE_extra_pips_\' ..trying again!"); 
              }
              local_2_bool = true ;
            }
-           if ( global_113_double_2A8>0.0 && g_profitCloseMode == 2 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - global_113_double_2A8 * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<g_virtualSLPrice - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 )
+           if ( g_beTriggerPips>0.0 && g_profitCloseMode == 2 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beTriggerPips * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<g_virtualSLPrice - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice )
            {
              g_virtualSLPrice = local_10_double - g_beExtraPips * g_pipSize ;
              local_2_bool = true ;
            }
-           if ( !(local_2_bool) && ( global_128_int_314 == 1 || (global_128_int_314 == 2 && g_virtualSLPrice - global_131_double_328 * g_pipSize>=local_5_double - g_curSpread - global_132_double_330 * g_pipSize) ) )
+           if ( !(local_2_bool) && ( g_partialCloseMode == 1 || (g_partialCloseMode == 2 && g_virtualSLPrice - g_gridSpacingPips * g_pipSize>=local_5_double - g_curSpread - g_gridMaxSpacingPips * g_pipSize) ) )
            {
-             global_250_int_2518 ++;
-             if ( MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - global_131_double_328 * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + global_309_double_2898 && ( global_129_double_318==0.0 || MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_nextOrderAnchorPrice * g_pipSize ) && global_250_int_2518 >= global_130_int_320 )
+             g_ordersSinceAnchor ++;
+             if ( MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_gridSpacingPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && ( g_gridAnchorPips==0.0 || MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_nextOrderAnchorPrice * g_pipSize ) && g_ordersSinceAnchor >= g_gridMaxOrdersPerAnchor )
              {
-               global_250_int_2518 = 0 ;
-               g_virtualSLPrice = g_virtualSLPrice - global_131_double_328 * g_pipSize ;
+               g_ordersSinceAnchor = 0 ;
+               g_virtualSLPrice = g_virtualSLPrice - g_gridSpacingPips * g_pipSize ;
                local_2_bool = true ;
              }
            }
@@ -7532,18 +7540,18 @@ void OnTick()
  // JIT compare fix: threshold uses the lot-sizing balance basis
  // (OnlyUp / ManualBalance aware), while OnTick keeps LastLotResizeBalance
  // as the raw account-balance snapshot.
- if ( ( !(global_401_double_6AD0!=g_lastLotResizeBalance) && !(arg_0_bool) ) )
+ if ( ( !(g_effectiveBalance!=g_lastLotResizeBalance) && !(arg_0_bool) ) )
  {
    return;
  }
  
- if ( ( !(global_401_double_6AD0>g_lastLotResizeBalance * local_1_double) &&
-        !(global_401_double_6AD0<g_lastLotResizeBalance / local_1_double) && !(arg_0_bool) ) )
+ if ( ( !(g_effectiveBalance>g_lastLotResizeBalance * local_1_double) &&
+        !(g_effectiveBalance<g_lastLotResizeBalance / local_1_double) && !(arg_0_bool) ) )
  {
    return;
  }
 
- CalculateStrategyLotSize(global_100_double_230,global_92_int_1EC); 
+ CalculateStrategyLotSize(g_stopLossPips,g_lotScalePercent); 
 
  // Preserve the lot-size refresh above while the market is closed.  Moving
  // the entire market gate before RefreshPendingOrderLotSizes() skipped this refresh and changed
@@ -7556,9 +7564,9 @@ void OnTick()
  local_2_int = MT4OrdersTotal() ;
  for (local_3_int = local_2_int ; local_3_int >= 0 ; local_3_int --)
  {
-   if ( OrderSelect(local_3_int,0,0) != true || OrderMagicNumber() != global_93_int_1F0 || OrderSymbol() != g_chartSymbol )   continue;
+   if ( OrderSelect(local_3_int,0,0) != true || OrderMagicNumber() != g_curStrategyMagic || OrderSymbol() != g_chartSymbol )   continue;
    
-   if ( OrderType() == 4 && OrderLots()!=global_223_double_1AC4_si99[g_currentStrategyIndex] )
+   if ( OrderType() == 4 && OrderLots()!=g_strategyStartLots[g_currentStrategyIndex] )
    {
      local_4_double = OrderStopLoss() ;
      local_5_long = OrderTicket() ;
@@ -7567,7 +7575,7 @@ void OnTick()
      local_8_datetime = OrderExpiration() ;
      local_9_string = OrderComment() ;
      OrderDelete(local_5_long,Red); 
-     local_10_int = OrderSend(g_chartSymbol,4,global_223_double_1AC4_si99[g_currentStrategyIndex],local_7_double,(int)g_slippagePts,local_4_double,local_6_double,local_9_string,global_93_int_1F0,local_8_datetime,Green) ;
+     local_10_int = OrderSend(g_chartSymbol,4,g_strategyStartLots[g_currentStrategyIndex],local_7_double,(int)g_slippagePts,local_4_double,local_6_double,local_9_string,g_curStrategyMagic,local_8_datetime,Green) ;
      temp_long_1 = local_10_int;
      temp_long_2 = local_5_long;
      for (temp_int_3 = 0 ; temp_int_3 < 100 ; temp_int_3=temp_int_3 + 1)
@@ -7580,7 +7588,7 @@ void OnTick()
      Print("Lotsize changed more than " + string(g_lotChangePctAlert) + "%... adjusting lotsize of pending orders"); 
      Sleep(1000); 
    }
-   if ( OrderType() != 5 || !(OrderLots()!=global_223_double_1AC4_si99[g_currentStrategyIndex]) )   continue;
+   if ( OrderType() != 5 || !(OrderLots()!=g_strategyStartLots[g_currentStrategyIndex]) )   continue;
    local_11_double = OrderStopLoss() ;
    local_12_long = OrderTicket() ;
    local_13_double = OrderTakeProfit() ;
@@ -7588,7 +7596,7 @@ void OnTick()
    local_15_datetime = OrderExpiration() ;
    local_16_string = OrderComment() ;
    OrderDelete(local_12_long,Red); 
-   local_17_int = OrderSend(g_chartSymbol,5,global_223_double_1AC4_si99[g_currentStrategyIndex],local_14_double,(int)g_slippagePts,local_11_double,local_13_double,local_16_string,global_93_int_1F0,local_15_datetime,Green) ;
+   local_17_int = OrderSend(g_chartSymbol,5,g_strategyStartLots[g_currentStrategyIndex],local_14_double,(int)g_slippagePts,local_11_double,local_13_double,local_16_string,g_curStrategyMagic,local_15_datetime,Green) ;
    temp_long_4 = local_17_int;
    temp_long_5 = local_12_long;
    for (temp_int_6 = 0 ; temp_int_6 < 100 ; temp_int_6=temp_int_6 + 1)
@@ -7646,7 +7654,7 @@ void OnTick()
  local_14_uint = LightSteelBlue ;
  local_15_bool = false ;
  local_16_int = 0 ;
- if ( global_17_bool_8C )
+ if ( g_manageAllSymbols )
  {
    local_16_int = (int)((g_strategyCount + 3) * g_panelCellHeight) ;
  }
@@ -7846,7 +7854,7 @@ void OnTick()
    CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,local_21_string,local_20_int,local_19_int,1,0,1.0); 
    local_18_int ++;
    local_19_int ++;
-   local_21_string = DoubleToString(NormalizeDouble(global_223_double_1AC4_si99[local_24_int],2),2) ;
+   local_21_string = DoubleToString(NormalizeDouble(g_strategyStartLots[local_24_int],2),2) ;
    CreateInfoPanelCell(local_22_int,local_23_int,local_18_int,local_21_string,local_20_int,local_19_int,1,0,1.0); 
    local_18_int ++;
    local_19_int = 0 ;
@@ -7857,17 +7865,17 @@ void OnTick()
  void CreateInfoPanelCell( int arg_0_int,int arg_1_int,int arg_2_int,string arg_3_string,int arg_4_int,int arg_5_int,int arg_6_int,uint arg_7_uint,double arg_8_double)
  {
  ObjectCreate(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJ_EDIT,0,0,0.0); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_XDISTANCE,(long)(arg_0_int + arg_5_int * global_361_double_5CC0)); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_XDISTANCE,(long)(arg_0_int + arg_5_int * g_panelCellWidth)); 
  ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_YDISTANCE,(long)(arg_1_int + arg_4_int * g_panelCellHeight)); 
  ObjectSetString(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_TEXT,arg_3_string); 
  ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_BACK,0); 
  ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_COLOR,arg_7_uint); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_BGCOLOR,global_364_uint_5CD4); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_BGCOLOR,g_panelCellBgColor); 
  ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_BORDER_COLOR,0); 
  ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_FONTSIZE,(long)(g_panelFontSize * arg_8_double)); 
  ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_READONLY,0x1); 
  ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_YSIZE,(long)g_panelCellHeight); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_XSIZE,(long)global_361_double_5CC0); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_XSIZE,(long)g_panelCellWidth); 
  ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_YSIZE,(long)g_panelCellHeight); 
  if ( arg_6_int == 0 )
  {
@@ -7972,7 +7980,7 @@ void OnTick()
    {
      if ( OrderSelect(temp_int_3,0,0) != true )   continue;
      
-     if ( ( OrderSymbol() != g_chartSymbol && !(global_17_bool_8C) ) )   continue;
+     if ( ( OrderSymbol() != g_chartSymbol && !(g_manageAllSymbols) ) )   continue;
      temp_int_4 = OrderMagicNumber();
      temp_int_5=ST1_MagicNumber + 1;
      if ( temp_int_4 != temp_int_5 )
@@ -8132,7 +8140,7 @@ void OnTick()
    local_2_string = DoubleToString(NormalizeDouble(g_avgPLperTrade[local_3_int],2),2) ;
    ObjectSetString(0,"info_ea" + IntegerToString(local_1_int,0,32),OBJPROP_TEXT,local_2_string); 
    local_1_int ++;
-   local_2_string = DoubleToString(NormalizeDouble(global_223_double_1AC4_si99[local_3_int],2),2) ;
+   local_2_string = DoubleToString(NormalizeDouble(g_strategyStartLots[local_3_int],2),2) ;
    ObjectSetString(0,"info_ea" + IntegerToString(local_1_int,0,32),OBJPROP_TEXT,local_2_string); 
    local_1_int ++;
  }
@@ -8177,7 +8185,7 @@ void OnTick()
    {
      if ( OrderSelect(temp_int_4,0,1) != true )   continue;
      
-     if ( ( OrderSymbol() != g_chartSymbol && !(global_17_bool_8C) ) )   continue;
+     if ( ( OrderSymbol() != g_chartSymbol && !(g_manageAllSymbols) ) )   continue;
      temp_int_5 = OrderMagicNumber();
      temp_int_6=ST1_MagicNumber + 1;
      if ( temp_int_5 != temp_int_6 )
@@ -8301,7 +8309,7 @@ void OnTick()
  {
    if ( OrderSelect(local_5_int,0,1) != true )   continue;
    
-   if ( ( OrderSymbol() != g_chartSymbol && !(global_17_bool_8C) ) )   continue;
+   if ( ( OrderSymbol() != g_chartSymbol && !(g_manageAllSymbols) ) )   continue;
    temp_int_1 = OrderMagicNumber();
    temp_int_2=ST1_MagicNumber + 1;
    if ( temp_int_1 != temp_int_2 )
@@ -8436,7 +8444,7 @@ void OnTick()
  {
    if ( OrderSelect(local_5_int,0,1) != true )   continue;
    
-   if ( ( OrderSymbol() != g_chartSymbol && !(global_17_bool_8C) ) )   continue;
+   if ( ( OrderSymbol() != g_chartSymbol && !(g_manageAllSymbols) ) )   continue;
    temp_int_1 = OrderMagicNumber();
    temp_int_2=ST1_MagicNumber + 1;
    if ( temp_int_1 != temp_int_2 )
@@ -8562,7 +8570,7 @@ void OnTick()
  }
  for (local_5_int = HistoryTotal() ; local_5_int >= 0 ; local_5_int --)
  {
-   if ( OrderSelect(local_5_int,0,1) != true || OrderMagicNumber() != global_93_int_1F0 )   continue;
+   if ( OrderSelect(local_5_int,0,1) != true || OrderMagicNumber() != g_curStrategyMagic )   continue;
    local_6_bool = true ;
    for (local_7_int = 0 ; local_7_int < g_strategyCount ; local_7_int ++)
    {
@@ -8573,7 +8581,7 @@ void OnTick()
    }
    if ( ( OrderCloseTime() <  TimeCurrent() - g_statWindowDays * 24 * 60 * 60 && local_6_bool ) )   break;
    local_8_double = OrderLots() * 100.0 ;
-   if ( global_151_int_438 == 1 )
+   if ( g_statWeightPerTrade == 1 )
    {
      local_8_double = 1.0 ;
    }
@@ -8594,7 +8602,7 @@ void OnTick()
      if ( (temp_long_2 >= temp_long_3 || g_minTradesReachedFlag[local_9_int]) )   continue;
      }
      g_closedTradeCount[local_9_int] ++;
-     if ( g_closedTradeCount[local_9_int] >= global_155_int_448 )
+     if ( g_closedTradeCount[local_9_int] >= g_statMinTrades )
      {
        g_minTradesReachedFlag[local_9_int] = true;
      }
@@ -8613,7 +8621,7 @@ void OnTick()
  }
  for (local_10_int = 0 ; local_10_int < g_strategyCount ; local_10_int ++)
  {
-   global_349_double_46B4_si99[local_10_int] = local_2_double_si99[local_10_int];
+   g_statTotalPL[local_10_int] = local_2_double_si99[local_10_int];
    if ( g_closedTradeCount[local_10_int] >  0 )
    {
      g_avgPLperTrade[local_10_int] = NormalizeDouble(local_2_double_si99[local_10_int] / g_closedTradeCount[local_10_int],2);
@@ -8644,19 +8652,19 @@ void OnTick()
  CalculatePerformanceMetrics(); 
  for (local_1_int = 0 ; local_1_int < g_strategyCount ; local_1_int ++)
  {
-   local_2_double = global_349_double_46B4_si99[local_1_int] ;
+   local_2_double = g_statTotalPL[local_1_int] ;
    local_3_int = 1 ;
    for (local_4_int = 0 ; local_4_int < g_strategyCount ; local_4_int ++)
    {
-     if ( local_4_int == local_1_int || !(global_349_double_46B4_si99[local_4_int]>local_2_double) )   continue;
+     if ( local_4_int == local_1_int || !(g_statTotalPL[local_4_int]>local_2_double) )   continue;
      local_3_int ++;
      
    }
-   global_356_int_5B14_si99[local_1_int] = local_3_int;
+   g_statRankScore[local_1_int] = local_3_int;
  }
  for (local_5_int = 0 ; local_5_int < g_strategyCount ; local_5_int ++)
  {
-   local_6_int = global_356_int_5B14_si99[local_5_int] ;
+   local_6_int = g_statRankScore[local_5_int] ;
    local_7_bool = true ;
    do
    {
@@ -8666,8 +8674,8 @@ void OnTick()
      
      for ( ; local_8_int < g_strategyCount ; local_8_int ++)
      {
-       if ( local_8_int == local_5_int || global_356_int_5B14_si99[local_8_int] != global_356_int_5B14_si99[local_5_int] )   continue;
-       global_356_int_5B14_si99[local_8_int] ++;
+       if ( local_8_int == local_5_int || g_statRankScore[local_8_int] != g_statRankScore[local_5_int] )   continue;
+       g_statRankScore[local_8_int] ++;
        local_7_bool = true ;
        
      }
@@ -8683,7 +8691,7 @@ void OnTick()
  {
    for (local_11_int = 0 ; local_11_int < g_strategyCount ; local_11_int ++)
    {
-     if ( global_356_int_5B14_si99[local_11_int] == local_10_int )
+     if ( g_statRankScore[local_11_int] == local_10_int )
      {
      }
    }
@@ -8716,11 +8724,11 @@ void OnTick()
      local_3_int ++;
      
    }
-   global_356_int_5B14_si99[local_1_int] = local_3_int;
+   g_statRankScore[local_1_int] = local_3_int;
  }
  for (local_5_int = 0 ; local_5_int < g_strategyCount ; local_5_int ++)
  {
-   local_6_int = global_356_int_5B14_si99[local_5_int] ;
+   local_6_int = g_statRankScore[local_5_int] ;
    local_7_bool = true ;
    do
    {
@@ -8730,8 +8738,8 @@ void OnTick()
      
      for ( ; local_8_int < g_strategyCount ; local_8_int ++)
      {
-       if ( local_8_int == local_5_int || global_356_int_5B14_si99[local_8_int] != global_356_int_5B14_si99[local_5_int] )   continue;
-       global_356_int_5B14_si99[local_8_int] ++;
+       if ( local_8_int == local_5_int || g_statRankScore[local_8_int] != g_statRankScore[local_5_int] )   continue;
+       g_statRankScore[local_8_int] ++;
        local_7_bool = true ;
        
      }
@@ -8747,7 +8755,7 @@ void OnTick()
  {
    for (local_11_int = 0 ; local_11_int < g_strategyCount ; local_11_int ++)
    {
-     if ( global_356_int_5B14_si99[local_11_int] == local_10_int )
+     if ( g_statRankScore[local_11_int] == local_10_int )
      {
      }
    }
@@ -9230,11 +9238,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_D1 ;
  g_entryTfPeriod = (int)PERIOD_D1 ;
  g_signalTfPeriod = (int)PERIOD_M15 ;
- global_73_int_17C = 24 ;
- global_74_int_180 = 3 ;
- global_77_int_188 = 105 ;
+ g_fractalRightBars = 24 ;
+ g_fractalLeftBars = 3 ;
+ g_fractalMinLookback = 105 ;
  g_entryBreakoutPips = 45.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -275.0;
  if ( Randomization>0.0 )
  {
@@ -9256,9 +9264,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 5 ;
- global_88_double_1D0 = 30.0 ;
+ g_pendingDupTolerancePips = 30.0 ;
  g_pendingExpiryHours = 35 ;
- global_99_int_22C = 1 ;
+ g_entryTfMinutes = 1 ;
  temp_double_3 = AdjustSL + 6100.0;
  if ( Randomization>0.0 )
  {
@@ -9268,7 +9276,7 @@ void OnTick()
  {
    temp_double_4 = 0.0;
  }
- global_100_double_230 = temp_double_3 + temp_double_4 ;
+ g_stopLossPips = temp_double_3 + temp_double_4 ;
  temp_double_4 = AdjustTP + 1450.0;
  if ( Randomization>0.0 )
  {
@@ -9288,7 +9296,7 @@ void OnTick()
  {
    temp_double_6 = 0.0;
  }
- global_103_double_250 = temp_double_5 + temp_double_6 ;
+ g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
  if ( Randomization>0.0 )
  {
    temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9306,9 +9314,9 @@ void OnTick()
  {
    temp_double_8 = 0.0;
  }
- global_105_double_260 = temp_double_8 + 5000.0 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9317,7 +9325,7 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_109_double_280 = temp_double_9 + 1600.0 ;
+ g_profitTargetPips = temp_double_9 + 1600.0 ;
  temp_double_9 = AdjustTrailTP + 700.0;
  if ( Randomization>0.0 )
  {
@@ -9336,7 +9344,7 @@ void OnTick()
  {
    temp_double_11 = 0.0;
  }
- global_113_double_2A8 = temp_double_11 + 930.0 ;
+ g_beTriggerPips = temp_double_11 + 930.0 ;
  temp_double_11 = AdjustBreakEven + 120.0;
  if ( Randomization>0.0 )
  {
@@ -9347,22 +9355,22 @@ void OnTick()
    temp_double_12 = 0.0;
  }
  g_beExtraPips = temp_double_11 + temp_double_12 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 14 ;
- global_120_int_2D4 = 12 ;
- global_121_int_2D8 = 300 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 14 ;
+ g_hlFractalLeftBars = 12 ;
+ g_hlTrailMinGapPips = 300 ;
  g_hlOffsetPips = 22.0 ;
  g_maxOpenTradesPerSide = 5 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_1";
  }
- global_93_int_1F0=ST1_MagicNumber + 1;
- global_397_double_6768 = ConvertUsdToAccountCurrency(145.0) ;
+ g_curStrategyMagic=ST1_MagicNumber + 1;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(145.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 2000.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(60.0) ;
+ g_varValueScalePrice = 2000.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(60.0) ;
  }
 //LoadStrategy1Settings <<==--------   --------
  void LoadStrategy4Settings()
@@ -9386,11 +9394,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_D1 ;
  g_entryTfPeriod = (int)PERIOD_H4 ;
  g_signalTfPeriod = (int)PERIOD_H1 ;
- global_73_int_17C = 12 ;
- global_74_int_180 = 8 ;
- global_77_int_188 = 90 ;
+ g_fractalRightBars = 12 ;
+ g_fractalLeftBars = 8 ;
+ g_fractalMinLookback = 90 ;
  g_entryBreakoutPips = 1050.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -40.0;
  if ( Randomization>0.0 )
  {
@@ -9412,9 +9420,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 2 ;
- global_88_double_1D0 = 130.0 ;
+ g_pendingDupTolerancePips = 130.0 ;
  g_pendingExpiryHours = 192 ;
- global_99_int_22C = 5 ;
+ g_entryTfMinutes = 5 ;
  if ( !(UseHL_TrailingSL) )
  {
    temp_double_3 = AdjustSL + 700.0;
@@ -9426,7 +9434,7 @@ void OnTick()
    {
      temp_double_4 = 0.0;
    }
-   global_100_double_230 = temp_double_3 + temp_double_4 ;
+   g_stopLossPips = temp_double_3 + temp_double_4 ;
  }
  else
  {
@@ -9439,7 +9447,7 @@ void OnTick()
    {
      temp_double_5 = 0.0;
    }
-   global_100_double_230 = temp_double_4 + temp_double_5 ;
+   g_stopLossPips = temp_double_4 + temp_double_5 ;
  }
  temp_double_5 = AdjustTP + 4900.0;
  if ( Randomization>0.0 )
@@ -9460,7 +9468,7 @@ void OnTick()
  {
    temp_double_7 = 0.0;
  }
- global_103_double_250 = temp_double_6 + temp_double_7 ;
+ g_profitTrailDistancePips = temp_double_6 + temp_double_7 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9478,9 +9486,9 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_105_double_260 = temp_double_9 + 2000.0 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailCapPips = temp_double_9 + 2000.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9489,7 +9497,7 @@ void OnTick()
  {
    temp_double_10 = 0.0;
  }
- global_109_double_280 = temp_double_10 + 1400.0 ;
+ g_profitTargetPips = temp_double_10 + 1400.0 ;
  temp_double_10 = AdjustTrailTP + 200.0;
  if ( Randomization>0.0 )
  {
@@ -9508,7 +9516,7 @@ void OnTick()
  {
    temp_double_12 = 0.0;
  }
- global_113_double_2A8 = temp_double_12 + 500.0 ;
+ g_beTriggerPips = temp_double_12 + 500.0 ;
  temp_double_12 = AdjustBreakEven + 200.0;
  if ( Randomization>0.0 )
  {
@@ -9519,25 +9527,25 @@ void OnTick()
    temp_double_13 = 0.0;
  }
  g_beExtraPips = temp_double_12 + temp_double_13 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 14 ;
- global_120_int_2D4 = 6 ;
- global_121_int_2D8 = 400 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 14 ;
+ g_hlFractalLeftBars = 6 ;
+ g_hlTrailMinGapPips = 400 ;
  g_hlOffsetPips = 32.0 ;
  g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_4";
  }
- global_93_int_1F0=ST1_MagicNumber + 2;
+ g_curStrategyMagic=ST1_MagicNumber + 2;
  // Repeated isolated probes of the Market EX5 use the 52-point DD weight
  // in variable-value mode.  A single cold-agent matrix run produced 57-like
  // sizing; that run is treated as an environment-state counterexample.
- global_397_double_6768 = ConvertUsdToAccountCurrency(52.0) ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(52.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 1600.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(52.0) ;
+ g_varValueScalePrice = 1600.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(52.0) ;
  }
 //LoadStrategy4Settings <<==--------   --------
  void LoadStrategy2Settings()
@@ -9560,11 +9568,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_D1 ;
  g_entryTfPeriod = (int)PERIOD_D1 ;
  g_signalTfPeriod = (int)PERIOD_H1 ;
- global_73_int_17C = 15 ;
- global_74_int_180 = 3 ;
- global_77_int_188 = 230 ;
+ g_fractalRightBars = 15 ;
+ g_fractalLeftBars = 3 ;
+ g_fractalMinLookback = 230 ;
  g_entryBreakoutPips = 550.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -170.0;
  if ( Randomization>0.0 )
  {
@@ -9586,9 +9594,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 1 ;
- global_88_double_1D0 = 480.0 ;
+ g_pendingDupTolerancePips = 480.0 ;
  g_pendingExpiryHours = 480 ;
- global_99_int_22C = 1 ;
+ g_entryTfMinutes = 1 ;
  temp_double_3 = AdjustSL + 1000.0;
  if ( Randomization>0.0 )
  {
@@ -9598,7 +9606,7 @@ void OnTick()
  {
    temp_double_4 = 0.0;
  }
- global_100_double_230 = temp_double_3 + temp_double_4 ;
+ g_stopLossPips = temp_double_3 + temp_double_4 ;
  temp_double_4 = AdjustTP + 4100.0;
  if ( Randomization>0.0 )
  {
@@ -9618,7 +9626,7 @@ void OnTick()
  {
    temp_double_6 = 0.0;
  }
- global_103_double_250 = temp_double_5 + temp_double_6 ;
+ g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
  if ( Randomization>0.0 )
  {
    temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9636,9 +9644,9 @@ void OnTick()
  {
    temp_double_8 = 0.0;
  }
- global_105_double_260 = temp_double_8 + 5000.0 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9647,7 +9655,7 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_109_double_280 = temp_double_9 + 1600.0 ;
+ g_profitTargetPips = temp_double_9 + 1600.0 ;
  temp_double_9 = AdjustTrailTP + 400.0;
  if ( Randomization>0.0 )
  {
@@ -9666,7 +9674,7 @@ void OnTick()
  {
    temp_double_11 = 0.0;
  }
- global_113_double_2A8 = temp_double_11 + 500.0 ;
+ g_beTriggerPips = temp_double_11 + 500.0 ;
  temp_double_11 = AdjustBreakEven + 100.0;
  if ( Randomization>0.0 )
  {
@@ -9677,22 +9685,22 @@ void OnTick()
    temp_double_12 = 0.0;
  }
  g_beExtraPips = temp_double_11 + temp_double_12 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 1 ;
- global_120_int_2D4 = 5 ;
- global_121_int_2D8 = 700 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 1 ;
+ g_hlFractalLeftBars = 5 ;
+ g_hlTrailMinGapPips = 700 ;
  g_hlOffsetPips = 22.0 ;
  g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_2";
  }
- global_93_int_1F0=ST1_MagicNumber + 5;
- global_397_double_6768 = ConvertUsdToAccountCurrency(30.0) ;
+ g_curStrategyMagic=ST1_MagicNumber + 5;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(30.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 2000.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(30.0) ;
+ g_varValueScalePrice = 2000.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(30.0) ;
  }
 //LoadStrategy2Settings <<==--------   --------
  void LoadStrategy3Settings()
@@ -9716,11 +9724,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_D1 ;
  g_entryTfPeriod = (int)PERIOD_D1 ;
  g_signalTfPeriod = (int)PERIOD_H1 ;
- global_73_int_17C = 7 ;
- global_74_int_180 = 2 ;
- global_77_int_188 = 20 ;
+ g_fractalRightBars = 7 ;
+ g_fractalLeftBars = 2 ;
+ g_fractalMinLookback = 20 ;
  g_entryBreakoutPips = 250.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -130.0;
  if ( Randomization>0.0 )
  {
@@ -9742,9 +9750,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 1 ;
- global_88_double_1D0 = 980.0 ;
+ g_pendingDupTolerancePips = 980.0 ;
  g_pendingExpiryHours = 432 ;
- global_99_int_22C = 1 ;
+ g_entryTfMinutes = 1 ;
  if ( !(UseHL_TrailingSL) )
  {
    temp_double_3 = AdjustSL + 600.0;
@@ -9756,7 +9764,7 @@ void OnTick()
    {
      temp_double_4 = 0.0;
    }
-   global_100_double_230 = temp_double_3 + temp_double_4 ;
+   g_stopLossPips = temp_double_3 + temp_double_4 ;
  }
  else
  {
@@ -9769,7 +9777,7 @@ void OnTick()
    {
      temp_double_5 = 0.0;
    }
-   global_100_double_230 = temp_double_4 + temp_double_5 ;
+   g_stopLossPips = temp_double_4 + temp_double_5 ;
  }
  temp_double_5 = AdjustTP + 3300.0;
  if ( Randomization>0.0 )
@@ -9790,7 +9798,7 @@ void OnTick()
  {
    temp_double_7 = 0.0;
  }
- global_103_double_250 = temp_double_6 + temp_double_7 ;
+ g_profitTrailDistancePips = temp_double_6 + temp_double_7 ;
  if ( Randomization>0.0 )
  {
    temp_double_8 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9808,7 +9816,7 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_105_double_260 = temp_double_9 + 5000.0 ;
+ g_profitTrailCapPips = temp_double_9 + 5000.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_10 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9817,7 +9825,7 @@ void OnTick()
  {
    temp_double_10 = 0.0;
  }
- global_109_double_280 = temp_double_10 + 1000.0 ;
+ g_profitTargetPips = temp_double_10 + 1000.0 ;
  temp_double_10 = AdjustTrailTP + 2000.0;
  if ( Randomization>0.0 )
  {
@@ -9828,8 +9836,8 @@ void OnTick()
    temp_double_11 = 0.0;
  }
  g_trailTpPips = temp_double_10 + temp_double_11 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_12 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9838,7 +9846,7 @@ void OnTick()
  {
    temp_double_12 = 0.0;
  }
- global_113_double_2A8 = temp_double_12 + 400.0 ;
+ g_beTriggerPips = temp_double_12 + 400.0 ;
  temp_double_12 = AdjustBreakEven;
  if ( Randomization>0.0 )
  {
@@ -9849,25 +9857,25 @@ void OnTick()
    temp_double_13 = 0.0;
  }
  g_beExtraPips = temp_double_12 + temp_double_13 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 7 ;
- global_120_int_2D4 = 4 ;
- global_121_int_2D8 = 100 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 7 ;
+ g_hlFractalLeftBars = 4 ;
+ g_hlTrailMinGapPips = 100 ;
  g_hlOffsetPips = 0.0 ;
  g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_3";
  }
- global_93_int_1F0=ST1_MagicNumber + 8;
+ g_curStrategyMagic=ST1_MagicNumber + 8;
  // The Market EX5 uses the 35-point historical DD weight in both fixed and
  // variable-value modes.  The reconstructed 32-point pre-return value caused
  // strategy 3 lots to round one step too high around the 0.025 boundary.
- global_397_double_6768 = ConvertUsdToAccountCurrency(35.0) ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(35.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 2000.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(35.0) ;
+ g_varValueScalePrice = 2000.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(35.0) ;
  }
 //LoadStrategy3Settings <<==--------   --------
  void LoadStrategy6Settings()
@@ -9890,11 +9898,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_D1 ;
  g_entryTfPeriod = (int)PERIOD_H1 ;
  g_signalTfPeriod = (int)PERIOD_M5 ;
- global_73_int_17C = 26 ;
- global_74_int_180 = 24 ;
- global_77_int_188 = 140 ;
+ g_fractalRightBars = 26 ;
+ g_fractalLeftBars = 24 ;
+ g_fractalMinLookback = 140 ;
  g_entryBreakoutPips = 120.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -115.0;
  if ( Randomization>0.0 )
  {
@@ -9916,9 +9924,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 5 ;
- global_88_double_1D0 = 55.0 ;
+ g_pendingDupTolerancePips = 55.0 ;
  g_pendingExpiryHours = 20 ;
- global_99_int_22C = 1 ;
+ g_entryTfMinutes = 1 ;
  temp_double_3 = AdjustSL + 10100.0;
  if ( Randomization>0.0 )
  {
@@ -9928,7 +9936,7 @@ void OnTick()
  {
    temp_double_4 = 0.0;
  }
- global_100_double_230 = temp_double_3 + temp_double_4 ;
+ g_stopLossPips = temp_double_3 + temp_double_4 ;
  temp_double_4 = AdjustTP + 800.0;
  if ( Randomization>0.0 )
  {
@@ -9948,7 +9956,7 @@ void OnTick()
  {
    temp_double_6 = 0.0;
  }
- global_103_double_250 = temp_double_5 + temp_double_6 ;
+ g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
  if ( Randomization>0.0 )
  {
    temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9966,9 +9974,9 @@ void OnTick()
  {
    temp_double_8 = 0.0;
  }
- global_105_double_260 = temp_double_8 + 5000.0 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -9977,7 +9985,7 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_109_double_280 = temp_double_9 + 1950.0 ;
+ g_profitTargetPips = temp_double_9 + 1950.0 ;
  temp_double_9 = AdjustTrailTP + 350.0;
  if ( Randomization>0.0 )
  {
@@ -9996,7 +10004,7 @@ void OnTick()
  {
    temp_double_11 = 0.0;
  }
- global_113_double_2A8 = temp_double_11 + 330.0 ;
+ g_beTriggerPips = temp_double_11 + 330.0 ;
  temp_double_11 = AdjustBreakEven + 80.0;
  if ( Randomization>0.0 )
  {
@@ -10007,22 +10015,22 @@ void OnTick()
    temp_double_12 = 0.0;
  }
  g_beExtraPips = temp_double_11 + temp_double_12 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 0 ;
- global_120_int_2D4 = 0 ;
- global_121_int_2D8 = 100 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 0 ;
+ g_hlFractalLeftBars = 0 ;
+ g_hlTrailMinGapPips = 100 ;
  g_hlOffsetPips = 0.0 ;
  g_maxOpenTradesPerSide = 5 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_6";
  }
- global_93_int_1F0=ST1_MagicNumber + 9;
- global_397_double_6768 = ConvertUsdToAccountCurrency(348.0) ;
+ g_curStrategyMagic=ST1_MagicNumber + 9;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(348.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 2400.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(140.0) ;
+ g_varValueScalePrice = 2400.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(140.0) ;
  }
 //LoadStrategy6Settings <<==--------   --------
  void LoadStrategy5Settings()
@@ -10045,11 +10053,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_D1 ;
  g_entryTfPeriod = (int)PERIOD_H1 ;
  g_signalTfPeriod = (int)PERIOD_M15 ;
- global_73_int_17C = 30 ;
- global_74_int_180 = 19 ;
- global_77_int_188 = 110 ;
+ g_fractalRightBars = 30 ;
+ g_fractalLeftBars = 19 ;
+ g_fractalMinLookback = 110 ;
  g_entryBreakoutPips = 160.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -120.0;
  if ( Randomization>0.0 )
  {
@@ -10071,9 +10079,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 3 ;
- global_88_double_1D0 = 55.0 ;
+ g_pendingDupTolerancePips = 55.0 ;
  g_pendingExpiryHours = 30 ;
- global_99_int_22C = 1 ;
+ g_entryTfMinutes = 1 ;
  temp_double_3 = AdjustSL + 5300.0;
  if ( Randomization>0.0 )
  {
@@ -10083,7 +10091,7 @@ void OnTick()
  {
    temp_double_4 = 0.0;
  }
- global_100_double_230 = temp_double_3 + temp_double_4 ;
+ g_stopLossPips = temp_double_3 + temp_double_4 ;
  temp_double_4 = AdjustTP + 900.0;
  if ( Randomization>0.0 )
  {
@@ -10103,7 +10111,7 @@ void OnTick()
  {
    temp_double_6 = 0.0;
  }
- global_103_double_250 = temp_double_5 + temp_double_6 ;
+ g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
  if ( Randomization>0.0 )
  {
    temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10121,9 +10129,9 @@ void OnTick()
  {
    temp_double_8 = 0.0;
  }
- global_105_double_260 = temp_double_8 + 5000.0 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10132,7 +10140,7 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_109_double_280 = temp_double_9 + 1900.0 ;
+ g_profitTargetPips = temp_double_9 + 1900.0 ;
  temp_double_9 = AdjustTrailTP + 250.0;
  if ( Randomization>0.0 )
  {
@@ -10151,7 +10159,7 @@ void OnTick()
  {
    temp_double_11 = 0.0;
  }
- global_113_double_2A8 = temp_double_11 + 260.0 ;
+ g_beTriggerPips = temp_double_11 + 260.0 ;
  temp_double_11 = AdjustBreakEven + 80.0;
  if ( Randomization>0.0 )
  {
@@ -10162,22 +10170,22 @@ void OnTick()
    temp_double_12 = 0.0;
  }
  g_beExtraPips = temp_double_11 + temp_double_12 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 0 ;
- global_120_int_2D4 = 0 ;
- global_121_int_2D8 = 100 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 0 ;
+ g_hlFractalLeftBars = 0 ;
+ g_hlTrailMinGapPips = 100 ;
  g_hlOffsetPips = 0.0 ;
  g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_5";
  }
- global_93_int_1F0=ST1_MagicNumber + 12;
- global_397_double_6768 = ConvertUsdToAccountCurrency(281.0) ;
+ g_curStrategyMagic=ST1_MagicNumber + 12;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(281.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 2600.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(110.0) ;
+ g_varValueScalePrice = 2600.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(110.0) ;
  }
 //LoadStrategy5Settings <<==--------   --------
  void LoadStrategy9Settings()
@@ -10200,11 +10208,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_D1 ;
  g_entryTfPeriod = (int)PERIOD_H1 ;
  g_signalTfPeriod = (int)PERIOD_M15 ;
- global_73_int_17C = 7 ;
- global_74_int_180 = 5 ;
- global_77_int_188 = 200 ;
+ g_fractalRightBars = 7 ;
+ g_fractalLeftBars = 5 ;
+ g_fractalMinLookback = 200 ;
  g_entryBreakoutPips = 40.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -150.0;
  if ( Randomization>0.0 )
  {
@@ -10226,9 +10234,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 3 ;
- global_88_double_1D0 = 5.0 ;
+ g_pendingDupTolerancePips = 5.0 ;
  g_pendingExpiryHours = 15 ;
- global_99_int_22C = 1 ;
+ g_entryTfMinutes = 1 ;
  temp_double_3 = AdjustSL + 3900.0;
  if ( Randomization>0.0 )
  {
@@ -10238,7 +10246,7 @@ void OnTick()
  {
    temp_double_4 = 0.0;
  }
- global_100_double_230 = temp_double_3 + temp_double_4 ;
+ g_stopLossPips = temp_double_3 + temp_double_4 ;
  temp_double_4 = AdjustTP + 1350.0;
  if ( Randomization>0.0 )
  {
@@ -10258,7 +10266,7 @@ void OnTick()
  {
    temp_double_6 = 0.0;
  }
- global_103_double_250 = temp_double_5 + temp_double_6 ;
+ g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
  if ( Randomization>0.0 )
  {
    temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10276,9 +10284,9 @@ void OnTick()
  {
    temp_double_8 = 0.0;
  }
- global_105_double_260 = temp_double_8 + 5000.0 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10287,7 +10295,7 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_109_double_280 = temp_double_9 + 1850.0 ;
+ g_profitTargetPips = temp_double_9 + 1850.0 ;
  temp_double_9 = AdjustTrailTP + 250.0;
  if ( Randomization>0.0 )
  {
@@ -10306,7 +10314,7 @@ void OnTick()
  {
    temp_double_11 = 0.0;
  }
- global_113_double_2A8 = temp_double_11 + 160.0 ;
+ g_beTriggerPips = temp_double_11 + 160.0 ;
  temp_double_11 = AdjustBreakEven + 50.0;
  if ( Randomization>0.0 )
  {
@@ -10317,22 +10325,22 @@ void OnTick()
    temp_double_12 = 0.0;
  }
  g_beExtraPips = temp_double_11 + temp_double_12 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 1 ;
- global_120_int_2D4 = 9 ;
- global_121_int_2D8 = 1500 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 1 ;
+ g_hlFractalLeftBars = 9 ;
+ g_hlTrailMinGapPips = 1500 ;
  g_hlOffsetPips = 46.0 ;
  g_maxOpenTradesPerSide = 99 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_9";
  }
- global_93_int_1F0=ST1_MagicNumber + 13;
- global_397_double_6768 = ConvertUsdToAccountCurrency(968.0) ;
+ g_curStrategyMagic=ST1_MagicNumber + 13;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(968.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 1900.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(700.0) ;
+ g_varValueScalePrice = 1900.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(700.0) ;
  }
 //LoadStrategy9Settings <<==--------   --------
  void LoadStrategy7Settings()
@@ -10355,11 +10363,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_H1 ;
  g_entryTfPeriod = (int)PERIOD_H1 ;
  g_signalTfPeriod = (int)PERIOD_M15 ;
- global_73_int_17C = 25 ;
- global_74_int_180 = 23 ;
- global_77_int_188 = 145 ;
+ g_fractalRightBars = 25 ;
+ g_fractalLeftBars = 23 ;
+ g_fractalMinLookback = 145 ;
  g_entryBreakoutPips = 10.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -10.0;
  if ( Randomization>0.0 )
  {
@@ -10381,9 +10389,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 5 ;
- global_88_double_1D0 = 90.0 ;
+ g_pendingDupTolerancePips = 90.0 ;
  g_pendingExpiryHours = 60 ;
- global_99_int_22C = 1 ;
+ g_entryTfMinutes = 1 ;
  temp_double_3 = AdjustSL + 2250.0;
  if ( Randomization>0.0 )
  {
@@ -10393,7 +10401,7 @@ void OnTick()
  {
    temp_double_4 = 0.0;
  }
- global_100_double_230 = temp_double_3 + temp_double_4 ;
+ g_stopLossPips = temp_double_3 + temp_double_4 ;
  temp_double_4 = AdjustTP + 1450.0;
  if ( Randomization>0.0 )
  {
@@ -10413,7 +10421,7 @@ void OnTick()
  {
    temp_double_6 = 0.0;
  }
- global_103_double_250 = temp_double_5 + temp_double_6 ;
+ g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
  if ( Randomization>0.0 )
  {
    temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10431,9 +10439,9 @@ void OnTick()
  {
    temp_double_8 = 0.0;
  }
- global_105_double_260 = temp_double_8 + 5000.0 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10442,7 +10450,7 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_109_double_280 = temp_double_9 + 2800.0 ;
+ g_profitTargetPips = temp_double_9 + 2800.0 ;
  temp_double_9 = AdjustTrailTP + 350.0;
  if ( Randomization>0.0 )
  {
@@ -10461,7 +10469,7 @@ void OnTick()
  {
    temp_double_11 = 0.0;
  }
- global_113_double_2A8 = temp_double_11 + 340.0 ;
+ g_beTriggerPips = temp_double_11 + 340.0 ;
  temp_double_11 = AdjustBreakEven + 30.0;
  if ( Randomization>0.0 )
  {
@@ -10472,22 +10480,22 @@ void OnTick()
    temp_double_12 = 0.0;
  }
  g_beExtraPips = temp_double_11 + temp_double_12 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 12 ;
- global_120_int_2D4 = 17 ;
- global_121_int_2D8 = 1000 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 12 ;
+ g_hlFractalLeftBars = 17 ;
+ g_hlTrailMinGapPips = 1000 ;
  g_hlOffsetPips = 45.0 ;
  g_maxOpenTradesPerSide = 5 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_7";
  }
- global_93_int_1F0=ST1_MagicNumber + 14;
- global_397_double_6768 = ConvertUsdToAccountCurrency(149.0) ;
+ g_curStrategyMagic=ST1_MagicNumber + 14;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(149.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 2600.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(90.0) ;
+ g_varValueScalePrice = 2600.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(90.0) ;
  }
 //LoadStrategy7Settings <<==--------   --------
  void LoadStrategy8Settings()
@@ -10510,11 +10518,11 @@ void OnTick()
  g_atrTimeframe = (int)PERIOD_D1 ;
  g_entryTfPeriod = (int)PERIOD_H1 ;
  g_signalTfPeriod = (int)PERIOD_M15 ;
- global_73_int_17C = 26 ;
- global_74_int_180 = 20 ;
- global_77_int_188 = 235 ;
+ g_fractalRightBars = 26 ;
+ g_fractalLeftBars = 20 ;
+ g_fractalMinLookback = 235 ;
  g_entryBreakoutPips = 80.0 ;
- global_81_double_1A0 = 0.0 ;
+ g_entryBreakoutPct = 0.0 ;
  temp_double_1 = AdjustEntry + -140.0;
  if ( Randomization>0.0 )
  {
@@ -10536,9 +10544,9 @@ void OnTick()
  }
  g_sellEntryOffsetPips = temp_double_2 + temp_double_3 ;
  g_maxPendingOrders = 5 ;
- global_88_double_1D0 = 5.0 ;
+ g_pendingDupTolerancePips = 5.0 ;
  g_pendingExpiryHours = 55 ;
- global_99_int_22C = 1 ;
+ g_entryTfMinutes = 1 ;
  temp_double_3 = AdjustSL + 1900.0;
  if ( Randomization>0.0 )
  {
@@ -10548,7 +10556,7 @@ void OnTick()
  {
    temp_double_4 = 0.0;
  }
- global_100_double_230 = temp_double_3 + temp_double_4 ;
+ g_stopLossPips = temp_double_3 + temp_double_4 ;
  temp_double_4 = AdjustTP + 1200.0;
  if ( Randomization>0.0 )
  {
@@ -10568,7 +10576,7 @@ void OnTick()
  {
    temp_double_6 = 0.0;
  }
- global_103_double_250 = temp_double_5 + temp_double_6 ;
+ g_profitTrailDistancePips = temp_double_5 + temp_double_6 ;
  if ( Randomization>0.0 )
  {
    temp_double_7 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10586,9 +10594,9 @@ void OnTick()
  {
    temp_double_8 = 0.0;
  }
- global_105_double_260 = temp_double_8 + 5000.0 ;
- global_106_double_268 = 0.1 ;
- global_107_double_270 = 0.0 ;
+ g_profitTrailCapPips = temp_double_8 + 5000.0 ;
+ g_profitTrailBufferPips = 0.1 ;
+ g_partialClosePct = 0.0 ;
  if ( Randomization>0.0 )
  {
    temp_double_9 = Randomization * 2.0 * MathRand() / 32768.0 + (0.0 - Randomization);
@@ -10597,7 +10605,7 @@ void OnTick()
  {
    temp_double_9 = 0.0;
  }
- global_109_double_280 = temp_double_9 + 1950.0 ;
+ g_profitTargetPips = temp_double_9 + 1950.0 ;
  temp_double_9 = AdjustTrailTP + 250.0;
  if ( Randomization>0.0 )
  {
@@ -10616,7 +10624,7 @@ void OnTick()
  {
    temp_double_11 = 0.0;
  }
- global_113_double_2A8 = temp_double_11 + 270.0 ;
+ g_beTriggerPips = temp_double_11 + 270.0 ;
  temp_double_11 = AdjustBreakEven;
  if ( Randomization>0.0 )
  {
@@ -10627,22 +10635,22 @@ void OnTick()
    temp_double_12 = 0.0;
  }
  g_beExtraPips = temp_double_11 + temp_double_12 ;
- global_117_int_2C8 = 60 ;
- global_118_int_2CC = 50 ;
- global_119_int_2D0 = 15 ;
- global_120_int_2D4 = 3 ;
- global_121_int_2D8 = 1200 ;
+ g_hlFractalTfMinutes = 60 ;
+ g_fractalMaxShift = 50 ;
+ g_hlFractalRightBars = 15 ;
+ g_hlFractalLeftBars = 3 ;
+ g_hlTrailMinGapPips = 1200 ;
  g_hlOffsetPips = 16.0 ;
  g_maxOpenTradesPerSide = 20 ;
  if ( !(RemoveCommentSuffix) )
  {
    g_orderComment=ST1_Comment + "_XAUUSD_8";
  }
- global_93_int_1F0=ST1_MagicNumber + 15;
- global_397_double_6768 = ConvertUsdToAccountCurrency(276.0) ;
+ g_curStrategyMagic=ST1_MagicNumber + 15;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(276.0) ;
  if ( !(UseVariableValues) )   return;
- global_7_double_50 = 2800.0 ;
- global_397_double_6768 = ConvertUsdToAccountCurrency(130.0) ;
+ g_varValueScalePrice = 2800.0 ;
+ g_usdToAccountRate = ConvertUsdToAccountCurrency(130.0) ;
  }
 //LoadStrategy8Settings <<==--------   --------
 // ============================================================================
@@ -10669,9 +10677,9 @@ void OnTick()
  temp_double_1 = AccountEquity();
  if ( temp_double_1==AccountBalance() )   return;
  local_1_double = 0.0 ;
- if ( AccountEquity()>global_384_double_5DA0 )
+ if ( AccountEquity()>g_propfirmDailyPeakEquity )
  {
-   global_384_double_5DA0 = AccountEquity() ;
+   g_propfirmDailyPeakEquity = AccountEquity() ;
  }
  for (local_2_int = HistoryTotal() ; local_2_int >= 0 ; local_2_int --)
  {
@@ -10694,9 +10702,9 @@ void OnTick()
  }
  local_4_double = AccountEquity() - AccountBalance() ;
  local_5_double = local_4_double + local_1_double ;
- if ( !( -(local_5_double)>global_384_double_5DA0 * PropFirmMaxDailyDD / 100.0) )   return;
+ if ( !( -(local_5_double)>g_propfirmDailyPeakEquity * PropFirmMaxDailyDD / 100.0) )   return;
  
- if ( !(global_382_bool_5D98) )
+ if ( !(g_propfirmDailyDDHit) )
  {
    Print("Max Daily Drawdown reached, closing trades and skipping rest of the day"); 
  }
@@ -10712,8 +10720,8 @@ void OnTick()
    if(OrderType()!=4 && OrderType()!=5) continue;
    OrderDelete(OrderTicket(),Red);
  }
- global_382_bool_5D98 = true ;
- global_384_double_5DA0 = 0.0 ;
+ g_propfirmDailyDDHit = true ;
+ g_propfirmDailyPeakEquity = 0.0 ;
  }
 //EnforcePropFirmDailyDrawdown <<==--------   --------
 // WorldTimeServer GMT parser.

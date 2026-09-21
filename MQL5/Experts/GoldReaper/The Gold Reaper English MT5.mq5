@@ -6285,79 +6285,79 @@ void OnTick()
 // ManageSellPositions —— 空头持仓管理（ManageBuyPositions 的对称实现）
  bool ManageSellPositions()
  {
-  bool      local_2_bool = false;
-  bool      local_3_bool = false;
-  double    local_4_double;
-  double    local_5_double;
-  int       local_6_int;
-  double    local_7_double;
-  double    local_8_double;
-  long      local_9_long;
-  double    local_10_double;
-  string    local_11_string;
-  double    local_12_double;
-  datetime  local_13_datetime;
-  int       local_14_int;
-  int       local_15_int;
-  string    local_16_string;
-  double    local_17_double;
-  double    local_18_double;
-  bool      local_19_bool;
-  bool      local_20_bool;
-  double    local_21_double;
-  bool      local_22_bool;
-  double    local_23_double;
-  double    local_24_double;
-  double    local_25_double;
-  double    local_26_double;
-  double    local_27_double;
-  int       local_28_int;
-  double    local_29_double;
+  bool      orderModified = false;
+  bool      anyOrderTouched = false;
+  double    prevVirtualSL;
+  double    entryRefPrice;
+  int       orderScanIdx;
+  double    currentStopLoss;
+  double    currentTakeProfit;
+  long      orderTicket;
+  double    orderOpenPrice;
+  string    orderComment;
+  double    orderLots;
+  datetime  orderOpenTime;
+  int       orderType;
+  int       orderMagic;
+  string    orderSymbol;
+  double    stopOrderRefPrice;
+  double    slippageDistance;
+  bool      slippageDetected;
+  bool      zoneRecoveryDone;
+  double    zrHedgeCount;
+  bool      zrOrderPlaced;
+  double    zrNextLotSize;
+  double    zrRecoveryLevel;
+  double    zrTargetPrice;
+  double    slTrailPartialLots;
+  double    tpTrailPartialLots;
+  int       trailElapsedSec;
+  double    virtTrailPartialLots;
 //----- -----
- int        temp_int_1;
- long       temp_long_2;
- int        temp_int_3;
- double     temp_double_4;
- double     temp_double_5;
- long       temp_long_6;
- int        temp_int_7;
- long       temp_long_8;
- int        temp_int_9;
- int        temp_int_10;
- string     temp_string_11;
- double     temp_double_12;
- int        temp_int_13;
- long       temp_long_14;
- double     temp_double_15;
- int        temp_int_16;
- long       temp_long_17;
- long       temp_long_18;
- int        temp_int_19;
- int        temp_int_20;
- int        temp_int_21;
- string     temp_string_22;
- long       temp_long_23;
- double     temp_double_24;
- double     temp_double_25;
- int        temp_int_26;
- double     temp_double_27;
- bool       temp_bool_28;
- int        temp_int_29;
- int        temp_int_30;
- double     temp_double_31;
- long       temp_long_32;
- int        temp_int_33;
- long       temp_long_34;
- double     temp_double_35;
- double     temp_double_36;
- int        temp_int_37;
- double     temp_double_38;
- bool       temp_bool_39;
- int        temp_int_40;
- int        temp_int_41;
- double     temp_double_42;
- long       temp_long_43;
- int        temp_int_44;
+ int        soDigits;
+ long       soTicket;
+ int        soScanIdx;
+ double     soCachedPrice;
+ double     soStorePrice;
+ long       soStoreTicket;
+ int        soStoreScanIdx;
+ long       zrTicketRef;
+ int        zrHedgeCountInt;
+ int        zrScanIdx;
+ string     zrScanComment;
+ double     accountEquity;
+ int        zrCloseAllScanIdx;
+ long       zrBasketTicket;
+ double     zrBasketProfit;
+ int        zrBasketScanIdx;
+ long       zrScanTicket;
+ long       zrCloseTicket;
+ int        zrCloseScanIdx;
+ int        zrMaxStepsScanIdx;
+ int        zrRecoveryScanIdx;
+ string     zrRecoveryScanComment;
+ long       virtSlTicket1;
+ double     virtSlPips1;
+ double     virtSlOpenPrice1;
+ int        virtSlMode1;
+ double     virtSlPrice1;
+ bool       virtSlFound1;
+ int        virtSlScanIdx1;
+ int        virtSlStoreIdx1;
+ double     virtSlUpdatePrice1;
+ long       virtSlUpdateTicket1;
+ int        virtSlUpdateIdx1;
+ long       virtSlTicket2;
+ double     virtSlPips2;
+ double     virtSlOpenPrice2;
+ int        virtSlMode2;
+ double     virtSlPrice2;
+ bool       virtSlFound2;
+ int        virtSlScanIdx2;
+ int        virtSlStoreIdx2;
+ double     virtSlUpdatePrice2;
+ long       virtSlUpdateTicket2;
+ int        virtSlUpdateIdx2;
 
  // Same pre-gate protection as ManageBuyPositions().
  if ( MarketInfo(g_chartSymbol,MODE_TRADEALLOWED)==0.0 )
@@ -6365,112 +6365,112 @@ void OnTick()
    return(false);
  }
 
- local_4_double = 0.0 ;
- local_5_double = 0.0 ;
- for (local_6_int = 0 ; local_6_int < MT4OrdersTotal() ; local_6_int ++)
+ prevVirtualSL = 0.0 ;
+ entryRefPrice = 0.0 ;
+ for (orderScanIdx = 0 ; orderScanIdx < MT4OrdersTotal() ; orderScanIdx ++)
  {
-   if ( OrderSelect(local_6_int,0,0) == true )
+   if ( OrderSelect(orderScanIdx,0,0) == true )
    {
-     local_2_bool = false ;
-     local_7_double = NormalizeDouble(OrderStopLoss(),g_symbolDigits) ;
-     local_8_double = NormalizeDouble(OrderTakeProfit(),g_symbolDigits) ;
-     local_9_long = OrderTicket() ;
-     local_10_double = NormalizeDouble(OrderOpenPrice(),g_symbolDigits) ;
-     local_11_string = OrderComment() ;
-     local_12_double = OrderLots() ;
-     local_13_datetime = OrderOpenTime() ;
-     local_14_int = OrderType() ;
-     local_15_int = OrderMagicNumber() ;
-     local_16_string = OrderSymbol() ;
-     if ( ( local_14_int == 5 || local_14_int == 3 ) && g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == g_chartSymbol) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && ( local_11_string == g_manualCommentFilter || g_manualCommentFilter == "" ) )
+     orderModified = false ;
+     currentStopLoss = NormalizeDouble(OrderStopLoss(),g_symbolDigits) ;
+     currentTakeProfit = NormalizeDouble(OrderTakeProfit(),g_symbolDigits) ;
+     orderTicket = OrderTicket() ;
+     orderOpenPrice = NormalizeDouble(OrderOpenPrice(),g_symbolDigits) ;
+     orderComment = OrderComment() ;
+     orderLots = OrderLots() ;
+     orderOpenTime = OrderOpenTime() ;
+     orderType = OrderType() ;
+     orderMagic = OrderMagicNumber() ;
+     orderSymbol = OrderSymbol() ;
+     if ( ( orderType == 5 || orderType == 3 ) && g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && orderSymbol == g_chartSymbol) ) && ( orderMagic == g_manualMagicNumber || g_manualMagicNumber == 0 ) && ( orderComment == g_manualCommentFilter || g_manualCommentFilter == "" ) )
      {
-       if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
+       if ( ( currentStopLoss==0.0 || currentStopLoss==0.0 ) )
        {
-         local_7_double = NormalizeDouble(g_stopLossPips * g_pipSize + local_10_double,g_symbolDigits) ;
-         OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
+         currentStopLoss = NormalizeDouble(g_stopLossPips * g_pipSize + orderOpenPrice,g_symbolDigits) ;
+         OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,Green); 
        }
-       if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
+       if ( ( currentTakeProfit==0.0 || currentTakeProfit==0.0 ) )
        {
-         local_8_double = NormalizeDouble(local_10_double - g_takeProfitPips * g_pipSize,g_symbolDigits) ;
-         OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
+         currentTakeProfit = NormalizeDouble(orderOpenPrice - g_takeProfitPips * g_pipSize,g_symbolDigits) ;
+         OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,Green); 
        }
      }
-     if ( local_14_int == 1 && ( ( local_15_int == g_curStrategyMagic && g_orderMgmtMode == 1 && local_16_string == g_chartSymbol ) || (g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && local_16_string == g_chartSymbol) ) && ( local_15_int == g_manualMagicNumber || g_manualMagicNumber == 0 ) && (local_11_string == g_manualCommentFilter || g_manualCommentFilter == "")) ) )
+     if ( orderType == 1 && ( ( orderMagic == g_curStrategyMagic && g_orderMgmtMode == 1 && orderSymbol == g_chartSymbol ) || (g_orderMgmtMode == 2 && ( g_manualSymbolMode == 0 || (g_manualSymbolMode == 1 && orderSymbol == g_chartSymbol) ) && ( orderMagic == g_manualMagicNumber || g_manualMagicNumber == 0 ) && (orderComment == g_manualCommentFilter || g_manualCommentFilter == "")) ) )
      {
-       if ( ( local_7_double==0.0 || local_7_double==0.0 ) )
+       if ( ( currentStopLoss==0.0 || currentStopLoss==0.0 ) )
        {
-         local_7_double = NormalizeDouble(g_stopLossPips * g_pipSize + local_10_double,g_symbolDigits) ;
-         OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
+         currentStopLoss = NormalizeDouble(g_stopLossPips * g_pipSize + orderOpenPrice,g_symbolDigits) ;
+         OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,Green); 
        }
-       if ( ( local_8_double==0.0 || local_8_double==0.0 ) )
+       if ( ( currentTakeProfit==0.0 || currentTakeProfit==0.0 ) )
        {
-         local_8_double = NormalizeDouble(local_10_double - g_takeProfitPips * g_pipSize,g_symbolDigits) ;
-         OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,Green); 
+         currentTakeProfit = NormalizeDouble(orderOpenPrice - g_takeProfitPips * g_pipSize,g_symbolDigits) ;
+         OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,Green); 
        }
-       if ( g_fakeoutEnableM1 && MT4BullishFakeout(g_fakeoutTfM1,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM1 && MT4BullishFakeout(g_fakeoutTfM1,g_fakeoutBarsBack,orderOpenTime,orderOpenPrice) )
        {
-         OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
+         OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( g_fakeoutEnableM5 && MT4BullishFakeout(g_fakeoutTfM5,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM5 && MT4BullishFakeout(g_fakeoutTfM5,g_fakeoutBarsBack,orderOpenTime,orderOpenPrice) )
        {
-         OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
+         OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( g_fakeoutEnableM15 && MT4BullishFakeout(g_fakeoutTfM15,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM15 && MT4BullishFakeout(g_fakeoutTfM15,g_fakeoutBarsBack,orderOpenTime,orderOpenPrice) )
        {
-         OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
+         OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( g_fakeoutEnableM30 && MT4BullishFakeout(g_fakeoutTfM30,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableM30 && MT4BullishFakeout(g_fakeoutTfM30,g_fakeoutBarsBack,orderOpenTime,orderOpenPrice) )
        {
-         OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
+         OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
-       if ( g_fakeoutEnableH1 && MT4BullishFakeout(g_fakeoutTfH1,g_fakeoutBarsBack,local_13_datetime,local_10_double) )
+       if ( g_fakeoutEnableH1 && MT4BullishFakeout(g_fakeoutTfH1,g_fakeoutBarsBack,orderOpenTime,orderOpenPrice) )
        {
-         OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
+         OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),0,Red); 
          Print("closing candle confirmation"); 
        }
        g_nextOrderAnchorPrice = g_gridAnchorPips ;
-       if ( g_orderTimeoutMin >  0 && TimeCurrent() >  local_13_datetime + g_orderTimeoutMin * 60 )
+       if ( g_orderTimeoutMin >  0 && TimeCurrent() >  orderOpenTime + g_orderTimeoutMin * 60 )
        {
          g_nextOrderAnchorPrice = g_gridTimeoutAnchorPips ;
        }
-       temp_int_1 = g_symbolDigits;
-       temp_long_2 = local_9_long;
-       temp_double_4 = 0.0;
-       for (temp_int_3 = 0 ; temp_int_3 < 100 ; temp_int_3=temp_int_3 + 1)
+       soDigits = g_symbolDigits;
+       soTicket = orderTicket;
+       soCachedPrice = 0.0;
+       for (soScanIdx = 0 ; soScanIdx < 100 ; soScanIdx=soScanIdx + 1)
        {
-         if ( !(g_stopOrderTicketPrice[temp_int_3][0]==temp_long_2) )   continue;
-         temp_double_4 = g_stopOrderTicketPrice[temp_int_3][1];
+         if ( !(g_stopOrderTicketPrice[soScanIdx][0]==soTicket) )   continue;
+         soCachedPrice = g_stopOrderTicketPrice[soScanIdx][1];
          break;
          
        }
-       local_17_double = NormalizeDouble(temp_double_4,temp_int_1) ;
-       if ( local_17_double==0.0 )
+       stopOrderRefPrice = NormalizeDouble(soCachedPrice,soDigits) ;
+       if ( stopOrderRefPrice==0.0 )
        {
-         temp_double_5 = local_10_double;
-         temp_long_6 = local_9_long;
-         for (temp_int_7 = 0 ; temp_int_7 < 100 ; temp_int_7=temp_int_7 + 1)
+         soStorePrice = orderOpenPrice;
+         soStoreTicket = orderTicket;
+         for (soStoreScanIdx = 0 ; soStoreScanIdx < 100 ; soStoreScanIdx=soStoreScanIdx + 1)
          {
-           if ( !(g_stopOrderTicketPrice[temp_int_7][0]==0.0) )   continue;
-           g_stopOrderTicketPrice[temp_int_7][0] = (double)temp_long_6;
-           g_stopOrderTicketPrice[temp_int_7][1] = temp_double_5;
+           if ( !(g_stopOrderTicketPrice[soStoreScanIdx][0]==0.0) )   continue;
+           g_stopOrderTicketPrice[soStoreScanIdx][0] = (double)soStoreTicket;
+           g_stopOrderTicketPrice[soStoreScanIdx][1] = soStorePrice;
            break;
            
          }
-         local_17_double = local_10_double ;
+         stopOrderRefPrice = orderOpenPrice ;
        }
        else
        {
-         local_17_double = local_17_double - g_trailRefSlippagePips * g_pipSize ;
+         stopOrderRefPrice = stopOrderRefPrice - g_trailRefSlippagePips * g_pipSize ;
        }
-       local_18_double = local_17_double - local_10_double ;
-       local_19_bool = false ;
-       if ( local_17_double>g_trailRefSlippagePips * g_pipSize && local_18_double>g_slippagePts * g_pipSize )
+       slippageDistance = stopOrderRefPrice - orderOpenPrice ;
+       slippageDetected = false ;
+       if ( stopOrderRefPrice>g_trailRefSlippagePips * g_pipSize && slippageDistance>g_slippagePts * g_pipSize )
        {
-         local_19_bool = true ;
+         slippageDetected = true ;
          if ( g_trailMode == 2 )
          {
            g_nextOrderAnchorPrice = -1000.0 ;
@@ -6479,45 +6479,45 @@ void OnTick()
        }
        if ( g_trailUseFillPrice )
        {
-         local_5_double = local_17_double ;
+         entryRefPrice = stopOrderRefPrice ;
        }
        else
        {
-         local_5_double = local_10_double ;
+         entryRefPrice = orderOpenPrice ;
        }
        // EX5 behavior: maximum-loss is a virtual close boundary here.
        // Do not rewrite the broker SL on every management pass.
-       if ( MarketInfo(g_chartSymbol,MODE_ASK)>(g_stopLossPips + g_stopExtraPips) * g_pipSize + local_10_double + g_curSpread )
+       if ( MarketInfo(g_chartSymbol,MODE_ASK)>(g_stopLossPips + g_stopExtraPips) * g_pipSize + orderOpenPrice + g_curSpread )
        {
          RefreshRates(); 
          OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,Red); 
          return(true); 
        }
-       local_20_bool = false ;
+       zoneRecoveryDone = false ;
        if ( g_zrEnabled )
        {
-         temp_long_8 = local_9_long;
-         temp_int_9 = 0;
-         for (temp_int_10 = MT4OrdersTotal() ; temp_int_10 >= 0 ; temp_int_10=temp_int_10 - 1)
+         zrTicketRef = orderTicket;
+         zrHedgeCountInt = 0;
+         for (zrScanIdx = MT4OrdersTotal() ; zrScanIdx >= 0 ; zrScanIdx=zrScanIdx - 1)
          {
-           if ( OrderSelect(temp_int_10,0,0) != true || OrderMagicNumber() != g_zrMagicSell || OrderSymbol() != g_chartSymbol )   continue;
-           temp_string_11 = OrderComment();
-           if ( temp_string_11 != IntegerToString(temp_long_8,0,32) )   continue;
-           temp_int_9=temp_int_9 + 1;
+           if ( OrderSelect(zrScanIdx,0,0) != true || OrderMagicNumber() != g_zrMagicSell || OrderSymbol() != g_chartSymbol )   continue;
+           zrScanComment = OrderComment();
+           if ( zrScanComment != IntegerToString(zrTicketRef,0,32) )   continue;
+           zrHedgeCountInt=zrHedgeCountInt + 1;
            
          }
-         local_21_double = temp_int_9 ;
-         local_22_bool = false ;
+         zrHedgeCount = zrHedgeCountInt ;
+         zrOrderPlaced = false ;
          if ( !(g_sellOrderSeen) )
          {
            g_sellOrderSeen = true ;
            g_sellFirstModDone = 1 ;
          }
-         if ( local_21_double==0.0 )
+         if ( zrHedgeCount==0.0 )
          {
            g_sellFirstModDone = 1 ;
          }
-         if ( MathFloor(local_21_double / 2.0)==local_21_double / 2.0 )
+         if ( MathFloor(zrHedgeCount / 2.0)==zrHedgeCount / 2.0 )
          {
            g_sellFirstModDone = 1 ;
          }
@@ -6527,14 +6527,14 @@ void OnTick()
          }
          if ( g_sellOrderSeen )
          {
-           if ( local_21_double>0.0 )
+           if ( zrHedgeCount>0.0 )
            {
-             temp_double_12 = AccountEquity();
-             if ( temp_double_12>AccountBalance() + g_zrTargetProfit )
+             accountEquity = AccountEquity();
+             if ( accountEquity>AccountBalance() + g_zrTargetProfit )
              {
-               for (temp_int_13 = MT4OrdersTotal() ; temp_int_13 >= 0 ; temp_int_13=temp_int_13 - 1)
+               for (zrCloseAllScanIdx = MT4OrdersTotal() ; zrCloseAllScanIdx >= 0 ; zrCloseAllScanIdx=zrCloseAllScanIdx - 1)
                {
-                 if ( OrderSelect(temp_int_13,0,0) != true )   continue;
+                 if ( OrderSelect(zrCloseAllScanIdx,0,0) != true )   continue;
                  
                  if ( ( OrderMagicNumber() != g_curStrategyMagic && OrderMagicNumber() != g_zrMagicSell && OrderMagicNumber() != g_zrMagicBuy ) )   continue;
                  
@@ -6548,36 +6548,36 @@ void OnTick()
                }
              }
            }
-           if ( local_21_double>0.0 )
+           if ( zrHedgeCount>0.0 )
            {
-             temp_long_14 = local_9_long;
-             temp_double_15 = 0.0;
-             for (temp_int_16 = MT4OrdersTotal() ; temp_int_16 >= 0 ; temp_int_16=temp_int_16 - 1)
+             zrBasketTicket = orderTicket;
+             zrBasketProfit = 0.0;
+             for (zrBasketScanIdx = MT4OrdersTotal() ; zrBasketScanIdx >= 0 ; zrBasketScanIdx=zrBasketScanIdx - 1)
              {
-               if ( OrderSelect(temp_int_16,0,0) != true )   continue;
-               temp_long_17 = OrderTicket();
-               if ( temp_long_17 != temp_long_14 )
+               if ( OrderSelect(zrBasketScanIdx,0,0) != true )   continue;
+               zrScanTicket = OrderTicket();
+               if ( zrScanTicket != zrBasketTicket )
                {
-                 temp_string_11 = OrderComment();
-               if ( temp_string_11 != IntegerToString(temp_long_14,0,32) )   continue;
+                 zrScanComment = OrderComment();
+               if ( zrScanComment != IntegerToString(zrBasketTicket,0,32) )   continue;
                }
-               temp_double_15 = temp_double_15 + OrderProfit();
+               zrBasketProfit = zrBasketProfit + OrderProfit();
                
              }
-             if ( temp_double_15>g_zrTargetProfit )
+             if ( zrBasketProfit>g_zrTargetProfit )
              {
-               temp_long_18 = local_9_long;
-               for (temp_int_19 = MT4OrdersTotal() ; temp_int_19 >= 0 ; temp_int_19=temp_int_19 - 1)
+               zrCloseTicket = orderTicket;
+               for (zrCloseScanIdx = MT4OrdersTotal() ; zrCloseScanIdx >= 0 ; zrCloseScanIdx=zrCloseScanIdx - 1)
                {
-                 if ( OrderSelect(temp_int_19,0,0) != true )   continue;
+                 if ( OrderSelect(zrCloseScanIdx,0,0) != true )   continue;
                  
-                 if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == temp_long_18 )
+                 if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == zrCloseTicket )
                  {
                    OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),3,Red); 
                  }
                  if ( OrderMagicNumber() != g_zrMagicSell )   continue;
-                 temp_string_11 = OrderComment();
-                 if ( temp_string_11 != IntegerToString(temp_long_18,0,32) )   continue;
+                 zrScanComment = OrderComment();
+                 if ( zrScanComment != IntegerToString(zrCloseTicket,0,32) )   continue;
                  
                  if ( OrderType() == 0 )
                  {
@@ -6588,38 +6588,38 @@ void OnTick()
                  
                }
                g_sellOrderSeen = false ;
-               local_20_bool = true ;
+               zoneRecoveryDone = true ;
              }
            }
            else
            {
-             local_23_double = local_12_double * g_zrLotMultiplier ;
+             zrNextLotSize = orderLots * g_zrLotMultiplier ;
              if ( g_zrLotMode == 2 )
              {
-               local_23_double = (local_21_double + 1.0) * local_12_double + local_12_double ;
+               zrNextLotSize = (zrHedgeCount + 1.0) * orderLots + orderLots ;
              }
              if ( g_zrLotMode == 3 )
              {
-               local_23_double = local_12_double * (MathPow(g_zrLotMultiplier,local_21_double + 1.0)) ;
+               zrNextLotSize = orderLots * (MathPow(g_zrLotMultiplier,zrHedgeCount + 1.0)) ;
              }
              if ( g_sellFirstModDone == 0 )
              {
-               local_24_double = local_17_double ;
-               if ( MarketInfo(g_chartSymbol,MODE_BID)<local_17_double )
+               zrRecoveryLevel = stopOrderRefPrice ;
+               if ( MarketInfo(g_chartSymbol,MODE_BID)<stopOrderRefPrice )
                {
-                 if ( local_21_double>=g_zrMaxRecoverySteps )
+                 if ( zrHedgeCount>=g_zrMaxRecoverySteps )
                  {
-                   for (temp_int_20 = MT4OrdersTotal() ; temp_int_20 >= 0 ; temp_int_20=temp_int_20 - 1)
+                   for (zrMaxStepsScanIdx = MT4OrdersTotal() ; zrMaxStepsScanIdx >= 0 ; zrMaxStepsScanIdx=zrMaxStepsScanIdx - 1)
                    {
-                     if ( OrderSelect(temp_int_20,0,0) != true )   continue;
+                     if ( OrderSelect(zrMaxStepsScanIdx,0,0) != true )   continue;
                      
-                     if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == local_9_long )
+                     if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == orderTicket )
                      {
                        OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),3,Red); 
                      }
                      if ( OrderMagicNumber() != g_zrMagicSell )   continue;
-                     temp_string_11 = OrderComment();
-                     if ( temp_string_11 != IntegerToString(local_9_long,0,32) )   continue;
+                     zrScanComment = OrderComment();
+                     if ( zrScanComment != IntegerToString(orderTicket,0,32) )   continue;
                      
                      if ( OrderType() == 0 )
                      {
@@ -6632,34 +6632,34 @@ void OnTick()
                  }
                  else
                  {
-                   OrderSend(g_chartSymbol,1,local_23_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),g_zrMagicSell,0,Green); 
+                   OrderSend(g_chartSymbol,1,zrNextLotSize,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,0.0,0.0,IntegerToString(orderTicket,0,32),g_zrMagicSell,0,Green); 
                    g_sellFirstModDone = 1 ;
-                   local_22_bool = true ;
+                   zrOrderPlaced = true ;
                  }
                }
              }
              else
              {
-               local_25_double = g_zrZoneSize * g_pipSize + local_17_double - local_21_double * g_zrStepDist * g_pipSize ;
-               if ( local_25_double<g_zrMinTargetDist * g_pipSize + local_17_double )
+               zrTargetPrice = g_zrZoneSize * g_pipSize + stopOrderRefPrice - zrHedgeCount * g_zrStepDist * g_pipSize ;
+               if ( zrTargetPrice<g_zrMinTargetDist * g_pipSize + stopOrderRefPrice )
                {
-                 local_25_double = g_zrMinTargetDist * g_pipSize + local_17_double ;
+                 zrTargetPrice = g_zrMinTargetDist * g_pipSize + stopOrderRefPrice ;
                }
-               if ( MarketInfo(g_chartSymbol,MODE_ASK)>local_25_double )
+               if ( MarketInfo(g_chartSymbol,MODE_ASK)>zrTargetPrice )
                {
-                 if ( local_21_double>=g_zrMaxRecoverySteps )
+                 if ( zrHedgeCount>=g_zrMaxRecoverySteps )
                  {
-                   for (temp_int_21 = MT4OrdersTotal() ; temp_int_21 >= 0 ; temp_int_21=temp_int_21 - 1)
+                   for (zrRecoveryScanIdx = MT4OrdersTotal() ; zrRecoveryScanIdx >= 0 ; zrRecoveryScanIdx=zrRecoveryScanIdx - 1)
                    {
-                     if ( OrderSelect(temp_int_21,0,0) != true )   continue;
+                     if ( OrderSelect(zrRecoveryScanIdx,0,0) != true )   continue;
                      
-                     if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == local_9_long )
+                     if ( OrderMagicNumber() == g_curStrategyMagic && OrderTicket() == orderTicket )
                      {
                        OrderClose(OrderTicket(),OrderLots(),MarketInfo(g_chartSymbol,MODE_ASK),3,Red); 
                      }
                      if ( OrderMagicNumber() != g_zrMagicSell )   continue;
-                     temp_string_22 = OrderComment();
-                     if ( temp_string_22 != IntegerToString(local_9_long,0,32) )   continue;
+                     zrRecoveryScanComment = OrderComment();
+                     if ( zrRecoveryScanComment != IntegerToString(orderTicket,0,32) )   continue;
                      
                      if ( OrderType() == 0 )
                      {
@@ -6672,132 +6672,132 @@ void OnTick()
                  }
                  else
                  {
-                   OrderSend(g_chartSymbol,0,local_23_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,0.0,0.0,IntegerToString(local_9_long,0,32),g_zrMagicSell,0,Green); 
+                   OrderSend(g_chartSymbol,0,zrNextLotSize,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,0.0,0.0,IntegerToString(orderTicket,0,32),g_zrMagicSell,0,Green); 
                    g_sellFirstModDone = 0 ;
-                   local_22_bool = true ;
+                   zrOrderPlaced = true ;
                  }
                }
              }
            }
          }
-         if ( ( local_21_double>0.0 || local_22_bool ) )
+         if ( ( zrHedgeCount>0.0 || zrOrderPlaced ) )
          {
-           local_20_bool = true ;
+           zoneRecoveryDone = true ;
          }
        }
-       if ( !(local_20_bool) )
+       if ( !(zoneRecoveryDone) )
        {
          if ( ( g_profitCloseMode == 1 || (g_profitCloseMode != 2 && g_profitCloseMode != 3) ) )
          {
-           temp_long_23 = local_9_long;
-           temp_double_24 = g_stopLossPips;
-           temp_double_25 = local_10_double;
-           temp_int_26 = 2;
-           temp_double_27 = 0.0;
-           temp_bool_28 = false;
-           for (temp_int_29 = 0 ; temp_int_29 < g_virtSLCacheSize ; temp_int_29=temp_int_29 + 1)
+           virtSlTicket1 = orderTicket;
+           virtSlPips1 = g_stopLossPips;
+           virtSlOpenPrice1 = orderOpenPrice;
+           virtSlMode1 = 2;
+           virtSlPrice1 = 0.0;
+           virtSlFound1 = false;
+           for (virtSlScanIdx1 = 0 ; virtSlScanIdx1 < g_virtSLCacheSize ; virtSlScanIdx1=virtSlScanIdx1 + 1)
            {
-             if ( g_virtSLCache[temp_int_29][0]==temp_long_23 )
+             if ( g_virtSLCache[virtSlScanIdx1][0]==virtSlTicket1 )
              {
-               temp_double_27 = g_virtSLCache[temp_int_29][1];
-               temp_bool_28 = true;
+               virtSlPrice1 = g_virtSLCache[virtSlScanIdx1][1];
+               virtSlFound1 = true;
                break;
              }
            }
-           if ( !(temp_bool_28) )
+           if ( !(virtSlFound1) )
            {
-             if ( temp_int_26 == 1 )
+             if ( virtSlMode1 == 1 )
              {
-               temp_double_27 = NormalizeDouble(temp_double_25 - temp_double_24 * g_pipSize,g_symbolDigits);
+               virtSlPrice1 = NormalizeDouble(virtSlOpenPrice1 - virtSlPips1 * g_pipSize,g_symbolDigits);
              }
-             if ( temp_int_26 == 2 )
+             if ( virtSlMode1 == 2 )
              {
-               temp_double_27 = NormalizeDouble(temp_double_24 * g_pipSize + temp_double_25,g_symbolDigits);
+               virtSlPrice1 = NormalizeDouble(virtSlPips1 * g_pipSize + virtSlOpenPrice1,g_symbolDigits);
              }
-             for (temp_int_30 = 0 ; temp_int_30 < g_virtSLCacheSize ; temp_int_30=temp_int_30 + 1)
+             for (virtSlStoreIdx1 = 0 ; virtSlStoreIdx1 < g_virtSLCacheSize ; virtSlStoreIdx1=virtSlStoreIdx1 + 1)
              {
-               if ( g_virtSLCache[temp_int_30][0]==0.0 )
+               if ( g_virtSLCache[virtSlStoreIdx1][0]==0.0 )
                {
-                 g_virtSLCache[temp_int_30][0] = (double)temp_long_23;
-                 g_virtSLCache[temp_int_30][1] = temp_double_27;
+                 g_virtSLCache[virtSlStoreIdx1][0] = (double)virtSlTicket1;
+                 g_virtSLCache[virtSlStoreIdx1][1] = virtSlPrice1;
                  break;
                }
              }
            }
-           g_virtualSLPrice = temp_double_27 ;
-           local_4_double = g_virtualSLPrice ;
-            if ( MarketInfo(g_chartSymbol,MODE_ASK)>local_4_double )
+           g_virtualSLPrice = virtSlPrice1 ;
+           prevVirtualSL = g_virtualSLPrice ;
+            if ( MarketInfo(g_chartSymbol,MODE_ASK)>prevVirtualSL )
             {
               Print("Closing with virtual SL"); 
-              Print("Virtual_SL: ",DoubleToString(local_4_double,g_symbolDigits));
+              Print("Virtual_SL: ",DoubleToString(prevVirtualSL,g_symbolDigits));
               Print("Last Ask: ",DoubleToString(MarketInfo(g_chartSymbol,MODE_ASK),g_symbolDigits));
               RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
+             OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
-           if ( g_timeTrailDelayMin>0.0 && TimeCurrent() >= local_13_datetime + g_timeTrailDelaySec && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - g_timeTrailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_timeTrailDistancePips * g_pipSize,g_symbolDigits)<local_7_double )
+           if ( g_timeTrailDelayMin>0.0 && TimeCurrent() >= orderOpenTime + g_timeTrailDelaySec && MarketInfo(g_chartSymbol,MODE_ASK)<currentStopLoss - g_symbolPoint - g_timeTrailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_timeTrailDistancePips * g_pipSize,g_symbolDigits)<currentStopLoss )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_timeTrailDistancePips * g_pipSize,g_symbolDigits) ;
-             if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
+             currentStopLoss = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_timeTrailDistancePips * g_pipSize,g_symbolDigits) ;
+             if ( currentStopLoss>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               g_lastOrderResult = OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,0xFFFFFFFF) ;
                if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_TrailSL_after_X_Minutes_size_ loss.  Trying again!"); 
                }
-               local_2_bool = true ;
+               orderModified = true ;
              }
            }
-           if ( g_profitTrailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - (g_profitTrailDistancePips + g_profitTrailBufferPips) * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_trailActivationPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && local_7_double>local_10_double - g_profitTrailCapPips * g_pipSize && NormalizeDouble(g_profitTrailDistancePips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK),g_symbolDigits)<local_7_double )
+           if ( g_profitTrailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<currentStopLoss - g_symbolPoint - (g_profitTrailDistancePips + g_profitTrailBufferPips) * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<orderOpenPrice - g_trailActivationPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && currentStopLoss>orderOpenPrice - g_profitTrailCapPips * g_pipSize && NormalizeDouble(g_profitTrailDistancePips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK),g_symbolDigits)<currentStopLoss )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_profitTrailDistancePips * g_pipSize,g_symbolDigits) ;
-             if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
+             currentStopLoss = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_profitTrailDistancePips * g_pipSize,g_symbolDigits) ;
+             if ( currentStopLoss>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               g_lastOrderResult = OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,0xFFFFFFFF) ;
                if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_stop_ loss.  Trying again!"); 
                }
                else
                {
-                 local_26_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
-                 if ( local_26_double<local_12_double && local_26_double>=MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
+                 slTrailPartialLots = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
+                 if ( slTrailPartialLots<orderLots && slTrailPartialLots>=MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
                  {
-                   OrderClose(local_9_long,local_26_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,Red); 
+                   OrderClose(orderTicket,slTrailPartialLots,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,Red); 
                    return(true); 
                  }
                }
-               local_2_bool = true ;
+               orderModified = true ;
              }
            }
-           if ( g_tpTrailPips>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_tpTrailPips * g_pipSize + (local_8_double + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_tpTrailMinGapPips * g_pipSize + local_5_double,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>local_8_double + g_freezeDistPrice )
+           if ( g_tpTrailPips>0.0 && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_tpTrailPips * g_pipSize + (currentTakeProfit + g_symbolPoint),g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>NormalizeDouble(g_tpTrailMinGapPips * g_pipSize + entryRefPrice,g_symbolDigits) && MarketInfo(g_chartSymbol,MODE_BID)>currentTakeProfit + g_freezeDistPrice )
            {
-             local_8_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - g_tpTrailPips * g_pipSize,g_symbolDigits) ;
-             if ( local_8_double<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
+             currentTakeProfit = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_BID) - g_tpTrailPips * g_pipSize,g_symbolDigits) ;
+             if ( currentTakeProfit<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
              {
-               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               g_lastOrderResult = OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,0xFFFFFFFF) ;
                if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting trailing Exit_TP.  Trying again!"); 
                }
                else
                {
-                 local_27_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
-                 if ( local_27_double<local_12_double && local_27_double>=SymbolInfoDouble(g_chartSymbol,34) )
+                 tpTrailPartialLots = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
+                 if ( tpTrailPartialLots<orderLots && tpTrailPartialLots>=SymbolInfoDouble(g_chartSymbol,34) )
                  {
-                   OrderClose(local_9_long,local_27_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,Red); 
+                   OrderClose(orderTicket,tpTrailPartialLots,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_slippagePts,Red); 
                    return(true); 
                  }
                }
-               local_2_bool = true ;
+               orderModified = true ;
              }
            }
-           if ( local_19_bool && g_trailMode == 1 && g_trailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_symbolPoint - g_trailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_17_double - g_trailStopBufferPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && local_7_double>local_10_double - g_trailCapAboveEntryPips * g_pipSize && NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_trailDistancePips * g_pipSize,g_symbolDigits)<local_7_double )
+           if ( slippageDetected && g_trailMode == 1 && g_trailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<currentStopLoss - g_symbolPoint - g_trailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<stopOrderRefPrice - g_trailStopBufferPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && currentStopLoss>orderOpenPrice - g_trailCapAboveEntryPips * g_pipSize && NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_trailDistancePips * g_pipSize,g_symbolDigits)<currentStopLoss )
            {
-             local_7_double = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_trailDistancePips * g_pipSize,g_symbolDigits) ;
-             if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
+             currentStopLoss = NormalizeDouble(MarketInfo(g_chartSymbol,MODE_ASK) + g_trailDistancePips * g_pipSize,g_symbolDigits) ;
+             if ( currentStopLoss>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               g_lastOrderResult = OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,0xFFFFFFFF) ;
                if ( g_lastOrderResult <= 0 )
                {
                  Print("TrailStop error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when setting Slip TL.  Trying again!"); 
@@ -6806,195 +6806,195 @@ void OnTick()
                {
                  Print("Slippage controle active"); 
                }
-               local_2_bool = true ;
+               orderModified = true ;
              }
            }
-           if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 && UseHL_TrailingSL && g_sellTrailStopLevel[g_currentStrategyIndex]<local_7_double - g_minStopDistPrice - g_symbolPoint && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailMinGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) && ( g_sellTrailStopLevel[g_currentStrategyIndex]>local_10_double || !(g_trailOnlyTighten) ) && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailBrokerGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && NormalizeDouble(g_sellTrailStopLevel[g_currentStrategyIndex],g_symbolDigits)<local_7_double )
+           if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 && UseHL_TrailingSL && g_sellTrailStopLevel[g_currentStrategyIndex]<currentStopLoss - g_minStopDistPrice - g_symbolPoint && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailMinGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) && ( g_sellTrailStopLevel[g_currentStrategyIndex]>orderOpenPrice || !(g_trailOnlyTighten) ) && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailBrokerGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && NormalizeDouble(g_sellTrailStopLevel[g_currentStrategyIndex],g_symbolDigits)<currentStopLoss )
            {
-             local_7_double = NormalizeDouble(g_sellTrailStopLevel[g_currentStrategyIndex],g_symbolDigits) ;
-             if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
+             currentStopLoss = NormalizeDouble(g_sellTrailStopLevel[g_currentStrategyIndex],g_symbolDigits) ;
+             if ( currentStopLoss>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               g_lastOrderResult = OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,0xFFFFFFFF) ;
                if ( g_lastOrderResult <= 0 )
                {
                  Print("error: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' when modifying stoploss"); 
                }
-               local_2_bool = true ;
+               orderModified = true ;
              }
            }
-           if ( g_beTriggerPips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beTriggerPips * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<local_7_double - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits)<local_7_double )
+           if ( g_beTriggerPips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<orderOpenPrice - g_beTriggerPips * g_pipSize && orderOpenPrice - g_beExtraPips * g_pipSize<currentStopLoss - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<orderOpenPrice - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && NormalizeDouble(orderOpenPrice - g_beExtraPips * g_pipSize,g_symbolDigits)<currentStopLoss )
            {
-             local_7_double = NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits) ;
-             if ( local_7_double>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
+             currentStopLoss = NormalizeDouble(orderOpenPrice - g_beExtraPips * g_pipSize,g_symbolDigits) ;
+             if ( currentStopLoss>MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice )
              {
-               g_lastOrderResult = OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF) ;
+               g_lastOrderResult = OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,0xFFFFFFFF) ;
                if ( g_lastOrderResult <= 0 )
                {
                  Print("error when setting breakeven: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' ..\'Exit_BE_start_\' to close to \'Exit_BE_extra_pips_\' ..trying again!"); 
                }
-               local_2_bool = true ;
+               orderModified = true ;
              }
            }
-           if ( !(local_2_bool) && ( g_partialCloseMode == 1 || (g_partialCloseMode == 2 && local_7_double - g_gridSpacingPips * g_pipSize>=local_5_double - g_curSpread - g_gridMaxSpacingPips * g_pipSize) ) )
+           if ( !(orderModified) && ( g_partialCloseMode == 1 || (g_partialCloseMode == 2 && currentStopLoss - g_gridSpacingPips * g_pipSize>=entryRefPrice - g_curSpread - g_gridMaxSpacingPips * g_pipSize) ) )
            {
              g_ordersSinceAnchor ++;
-             if ( MarketInfo(g_chartSymbol,MODE_ASK)<local_7_double - g_gridSpacingPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && ( g_gridAnchorPips==0.0 || MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_nextOrderAnchorPrice * g_pipSize ) && g_ordersSinceAnchor >= g_gridMaxOrdersPerAnchor && NormalizeDouble(local_7_double - g_gridSpacingPips * g_pipSize,g_symbolDigits)<local_7_double )
+             if ( MarketInfo(g_chartSymbol,MODE_ASK)<currentStopLoss - g_gridSpacingPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && ( g_gridAnchorPips==0.0 || MarketInfo(g_chartSymbol,MODE_ASK)<entryRefPrice - g_nextOrderAnchorPrice * g_pipSize ) && g_ordersSinceAnchor >= g_gridMaxOrdersPerAnchor && NormalizeDouble(currentStopLoss - g_gridSpacingPips * g_pipSize,g_symbolDigits)<currentStopLoss )
              {
                g_ordersSinceAnchor = 0 ;
-               local_7_double = NormalizeDouble(local_7_double - g_gridSpacingPips * g_pipSize,g_symbolDigits) ;
-               OrderModify(local_9_long,local_10_double,local_7_double,local_8_double,0,0xFFFFFFFF); 
-               local_2_bool = true ;
+               currentStopLoss = NormalizeDouble(currentStopLoss - g_gridSpacingPips * g_pipSize,g_symbolDigits) ;
+               OrderModify(orderTicket,orderOpenPrice,currentStopLoss,currentTakeProfit,0,0xFFFFFFFF); 
+               orderModified = true ;
              }
            }
-           g_virtualSLPrice = local_7_double ;
-            if ( MarketInfo(g_chartSymbol,MODE_ASK)>local_7_double )
+           g_virtualSLPrice = currentStopLoss ;
+            if ( MarketInfo(g_chartSymbol,MODE_ASK)>currentStopLoss )
             {
               Print("Closing with virtual SL"); 
-              Print("Virtual_SL: ",DoubleToString(local_7_double,g_symbolDigits));
+              Print("Virtual_SL: ",DoubleToString(currentStopLoss,g_symbolDigits));
               Print("Last Ask: ",DoubleToString(MarketInfo(g_chartSymbol,MODE_ASK),g_symbolDigits));
               RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
+             OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
-           if ( NormalizeDouble(local_4_double,g_symbolDigits)!=NormalizeDouble(g_virtualSLPrice,g_symbolDigits) )
+           if ( NormalizeDouble(prevVirtualSL,g_symbolDigits)!=NormalizeDouble(g_virtualSLPrice,g_symbolDigits) )
            {
-             temp_double_31 = NormalizeDouble(g_virtualSLPrice,g_symbolDigits);
-             temp_long_32 = local_9_long;
-             for (temp_int_33 = 0 ; temp_int_33 < g_virtSLCacheSize ; temp_int_33=temp_int_33 + 1)
+             virtSlUpdatePrice1 = NormalizeDouble(g_virtualSLPrice,g_symbolDigits);
+             virtSlUpdateTicket1 = orderTicket;
+             for (virtSlUpdateIdx1 = 0 ; virtSlUpdateIdx1 < g_virtSLCacheSize ; virtSlUpdateIdx1=virtSlUpdateIdx1 + 1)
              {
-               if ( g_virtSLCache[temp_int_33][0]==temp_long_32 )
+               if ( g_virtSLCache[virtSlUpdateIdx1][0]==virtSlUpdateTicket1 )
                {
-                 g_virtSLCache[temp_int_33][1] = temp_double_31;
+                 g_virtSLCache[virtSlUpdateIdx1][1] = virtSlUpdatePrice1;
                  break;
                }
              }
            }
-           if ( local_2_bool && g_returnAfterOrderModify )
+           if ( orderModified && g_returnAfterOrderModify )
            {
              return(true); 
            }
          }
          if ( ( g_profitCloseMode == 2 || g_profitCloseMode == 3 ) )
          {
-           temp_long_34 = local_9_long;
-           temp_double_35 = g_stopLossPips;
-           temp_double_36 = local_10_double;
-           temp_int_37 = 2;
-           temp_double_38 = 0.0;
-           temp_bool_39 = false;
-           for (temp_int_40 = 0 ; temp_int_40 < g_virtSLCacheSize ; temp_int_40=temp_int_40 + 1)
+           virtSlTicket2 = orderTicket;
+           virtSlPips2 = g_stopLossPips;
+           virtSlOpenPrice2 = orderOpenPrice;
+           virtSlMode2 = 2;
+           virtSlPrice2 = 0.0;
+           virtSlFound2 = false;
+           for (virtSlScanIdx2 = 0 ; virtSlScanIdx2 < g_virtSLCacheSize ; virtSlScanIdx2=virtSlScanIdx2 + 1)
            {
-             if ( g_virtSLCache[temp_int_40][0]==temp_long_34 )
+             if ( g_virtSLCache[virtSlScanIdx2][0]==virtSlTicket2 )
              {
-               temp_double_38 = g_virtSLCache[temp_int_40][1];
-               temp_bool_39 = true;
+               virtSlPrice2 = g_virtSLCache[virtSlScanIdx2][1];
+               virtSlFound2 = true;
                break;
              }
            }
-           if ( !(temp_bool_39) )
+           if ( !(virtSlFound2) )
            {
-             if ( temp_int_37 == 1 )
+             if ( virtSlMode2 == 1 )
              {
-               temp_double_38 = NormalizeDouble(temp_double_36 - temp_double_35 * g_pipSize,g_symbolDigits);
+               virtSlPrice2 = NormalizeDouble(virtSlOpenPrice2 - virtSlPips2 * g_pipSize,g_symbolDigits);
              }
-             if ( temp_int_37 == 2 )
+             if ( virtSlMode2 == 2 )
              {
-               temp_double_38 = NormalizeDouble(temp_double_35 * g_pipSize + temp_double_36,g_symbolDigits);
+               virtSlPrice2 = NormalizeDouble(virtSlPips2 * g_pipSize + virtSlOpenPrice2,g_symbolDigits);
              }
-             for (temp_int_41 = 0 ; temp_int_41 < g_virtSLCacheSize ; temp_int_41=temp_int_41 + 1)
+             for (virtSlStoreIdx2 = 0 ; virtSlStoreIdx2 < g_virtSLCacheSize ; virtSlStoreIdx2=virtSlStoreIdx2 + 1)
              {
-               if ( g_virtSLCache[temp_int_41][0]==0.0 )
+               if ( g_virtSLCache[virtSlStoreIdx2][0]==0.0 )
                {
-                 g_virtSLCache[temp_int_41][0] = (double)temp_long_34;
-                 g_virtSLCache[temp_int_41][1] = temp_double_38;
+                 g_virtSLCache[virtSlStoreIdx2][0] = (double)virtSlTicket2;
+                 g_virtSLCache[virtSlStoreIdx2][1] = virtSlPrice2;
                  break;
                }
              }
            }
-           g_virtualSLPrice = temp_double_38 ;
-           local_4_double = g_virtualSLPrice ;
-           if ( MarketInfo(g_chartSymbol,MODE_ASK)>=local_4_double )
+           g_virtualSLPrice = virtSlPrice2 ;
+           prevVirtualSL = g_virtualSLPrice ;
+           if ( MarketInfo(g_chartSymbol,MODE_ASK)>=prevVirtualSL )
            {
              RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
+             OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
-           local_28_int = (int)(TimeCurrent() - g_lastTrailOrderTime) ;
-           if ( local_28_int >= g_trailModifyMinSec )
+           trailElapsedSec = (int)(TimeCurrent() - g_lastTrailOrderTime) ;
+           if ( trailElapsedSec >= g_trailModifyMinSec )
            {
-             if ( NormalizeDouble(g_virtualSLPrice,g_symbolDigits)<local_7_double - g_symbolPoint )
+             if ( NormalizeDouble(g_virtualSLPrice,g_symbolDigits)<currentStopLoss - g_symbolPoint )
              {
-               OrderModify(local_9_long,local_10_double,NormalizeDouble(g_virtualSLPrice,g_symbolDigits),local_8_double,0,0xFFFFFFFF); 
+               OrderModify(orderTicket,orderOpenPrice,NormalizeDouble(g_virtualSLPrice,g_symbolDigits),currentTakeProfit,0,0xFFFFFFFF); 
              }
              g_lastTrailOrderTime = TimeCurrent() ;
            }
-           if ( g_timeTrailDelayMin>0.0 && TimeCurrent() >= local_13_datetime + g_timeTrailDelaySec && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - g_timeTrailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice )
+           if ( g_timeTrailDelayMin>0.0 && TimeCurrent() >= orderOpenTime + g_timeTrailDelaySec && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - g_timeTrailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice )
            {
              g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_ASK) + g_timeTrailDistancePips * g_pipSize ;
-             local_2_bool = true ;
+             orderModified = true ;
            }
-           if ( g_profitTrailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - (g_profitTrailDistancePips + g_profitTrailBufferPips) * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_trailActivationPips * g_pipSize && g_virtualSLPrice>local_10_double - g_profitTrailCapPips * g_pipSize )
+           if ( g_profitTrailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - (g_profitTrailDistancePips + g_profitTrailBufferPips) * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<entryRefPrice - g_trailActivationPips * g_pipSize && g_virtualSLPrice>orderOpenPrice - g_profitTrailCapPips * g_pipSize )
            {
              g_virtualSLPrice = g_profitTrailDistancePips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) ;
-             local_29_double = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
-             if ( local_29_double<local_12_double && local_29_double>=MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
+             virtTrailPartialLots = NormalizeDouble(g_partialClosePct / 100.0 * g_strategyStartLots[g_currentStrategyIndex],2) ;
+             if ( virtTrailPartialLots<orderLots && virtTrailPartialLots>=MarketInfo(g_chartSymbol,MODE_LOTSTEP) )
              {
-               OrderClose(local_9_long,local_29_double,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,Red); 
+               OrderClose(orderTicket,virtTrailPartialLots,MarketInfo(g_chartSymbol,MODE_BID),(int)g_slippagePts,Red); 
                return(true); 
              }
-             local_2_bool = true ;
+             orderModified = true ;
            }
-           if ( local_19_bool && g_trailMode == 1 && g_trailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - g_trailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<local_17_double - g_trailStopBufferPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && g_virtualSLPrice>local_10_double - g_trailCapAboveEntryPips * g_pipSize )
+           if ( slippageDetected && g_trailMode == 1 && g_trailDistancePips>0.0 && MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_symbolPoint - g_trailDistancePips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)<stopOrderRefPrice - g_trailStopBufferPips * g_pipSize && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && g_virtualSLPrice>orderOpenPrice - g_trailCapAboveEntryPips * g_pipSize )
            {
              Print("Slippage controle active"); 
-             local_2_bool = true ;
+             orderModified = true ;
              g_virtualSLPrice = MarketInfo(g_chartSymbol,MODE_ASK) + g_trailDistancePips * g_pipSize ;
            }
-           if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 && g_sellTrailStopLevel[g_currentStrategyIndex]<g_virtualSLPrice - g_minStopDistPrice - g_symbolPoint && ( g_sellTrailStopLevel[g_currentStrategyIndex]>local_10_double || !(g_trailOnlyTighten) ) && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailBrokerGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice )
+           if ( g_hlFractalRightBars >  0 && g_hlFractalLeftBars >= 0 && g_sellTrailStopLevel[g_currentStrategyIndex]<g_virtualSLPrice - g_minStopDistPrice - g_symbolPoint && ( g_sellTrailStopLevel[g_currentStrategyIndex]>orderOpenPrice || !(g_trailOnlyTighten) ) && g_sellTrailStopLevel[g_currentStrategyIndex]>g_hlTrailBrokerGapPips * g_pipSize + MarketInfo(g_chartSymbol,MODE_ASK) + g_minStopDistPrice + g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice )
            {
              g_virtualSLPrice = g_sellTrailStopLevel[g_currentStrategyIndex] ;
-             local_2_bool = true ;
+             orderModified = true ;
            }
-           if ( g_beTriggerPips>0.0 && g_profitCloseMode == 3 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beTriggerPips * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<local_7_double - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits)<g_virtualSLPrice )
+           if ( g_beTriggerPips>0.0 && g_profitCloseMode == 3 && MarketInfo(g_chartSymbol,MODE_ASK)<orderOpenPrice - g_beTriggerPips * g_pipSize && orderOpenPrice - g_beExtraPips * g_pipSize<currentStopLoss - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<orderOpenPrice - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && NormalizeDouble(orderOpenPrice - g_beExtraPips * g_pipSize,g_symbolDigits)<g_virtualSLPrice )
            {
-             g_virtualSLPrice = NormalizeDouble(local_10_double - g_beExtraPips * g_pipSize,g_symbolDigits) ;
-             g_lastOrderResult = OrderModify(local_9_long,local_10_double,g_virtualSLPrice,local_8_double,0,0xFFFFFFFF) ;
+             g_virtualSLPrice = NormalizeDouble(orderOpenPrice - g_beExtraPips * g_pipSize,g_symbolDigits) ;
+             g_lastOrderResult = OrderModify(orderTicket,orderOpenPrice,g_virtualSLPrice,currentTakeProfit,0,0xFFFFFFFF) ;
              if ( g_lastOrderResult <= 0 )
              {
                Print("error when setting breakeven: \'" + GetTradeErrorDescription(MT4_LastError()) + "\' ..\'Exit_BE_start_\' to close to \'Exit_BE_extra_pips_\' ..trying again!"); 
              }
-             local_2_bool = true ;
+             orderModified = true ;
            }
-           if ( g_beTriggerPips>0.0 && g_profitCloseMode == 2 && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beTriggerPips * g_pipSize && local_10_double - g_beExtraPips * g_pipSize<g_virtualSLPrice - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<local_10_double - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice )
+           if ( g_beTriggerPips>0.0 && g_profitCloseMode == 2 && MarketInfo(g_chartSymbol,MODE_ASK)<orderOpenPrice - g_beTriggerPips * g_pipSize && orderOpenPrice - g_beExtraPips * g_pipSize<g_virtualSLPrice - g_symbolPoint && MarketInfo(g_chartSymbol,MODE_ASK)<orderOpenPrice - g_beExtraPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice )
            {
-             g_virtualSLPrice = local_10_double - g_beExtraPips * g_pipSize ;
-             local_2_bool = true ;
+             g_virtualSLPrice = orderOpenPrice - g_beExtraPips * g_pipSize ;
+             orderModified = true ;
            }
-           if ( !(local_2_bool) && ( g_partialCloseMode == 1 || (g_partialCloseMode == 2 && g_virtualSLPrice - g_gridSpacingPips * g_pipSize>=local_5_double - g_curSpread - g_gridMaxSpacingPips * g_pipSize) ) )
+           if ( !(orderModified) && ( g_partialCloseMode == 1 || (g_partialCloseMode == 2 && g_virtualSLPrice - g_gridSpacingPips * g_pipSize>=entryRefPrice - g_curSpread - g_gridMaxSpacingPips * g_pipSize) ) )
            {
              g_ordersSinceAnchor ++;
-             if ( MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_gridSpacingPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>local_8_double + g_freezeDistPrice && ( g_gridAnchorPips==0.0 || MarketInfo(g_chartSymbol,MODE_ASK)<local_5_double - g_nextOrderAnchorPrice * g_pipSize ) && g_ordersSinceAnchor >= g_gridMaxOrdersPerAnchor )
+             if ( MarketInfo(g_chartSymbol,MODE_ASK)<g_virtualSLPrice - g_gridSpacingPips * g_pipSize - g_minStopDistPrice && MarketInfo(g_chartSymbol,MODE_ASK)>currentTakeProfit + g_freezeDistPrice && ( g_gridAnchorPips==0.0 || MarketInfo(g_chartSymbol,MODE_ASK)<entryRefPrice - g_nextOrderAnchorPrice * g_pipSize ) && g_ordersSinceAnchor >= g_gridMaxOrdersPerAnchor )
              {
                g_ordersSinceAnchor = 0 ;
                g_virtualSLPrice = g_virtualSLPrice - g_gridSpacingPips * g_pipSize ;
-               local_2_bool = true ;
+               orderModified = true ;
              }
            }
            if ( MarketInfo(g_chartSymbol,MODE_ASK)>=g_virtualSLPrice )
            {
              RefreshRates(); 
-             OrderClose(local_9_long,local_12_double,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
+             OrderClose(orderTicket,orderLots,MarketInfo(g_chartSymbol,MODE_ASK),(int)g_curSpread,0xFFFFFFFF); 
              return(true); 
            }
-           if ( NormalizeDouble(local_4_double,g_symbolDigits)!=NormalizeDouble(g_virtualSLPrice,g_symbolDigits) )
+           if ( NormalizeDouble(prevVirtualSL,g_symbolDigits)!=NormalizeDouble(g_virtualSLPrice,g_symbolDigits) )
            {
-             temp_double_42 = NormalizeDouble(g_virtualSLPrice,g_symbolDigits);
-             temp_long_43 = local_9_long;
-             for (temp_int_44 = 0 ; temp_int_44 < g_virtSLCacheSize ; temp_int_44=temp_int_44 + 1)
+             virtSlUpdatePrice2 = NormalizeDouble(g_virtualSLPrice,g_symbolDigits);
+             virtSlUpdateTicket2 = orderTicket;
+             for (virtSlUpdateIdx2 = 0 ; virtSlUpdateIdx2 < g_virtSLCacheSize ; virtSlUpdateIdx2=virtSlUpdateIdx2 + 1)
              {
-               if ( g_virtSLCache[temp_int_44][0]==temp_long_43 )
+               if ( g_virtSLCache[virtSlUpdateIdx2][0]==virtSlUpdateTicket2 )
                {
-                 g_virtSLCache[temp_int_44][1] = temp_double_42;
+                 g_virtSLCache[virtSlUpdateIdx2][1] = virtSlUpdatePrice2;
                  break;
                }
              }
@@ -7002,17 +7002,17 @@ void OnTick()
          }
        }
      }
-     if ( local_2_bool )
+     if ( orderModified )
      {
-       local_3_bool = true ;
+       anyOrderTouched = true ;
      }
    }
-   if ( local_2_bool )
+   if ( orderModified )
    {
-     local_3_bool = true ;
+     anyOrderTouched = true ;
    }
  }
- return(local_3_bool); 
+ return(anyOrderTouched); 
  }
 //ManageSellPositions <<==--------   --------
 // ============================================================================

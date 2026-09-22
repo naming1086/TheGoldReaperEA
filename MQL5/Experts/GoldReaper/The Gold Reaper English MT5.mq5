@@ -7970,7 +7970,7 @@ void CreateInfoPanel()
     //         的判定口径一致：g_curSpread > MaxSpread * variableRatio * g_pipSize）。
     ObjectCreate(0, "linesp" + IntegerToString(0, 0, 32), OBJ_LABEL, 0, 0, 0.0);
     ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_CORNER, panelCorner);
-    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_YDISTANCE, (long)(panelY + InfoPanelSizeAdjust * 124.0 + textOffsetY));
+    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_YDISTANCE, (long)(panelY + InfoPanelSizeAdjust * 156.0 + textOffsetY));
     ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_XDISTANCE, panelX + textOffsetX);
     ObjectSetString(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_TEXT, "Spread: -");
     ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_COLOR, g_panelTextColor);

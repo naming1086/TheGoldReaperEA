@@ -1814,12 +1814,12 @@ double    g_winTradeCount[30];
 double    g_lossTradeCount[30];
 double    g_totalPLbyStrategy[30];
 int       g_currentStrategyIndex = 0;
-uint      g_panelTextColor = C'244,248,252';   // 深色面板主题下的正文色（原 DarkBlue，仅适配浅色底）
-uint      g_panelAccentColor = C'66,153,225';
-uint      g_panelMutedColor = C'150,164,181';
-uint      g_panelOkColor = C'88,199,135';
-uint      g_panelWarnColor = C'255,183,77';
-uint      g_panelBadColor = C'239,100,97';
+color     g_panelTextColor = C'244,248,252';   // 深色面板主题下的正文色（原 DarkBlue，仅适配浅色底）
+color     g_panelAccentColor = C'66,153,225';
+color     g_panelMutedColor = C'150,164,181';
+color     g_panelOkColor = C'88,199,135';
+color     g_panelWarnColor = C'255,183,77';
+color     g_panelBadColor = C'239,100,97';
 string    g_orderComment;
 string    g_chartSymbol;
 double    g_symbolPoint = 0.0;
@@ -1836,6 +1836,10 @@ double    g_panelCellWidth = 0.0;
 double    g_panelCellHeight = 0.0;
 uint      g_panelCellBgColor = LightSteelBlue;
 int       g_panelFontSize = 7;
+int       g_panelTableY = 0;      // 卡片渲染后策略表格的起始 Y（由 DrawTGRCards 计算）
+int       g_panelX = 5;           // 面板位置/尺寸（创建时写入，供卡片渲染跨函数使用）
+int       g_panelY = 20;
+int       g_panelWidth = 350;
 double    g_panelWidthScale = 0.45;
 double    g_panelRowHeightFactor = 0.6;
 int       g_strategyCount = 0;
@@ -7829,10 +7833,13 @@ void CreateInfoPanel()
     textOffsetX = 6;
     textOffsetY = 4;
     panelWidth = 350;
-    panelBaseHeight = 366;
+    panelBaseHeight = 530;   // 卡片式布局后头部+三张卡片约占 338px，下方留给策略表格与历史面板
+    g_panelWidth = panelWidth;
     panelCorner = 0;
     panelX = 5;
     panelY = 20;
+    g_panelX = panelX;
+    g_panelY = panelY;
     panelBgColor = C'15,20,27';          // 深色主题底（麒麟King 风格，原 LightSteelBlue）
     extraHeightAllSymbols = 0;
     if (g_manageAllSymbols)
@@ -8031,7 +8038,11 @@ void CreateInfoPanel()
     cellSubIdx = 0;
     cellRowIdx = 0;
     tableX = panelX + textOffsetX;
-    tableY = (int)(panelY + InfoPanelSizeAdjust * 176.0 + textOffsetY);
+    // [卡片式布局] 移除旧的单行标签，改为「账户 / 风控 / 状态」三张卡片，
+    // 表格起点改用 DrawTGRCards 计算出的 g_panelTableY。
+    DeleteLegacyPanelLines();
+    DrawTGRCards();
+    tableY = g_panelTableY;
     cellText = "Strategy";
     CreateInfoPanelCell(tableX, tableY, 0, "Strategy", 0, 0, 1, 0, 1.0);
     cellColumnIdx = 1;
@@ -8158,6 +8169,181 @@ string GetNextNFPText()
     return("no news coming up");
 }
 //GetNextNFPText <<==--------   --------
+// ============================================================================
+// 面板卡片式渲染（麒麟King 风格移植）
+//   ScalePx / EnsureRect / EnsureText 为声明式绘制原语：对象不存在则创建，
+//   已存在则就地更新，因此可在每次刷新时安全重复调用。
+//   DrawTGRCards() 绘制头部下方的「账户 / 风控 / 状态」三张卡片，
+//   并把策略表格的起始 Y 写入 g_panelTableY。
+// ============================================================================
+int ScalePx(const int value)
+{
+    return((int)MathRound(value * InfoPanelSizeAdjust));
+}
+void EnsureRect(const string name, const int x, const int y, const int w, const int h, const color bg, const color border)
+{
+    if (ObjectFind(0, name) < 0)
+    {
+        ObjectCreate(0, name, OBJ_RECTANGLE_LABEL, 0, 0, 0);
+    }
+    ObjectSetInteger(0, name, OBJPROP_CORNER, 0);
+    ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
+    ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
+    ObjectSetInteger(0, name, OBJPROP_XSIZE, w);
+    ObjectSetInteger(0, name, OBJPROP_YSIZE, h);
+    ObjectSetInteger(0, name, OBJPROP_BGCOLOR, bg);
+    ObjectSetInteger(0, name, OBJPROP_BORDER_COLOR, border);
+    ObjectSetInteger(0, name, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+    ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
+    ObjectSetInteger(0, name, OBJPROP_SELECTED, false);
+    ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
+    ObjectSetInteger(0, name, OBJPROP_BACK, false);
+}
+void EnsureText(const string name, const string text, const int x, const int y, const int font_size, const color clr)
+{
+    if (ObjectFind(0, name) < 0)
+    {
+        ObjectCreate(0, name, OBJ_LABEL, 0, 0, 0);
+    }
+    ObjectSetInteger(0, name, OBJPROP_CORNER, 0);
+    ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
+    ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
+    ObjectSetString(0, name, OBJPROP_TEXT, text);
+    ObjectSetInteger(0, name, OBJPROP_COLOR, clr);
+    ObjectSetInteger(0, name, OBJPROP_FONTSIZE, font_size);
+    ObjectSetString(0, name, OBJPROP_FONT, "Microsoft YaHei");
+    ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
+    ObjectSetInteger(0, name, OBJPROP_SELECTED, false);
+    ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
+    ObjectSetInteger(0, name, OBJPROP_BACK, false);
+}
+void DeleteLegacyPanelLines()
+{
+    ObjectDelete(0, "line1");
+    ObjectDelete(0, "linec");
+    ObjectDelete(0, "line2");
+    ObjectDelete(0, "lines");
+    ObjectDelete(0, "linet");
+    ObjectDelete(0, "lineTradeStart");
+    for (int dlIdx = 0; dlIdx <= 99; dlIdx++)
+    {
+        ObjectDelete(0, "lineopl" + IntegerToString(dlIdx, 0, 32));
+        ObjectDelete(0, "linehb" + IntegerToString(dlIdx, 0, 32));
+        ObjectDelete(0, "linea" + IntegerToString(dlIdx, 0, 32));
+        ObjectDelete(0, "linesp" + IntegerToString(dlIdx, 0, 32));
+        ObjectDelete(0, "linetp" + IntegerToString(dlIdx, 0, 32));
+        ObjectDelete(0, "linenfp" + IntegerToString(dlIdx, 0, 32));
+    }
+}
+string GetTradeFrequencyText()
+{
+    if (g_tradeFrequencyMode == 0)   return("extreme conservative");
+    if (g_tradeFrequencyMode == 1)   return("conservative");
+    if (g_tradeFrequencyMode == 2)   return("moderate");
+    if (g_tradeFrequencyMode == 3)   return("intense");
+    if (g_tradeFrequencyMode == 4)   return("extreme");
+    return("manual strategy selection");
+}
+string GetRiskText()
+{
+    if (Risk == 1234)   return("Max allowed DD: " + DoubleToString(MaxAllowedDD, 1) + "%");
+    if (Risk == 3)      return("Max risk/strategy: " + DoubleToString(MaxRiskPerStrategy_, 2) + "%");
+    return("Manual lotsize: " + DoubleToString(g_startLots_rw, 2) + " lots");
+}
+string GetDailyLimitText()
+{
+    if (PropFirmDailyLossUSD > 0.0)
+    {
+        return("Daily limit: " + DoubleToString(PropFirmDailyLossUSD, 2) + " USD (fixed)");
+    }
+    if (PropFirmMaxDailyDD > 0.0)
+    {
+        return("Daily limit: " + DoubleToString(PropFirmMaxDailyDD, 2) + "% of " +
+               (PropFirmDailyLossStatic ? "day-start equity" : "peak equity"));
+    }
+    return("Daily limit: off");
+}
+string GetWorkStateText(const bool spreadHigh)
+{
+    if (g_propfirmDailyDDHit)     return("日内熔断 / daily DD hit");
+    if (g_fridayStopDone)         return("周五收工 / friday stop");
+    if (spreadHigh)               return("点差过大 / spread too high");
+    return("工作中 / running");
+}
+color GetWorkStateColor(const bool spreadHigh)
+{
+    if (g_propfirmDailyDDHit)     return(g_panelBadColor);
+    if (g_fridayStopDone)         return(g_panelWarnColor);
+    if (spreadHigh)               return(g_panelBadColor);
+    return(g_panelOkColor);
+}
+void DrawTGRCards()
+{
+    const int px = g_panelX;
+    const int py = g_panelY;
+    const int pw = (int)(g_panelWidth * InfoPanelSizeAdjust);
+    const int pad = ScalePx(10);
+    const int rowH = ScalePx(15);
+    const int titleH = ScalePx(16);
+    const int gap = ScalePx(8);
+    const int fRow = g_panelFontSize + 1;
+    const int fTitle = g_panelFontSize + 2;
+    const int tx = px + pad + ScalePx(6);
+
+    double oplNow = AccountEquity() - AccountBalance();
+    double spreadNow = MarketInfo(g_chartSymbol, MODE_ASK) - MarketInfo(g_chartSymbol, MODE_BID);
+    double spreadUnit = (g_pipSize > 0.0) ? g_pipSize : g_symbolPoint;
+    double spreadLimit = MaxSpread * spreadUnit;
+    bool  spreadHigh = (spreadNow > spreadLimit);
+
+    int y = py + ScalePx(48) + gap;
+
+    // ---------- 卡片 1：账户 ----------
+    EnsureRect("card_account", px, y, pw, pad * 2 + titleH + 4 * rowH, C'24,33,45', C'45,58,74');
+    y += pad;
+    EnsureText("ca_title", "账 户   ACCOUNT", tx, y, fTitle, g_panelAccentColor);
+    y += titleH;
+    EnsureText("ca_balance", "Balance: " + DoubleToString(AccountBalance(), 2), tx, y, fRow, g_panelTextColor);
+    y += rowH;
+    EnsureText("ca_equity", "Equity: " + DoubleToString(AccountEquity(), 2), tx, y, fRow, g_panelTextColor);
+    y += rowH;
+    EnsureText("ca_peak", "Peak Balance: " + DoubleToString(g_highestBalance, 2), tx, y, fRow, g_panelMutedColor);
+    y += rowH;
+    EnsureText("ca_opl", "Open P/L: " + DoubleToString(oplNow, 2), tx, y, fRow,
+               (oplNow > 0.0) ? g_panelOkColor : ((oplNow < 0.0) ? g_panelBadColor : g_panelTextColor));
+    y += rowH + pad + gap;
+
+    // ---------- 卡片 2：风控 ----------
+    EnsureRect("card_risk", px, y, pw, pad * 2 + titleH + 4 * rowH, C'24,33,45', C'45,58,74');
+    y += pad;
+    EnsureText("cr_title", "风 控   RISK", tx, y, fTitle, g_panelAccentColor);
+    y += titleH;
+    EnsureText("cr_freq", "Frequency: " + GetTradeFrequencyText(), tx, y, fRow, g_panelTextColor);
+    y += rowH;
+    EnsureText("cr_risk", GetRiskText(), tx, y, fRow, g_panelTextColor);
+    y += rowH;
+    EnsureText("cr_daily", GetDailyLimitText(), tx, y, fRow,
+               (g_propfirmDailyDDHit ? g_panelBadColor : g_panelTextColor));
+    y += rowH;
+    EnsureText("cr_spread", "Spread: " + DoubleToString(spreadNow, g_symbolDigits) +
+               "  (" + DoubleToString(spreadNow / spreadUnit, 0) + " / " + DoubleToString(MaxSpread, 0) + ")" +
+               (spreadHigh ? "  HIGH" : ""), tx, y, fRow,
+               spreadHigh ? g_panelBadColor : g_panelTextColor);
+    y += rowH + pad + gap;
+
+    // ---------- 卡片 3：状态 ----------
+    EnsureRect("card_state", px, y, pw, pad * 2 + titleH + 2 * rowH, C'24,33,45', C'45,58,74');
+    y += pad;
+    EnsureText("cs_title", "状 态   STATUS", tx, y, fTitle, g_panelAccentColor);
+    y += titleH;
+    EnsureText("cs_state", "State: " + GetWorkStateText(spreadHigh), tx, y, fRow, GetWorkStateColor(spreadHigh));
+    y += rowH;
+    EnsureText("cs_nfp", GetNextNFPText(), tx, y, fRow, g_panelMutedColor);
+    y += rowH + pad;
+
+    g_panelTableY = y + gap;
+}
+//DrawTGRCards <<==--------   --------
 void UpdateAccountPanel()
 {
     string    frequencyText;
@@ -8336,20 +8522,8 @@ void UpdateAccountPanel()
             ObjectSetString(0, "linet", OBJPROP_TEXT, "Manual lotsize: " + string(g_startLots_rw) + "lots");
         }
     }
-    // [新增] 实时点差：价格单位 + 换算点数 + MaxSpread 上限；超限变红
-    double panelSpreadNow = MarketInfo(g_chartSymbol, MODE_ASK) - MarketInfo(g_chartSymbol, MODE_BID);
-    double panelSpreadUnit = (g_pipSize > 0.0) ? g_pipSize : g_symbolPoint;
-    double panelSpreadLimit = MaxSpread * panelSpreadUnit;
-    string panelSpreadText = "Spread: " + DoubleToString(panelSpreadNow, g_symbolDigits) +
-                             "  (" + DoubleToString(panelSpreadNow / panelSpreadUnit, 0) +
-                             " / " + DoubleToString(MaxSpread, 0) + ")";
-    if (panelSpreadNow > panelSpreadLimit)
-    {
-        panelSpreadText = panelSpreadText + "  HIGH!";
-    }
-    ObjectSetString(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_TEXT, panelSpreadText);
-    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_COLOR,
-                     (panelSpreadNow > panelSpreadLimit) ? clrRed : g_panelTextColor);
+    // 卡片式渲染（含点差、状态、风控等信息）；旧的散装标签在面板重建时已移除
+    DrawTGRCards();
 }
 //UpdateAccountPanel <<==--------   --------
 void UpdateStrategyPanelRows()

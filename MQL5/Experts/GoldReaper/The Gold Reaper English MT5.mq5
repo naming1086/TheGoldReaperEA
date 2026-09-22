@@ -7894,10 +7894,10 @@ void OnTick()
 //CreateInfoPanelCell <<==--------   --------
  void DeleteInfoPanel()
  {
-  int       local_1_int;
-  int       local_2_int;
-  int       local_3_int;
-  int       local_4_int;
+  int       mainObjIdx;
+  int       subObjIdx;
+  int       headingObjIdx;
+  int       rectObjIdx;
 //----- -----
 
  ObjectDelete(0,"line1"); 
@@ -7906,30 +7906,30 @@ void OnTick()
  ObjectDelete(0,"lines"); 
  ObjectDelete(0,"linet"); 
  ObjectDelete(0,"lineTradeStart"); 
- for (local_1_int = 0 ; local_1_int <= 99 ; local_1_int ++)
+ for (mainObjIdx = 0 ; mainObjIdx <= 99 ; mainObjIdx ++)
  {
-   ObjectDelete(0,"lineopl" + IntegerToString(local_1_int,0,32)); 
-   ObjectDelete(0,"linehb" + IntegerToString(local_1_int,0,32));
-   ObjectDelete(0,"linea" + IntegerToString(local_1_int,0,32)); 
-   ObjectDelete(0,"lineto" + IntegerToString(local_1_int,0,32)); 
-   ObjectDelete(0,"linetp" + IntegerToString(local_1_int,0,32));
-   ObjectDelete(0,"linetq" + IntegerToString(local_1_int,0,32));
-   ObjectDelete(0,"linenfp" + IntegerToString(local_1_int,0,32));
-   for (local_2_int = 0 ; local_2_int < 10 ; local_2_int ++)
+   ObjectDelete(0,"lineopl" + IntegerToString(mainObjIdx,0,32)); 
+   ObjectDelete(0,"linehb" + IntegerToString(mainObjIdx,0,32));
+   ObjectDelete(0,"linea" + IntegerToString(mainObjIdx,0,32)); 
+   ObjectDelete(0,"lineto" + IntegerToString(mainObjIdx,0,32)); 
+   ObjectDelete(0,"linetp" + IntegerToString(mainObjIdx,0,32));
+   ObjectDelete(0,"linetq" + IntegerToString(mainObjIdx,0,32));
+   ObjectDelete(0,"linenfp" + IntegerToString(mainObjIdx,0,32));
+   for (subObjIdx = 0 ; subObjIdx < 10 ; subObjIdx ++)
    {
-     ObjectDelete(0,"tabel_info" + IntegerToString(local_1_int * 100 + local_2_int,0,32)); 
+     ObjectDelete(0,"tabel_info" + IntegerToString(mainObjIdx * 100 + subObjIdx,0,32)); 
    }
  }
  ObjectDelete(0,"infopanel_rectangle"); 
- for (local_3_int = 0 ; local_3_int < 10 ; local_3_int ++)
+ for (headingObjIdx = 0 ; headingObjIdx < 10 ; headingObjIdx ++)
  {
-   ObjectDelete(0,"tabel_heading" + IntegerToString(local_3_int,0,32)); 
-   ObjectDelete(0,"tabel_totals" + IntegerToString(local_3_int,0,32)); 
+   ObjectDelete(0,"tabel_heading" + IntegerToString(headingObjIdx,0,32)); 
+   ObjectDelete(0,"tabel_totals" + IntegerToString(headingObjIdx,0,32)); 
  }
- for (local_4_int = 0 ; local_4_int < g_maxPanelObjects ; local_4_int ++)
+ for (rectObjIdx = 0 ; rectObjIdx < g_maxPanelObjects ; rectObjIdx ++)
  {
-   ObjectDelete(0,"horizontalrect" + IntegerToString(local_4_int,0,32)); 
-   ObjectDelete(0,"info_ea" + IntegerToString(local_4_int,0,32)); 
+   ObjectDelete(0,"horizontalrect" + IntegerToString(rectObjIdx,0,32)); 
+   ObjectDelete(0,"info_ea" + IntegerToString(rectObjIdx,0,32)); 
  }
  }
 //DeleteInfoPanel <<==--------   --------
@@ -8123,29 +8123,29 @@ void OnTick()
 //UpdateAccountPanel <<==--------   --------
  void UpdateStrategyPanelRows()
  {
-  int       local_1_int;
-  string    local_2_string;
-  int       local_3_int;
+  int       cellObjIdx;
+  string    cellText;
+  int       strategyIdx;
 //----- -----
 
  if ( !(ShowInfoPanel) )   return;
  
  if ( ( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) ) )   return;
- local_1_int = g_panelStrategyRowStart ;
- for (local_3_int = 0 ; local_3_int < 9 ; local_3_int ++)
+ cellObjIdx = g_panelStrategyRowStart ;
+ for (strategyIdx = 0 ; strategyIdx < 9 ; strategyIdx ++)
  {
-   local_2_string="Strategy " + IntegerToString(local_3_int + 1,0,32);
-   ObjectSetString(0,"info_ea" + IntegerToString(local_1_int,0,32),OBJPROP_TEXT,local_2_string); 
-   local_1_int ++;
-   local_2_string = DoubleToString(NormalizeDouble(g_histClosedPLbyStrategy[local_3_int],2),2) ;
-   ObjectSetString(0,"info_ea" + IntegerToString(local_1_int,0,32),OBJPROP_TEXT,local_2_string); 
-   local_1_int ++;
-   local_2_string = DoubleToString(NormalizeDouble(g_avgPLperTrade[local_3_int],2),2) ;
-   ObjectSetString(0,"info_ea" + IntegerToString(local_1_int,0,32),OBJPROP_TEXT,local_2_string); 
-   local_1_int ++;
-   local_2_string = DoubleToString(NormalizeDouble(g_strategyStartLots[local_3_int],2),2) ;
-   ObjectSetString(0,"info_ea" + IntegerToString(local_1_int,0,32),OBJPROP_TEXT,local_2_string); 
-   local_1_int ++;
+   cellText="Strategy " + IntegerToString(strategyIdx + 1,0,32);
+   ObjectSetString(0,"info_ea" + IntegerToString(cellObjIdx,0,32),OBJPROP_TEXT,cellText); 
+   cellObjIdx ++;
+   cellText = DoubleToString(NormalizeDouble(g_histClosedPLbyStrategy[strategyIdx],2),2) ;
+   ObjectSetString(0,"info_ea" + IntegerToString(cellObjIdx,0,32),OBJPROP_TEXT,cellText); 
+   cellObjIdx ++;
+   cellText = DoubleToString(NormalizeDouble(g_avgPLperTrade[strategyIdx],2),2) ;
+   ObjectSetString(0,"info_ea" + IntegerToString(cellObjIdx,0,32),OBJPROP_TEXT,cellText); 
+   cellObjIdx ++;
+   cellText = DoubleToString(NormalizeDouble(g_strategyStartLots[strategyIdx],2),2) ;
+   ObjectSetString(0,"info_ea" + IntegerToString(cellObjIdx,0,32),OBJPROP_TEXT,cellText); 
+   cellObjIdx ++;
  }
  }
 //UpdateStrategyPanelRows <<==--------   --------

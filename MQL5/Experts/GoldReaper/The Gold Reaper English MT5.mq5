@@ -1922,19 +1922,19 @@ g_initialLegacyRiskLotPending=true;
      g_backtestSpeedEnabled = true;
    }
  }
-   double    local_2_double;
-   double    local_3_double;
-   int       local_4_int;
-   int       local_5_int;
-  int       local_6_int;
-  int       local_7_int;
-  int       local_8_int;
-  int       local_9_int;
+   double    usdBalance;
+   double    maxDdUsd;
+   int       virtSlSlotIdx;
+   int       virtSlFieldIdx;
+  int       vpoSlotIdx;
+  int       vpoFieldIdx;
+  int       vpoExtraSlotIdx;
+  int       strategyInitIdx;
 //----- -----
  // MQL4 tu dong khoi tao bool local ve false; MQL5 thi khong, nen phai gan
  // ro rang de giu dung hanh vi ban goc (bien nay khong duoc gan truoc khi
  // dung o duoi, IsDemo() ket qua bi bo qua trong ca ban mq4 goc).
- bool       temp_bool_1 = false;
+ bool       isDemoFlag = false;
 
  // SetFontSize >0: ghi de co chu panel (0 = co mac dinh theo thiet ke goc)
  if ( SetFontSize > 0 )   g_panelFontSize = SetFontSize ;
@@ -2223,21 +2223,21 @@ g_initialLegacyRiskLotPending=true;
  }
   if ( TradeFrequency == 5 && Risk == 1234 )
  {
-   local_2_double = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE)) ;
-   local_3_double = MaxAllowedDD / 100.0 * local_2_double ;
-   if ( local_3_double>g_ddTierThreshold4Usd )
+   usdBalance = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE)) ;
+   maxDdUsd = MaxAllowedDD / 100.0 * usdBalance ;
+   if ( maxDdUsd>g_ddTierThreshold4Usd )
    {
      g_tradeFrequencyMode = 3 ;
    }
    else
    {
-     if ( local_3_double>g_ddTierThreshold3 )
+     if ( maxDdUsd>g_ddTierThreshold3 )
      {
        g_tradeFrequencyMode = 2 ;
      }
      else
      {
-       if ( local_3_double>g_ddTierThreshold2Usd )
+       if ( maxDdUsd>g_ddTierThreshold2Usd )
        {
          g_tradeFrequencyMode = 1 ;
        }
@@ -2524,24 +2524,24 @@ g_initialLegacyRiskLotPending=true;
  {
    g_maxLotCap = MarketInfo(g_chartSymbol,MODE_MAXLOT) ;
  }
- for (local_4_int = 0 ; local_4_int < g_virtSLCacheSize ; local_4_int ++)
+ for (virtSlSlotIdx = 0 ; virtSlSlotIdx < g_virtSLCacheSize ; virtSlSlotIdx ++)
  {
-   for (local_5_int = 0 ; local_5_int < 2 ; local_5_int ++)
+   for (virtSlFieldIdx = 0 ; virtSlFieldIdx < 2 ; virtSlFieldIdx ++)
    {
-     g_virtSLCache[local_4_int][local_5_int] = 0.0;
+     g_virtSLCache[virtSlSlotIdx][virtSlFieldIdx] = 0.0;
    }
  }
- for (local_6_int = 0 ; local_6_int < g_virtualOrderSlots ; local_6_int ++)
+ for (vpoSlotIdx = 0 ; vpoSlotIdx < g_virtualOrderSlots ; vpoSlotIdx ++)
  {
-   for (local_7_int = 0 ; local_7_int < 3 ; local_7_int ++)
+   for (vpoFieldIdx = 0 ; vpoFieldIdx < 3 ; vpoFieldIdx ++)
    {
-     g_virtualPendingOrders[local_6_int][local_7_int] = 0.0;
+     g_virtualPendingOrders[vpoSlotIdx][vpoFieldIdx] = 0.0;
    }
  }
- for (local_8_int = 0 ; local_8_int < 100 ; local_8_int ++)
+ for (vpoExtraSlotIdx = 0 ; vpoExtraSlotIdx < 100 ; vpoExtraSlotIdx ++)
  {
-   g_virtualPendingOrders[local_8_int][0] = 0.0;
-   g_virtualPendingOrders[local_8_int][1] = 0.0;
+   g_virtualPendingOrders[vpoExtraSlotIdx][0] = 0.0;
+   g_virtualPendingOrders[vpoExtraSlotIdx][1] = 0.0;
  }
  g_fridayStopDone = false ;
  g_commentBuy1=ST1_Comment + "B1";
@@ -2553,13 +2553,13 @@ g_initialLegacyRiskLotPending=true;
  {
    g_maxPendingOrders = 1 ;
  }
- for (local_9_int = 0 ; local_9_int < 99 ; local_9_int ++)
+ for (strategyInitIdx = 0 ; strategyInitIdx < 99 ; strategyInitIdx ++)
  {
-   g_lastSignalBarsCount[local_9_int] = 0;
-   g_lastEntryBarsCount[local_9_int] = 0;
-   g_lastEntryBarTime[local_9_int] = iTime(g_chartSymbol,MT4Period(g_entryTfPeriod),1);
-   if ( !(g_strategyStartLots[local_9_int]<g_startLots_rw) )   continue;
-   g_strategyStartLots[local_9_int] = g_startLots_rw;
+   g_lastSignalBarsCount[strategyInitIdx] = 0;
+   g_lastEntryBarsCount[strategyInitIdx] = 0;
+   g_lastEntryBarTime[strategyInitIdx] = iTime(g_chartSymbol,MT4Period(g_entryTfPeriod),1);
+   if ( !(g_strategyStartLots[strategyInitIdx]<g_startLots_rw) )   continue;
+   g_strategyStartLots[strategyInitIdx] = g_startLots_rw;
    
  }
  if ( g_profitCloseMode == 1 )
@@ -2570,7 +2570,7 @@ g_initialLegacyRiskLotPending=true;
  g_isDemoAccount = false ;
  IsDemo(); 
 
- if ( temp_bool_1 == true )
+ if ( isDemoFlag == true )
  {
    g_isDemoAccount = true ;
  }
@@ -7865,31 +7865,31 @@ void OnTick()
  }
  }
 //CreateInfoPanel <<==--------   --------
- void CreateInfoPanelCell( int arg_0_int,int arg_1_int,int arg_2_int,string arg_3_string,int arg_4_int,int arg_5_int,int arg_6_int,uint arg_7_uint,double arg_8_double)
+ void CreateInfoPanelCell( int baseX,int baseY,int objectIdx,string cellText,int rowOffset,int colOffset,int alignMode,uint textColor,double fontScale)
  {
- ObjectCreate(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJ_EDIT,0,0,0.0); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_XDISTANCE,(long)(arg_0_int + arg_5_int * g_panelCellWidth)); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_YDISTANCE,(long)(arg_1_int + arg_4_int * g_panelCellHeight)); 
- ObjectSetString(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_TEXT,arg_3_string); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_BACK,0); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_COLOR,arg_7_uint); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_BGCOLOR,g_panelCellBgColor); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_BORDER_COLOR,0); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_FONTSIZE,(long)(g_panelFontSize * arg_8_double)); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_READONLY,0x1); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_YSIZE,(long)g_panelCellHeight); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_XSIZE,(long)g_panelCellWidth); 
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_YSIZE,(long)g_panelCellHeight); 
- if ( arg_6_int == 0 )
+ ObjectCreate(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJ_EDIT,0,0,0.0); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_XDISTANCE,(long)(baseX + colOffset * g_panelCellWidth)); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_YDISTANCE,(long)(baseY + rowOffset * g_panelCellHeight)); 
+ ObjectSetString(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_TEXT,cellText); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_BACK,0); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_COLOR,textColor); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_BGCOLOR,g_panelCellBgColor); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_BORDER_COLOR,0); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_FONTSIZE,(long)(g_panelFontSize * fontScale)); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_READONLY,0x1); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_YSIZE,(long)g_panelCellHeight); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_XSIZE,(long)g_panelCellWidth); 
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_YSIZE,(long)g_panelCellHeight); 
+ if ( alignMode == 0 )
  {
-   ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_ALIGN,0x1); 
+   ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_ALIGN,0x1); 
  }
- if ( arg_6_int == 1 )
+ if ( alignMode == 1 )
  {
-   ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_ALIGN,0x2); 
+   ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_ALIGN,0x2); 
  }
- if ( arg_6_int != 2 )   return;
- ObjectSetInteger(0,"info_ea" + IntegerToString(arg_2_int,0,32),OBJPROP_ALIGN,0); 
+ if ( alignMode != 2 )   return;
+ ObjectSetInteger(0,"info_ea" + IntegerToString(objectIdx,0,32),OBJPROP_ALIGN,0); 
  }
 //CreateInfoPanelCell <<==--------   --------
  void DeleteInfoPanel()

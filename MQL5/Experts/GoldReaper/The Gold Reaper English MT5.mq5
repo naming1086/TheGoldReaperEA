@@ -4845,100 +4845,100 @@ void OnTick()
   return(g_entryLowPrice);
  }
 
- double FindFractalHigh( int arg_0_int,int arg_1_int,int arg_2_int)
+ double FindFractalHigh( int tfMinutes,int rightBars,int leftBars)
  {
-  bool      local_2_bool = false;
-  double    local_3_double = 0.0;
-  bool      local_4_bool = false;
-  bool      local_5_bool;
-  int       local_6_int;
-  int       local_7_int;
-  int       local_8_int;
+  bool      fractalFound = false;
+  double    fractalPrice = 0.0;
+  bool      rightSideClear = false;
+  bool      leftSideClear;
+  int       candidateShift;
+  int       leftScanShift;
+  int       rightScanShift;
 //----- -----
 
- local_5_bool = false ;
- local_6_int=arg_2_int + 1;
+ leftSideClear = false ;
+ candidateShift=leftBars + 1;
  do
  {
-   local_4_bool = true ;
-   local_5_bool = true ;
-   for (local_7_int = local_6_int ; local_7_int >= local_6_int - arg_2_int ; local_7_int --)
+   rightSideClear = true ;
+   leftSideClear = true ;
+   for (leftScanShift = candidateShift ; leftScanShift >= candidateShift - leftBars ; leftScanShift --)
    {
-     if ( iHigh(g_chartSymbol,MT4Period(arg_0_int),local_7_int)>iHigh(g_chartSymbol,MT4Period(arg_0_int),local_6_int) )
+     if ( iHigh(g_chartSymbol,MT4Period(tfMinutes),leftScanShift)>iHigh(g_chartSymbol,MT4Period(tfMinutes),candidateShift) )
      {
-       local_5_bool = false ;
+       leftSideClear = false ;
      }
    }
-   for (local_8_int = local_6_int ; local_8_int <= local_6_int + arg_1_int ; local_8_int ++)
+   for (rightScanShift = candidateShift ; rightScanShift <= candidateShift + rightBars ; rightScanShift ++)
    {
-     if ( iHigh(g_chartSymbol,MT4Period(arg_0_int),local_8_int)>iHigh(g_chartSymbol,MT4Period(arg_0_int),local_6_int) )
+     if ( iHigh(g_chartSymbol,MT4Period(tfMinutes),rightScanShift)>iHigh(g_chartSymbol,MT4Period(tfMinutes),candidateShift) )
      {
-       local_4_bool = false ;
+       rightSideClear = false ;
      }
    }
-   if ( local_5_bool && local_4_bool && iHigh(g_chartSymbol,MT4Period(arg_0_int),local_6_int)>g_minStopDistPrice + MarketInfo(g_chartSymbol,MODE_ASK) )
+   if ( leftSideClear && rightSideClear && iHigh(g_chartSymbol,MT4Period(tfMinutes),candidateShift)>g_minStopDistPrice + MarketInfo(g_chartSymbol,MODE_ASK) )
    {
-     local_2_bool = true ;
-     local_3_double = NormalizeDouble(iHigh(g_chartSymbol,MT4Period(arg_0_int),local_6_int),g_symbolDigits) ;
+     fractalFound = true ;
+     fractalPrice = NormalizeDouble(iHigh(g_chartSymbol,MT4Period(tfMinutes),candidateShift),g_symbolDigits) ;
      break;
    }
-   local_6_int ++;
-   if ( local_6_int <= g_fractalMaxShift )   continue;
-   local_3_double = 9999.0 ;
+   candidateShift ++;
+   if ( candidateShift <= g_fractalMaxShift )   continue;
+   fractalPrice = 9999.0 ;
    break;
    
  }
- while(!(local_2_bool));
+ while(!(fractalFound));
  
- return(local_3_double); 
+ return(fractalPrice); 
  }
 //FindFractalHigh <<==--------   --------
- double FindFractalLow( int arg_0_int,int arg_1_int,int arg_2_int)
+ double FindFractalLow( int tfMinutes,int rightBars,int leftBars)
  {
-  bool      local_2_bool = false;
-  double    local_3_double = 0.0;
-  bool      local_4_bool = false;
-  bool      local_5_bool;
-  int       local_6_int;
-  int       local_7_int;
-  int       local_8_int;
+  bool      fractalFound = false;
+  double    fractalPrice = 0.0;
+  bool      rightSideClear = false;
+  bool      leftSideClear;
+  int       candidateShift;
+  int       leftScanShift;
+  int       rightScanShift;
 //----- -----
 
- local_5_bool = false ;
- local_6_int=arg_2_int + 1;
+ leftSideClear = false ;
+ candidateShift=leftBars + 1;
  do
  {
-   local_4_bool = true ;
-   local_5_bool = true ;
-   for (local_7_int = local_6_int ; local_7_int >= local_6_int - arg_2_int ; local_7_int --)
+   rightSideClear = true ;
+   leftSideClear = true ;
+   for (leftScanShift = candidateShift ; leftScanShift >= candidateShift - leftBars ; leftScanShift --)
    {
-     if ( iLow(g_chartSymbol,MT4Period(arg_0_int),local_7_int)<iLow(g_chartSymbol,MT4Period(arg_0_int),local_6_int) )
+     if ( iLow(g_chartSymbol,MT4Period(tfMinutes),leftScanShift)<iLow(g_chartSymbol,MT4Period(tfMinutes),candidateShift) )
      {
-       local_5_bool = false ;
+       leftSideClear = false ;
      }
    }
-   for (local_8_int = local_6_int ; local_8_int <= local_6_int + arg_1_int ; local_8_int ++)
+   for (rightScanShift = candidateShift ; rightScanShift <= candidateShift + rightBars ; rightScanShift ++)
    {
-     if ( iLow(g_chartSymbol,MT4Period(arg_0_int),local_8_int)<iLow(g_chartSymbol,MT4Period(arg_0_int),local_6_int) )
+     if ( iLow(g_chartSymbol,MT4Period(tfMinutes),rightScanShift)<iLow(g_chartSymbol,MT4Period(tfMinutes),candidateShift) )
      {
-       local_4_bool = false ;
+       rightSideClear = false ;
      }
    }
-   if ( local_5_bool && local_4_bool && iLow(g_chartSymbol,MT4Period(arg_0_int),local_6_int)<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
+   if ( leftSideClear && rightSideClear && iLow(g_chartSymbol,MT4Period(tfMinutes),candidateShift)<MarketInfo(g_chartSymbol,MODE_BID) - g_minStopDistPrice )
    {
-     local_2_bool = true ;
-     local_3_double = NormalizeDouble(iLow(g_chartSymbol,MT4Period(arg_0_int),local_6_int),g_symbolDigits) ;
+     fractalFound = true ;
+     fractalPrice = NormalizeDouble(iLow(g_chartSymbol,MT4Period(tfMinutes),candidateShift),g_symbolDigits) ;
      break;
    }
-   local_6_int ++;
-   if ( local_6_int <= g_fractalMaxShift )   continue;
-   local_3_double = 0.0 ;
+   candidateShift ++;
+   if ( candidateShift <= g_fractalMaxShift )   continue;
+   fractalPrice = 0.0 ;
    break;
    
  }
- while(!(local_2_bool));
+ while(!(fractalFound));
  
- return(local_3_double); 
+ return(fractalPrice); 
  }
 //FindFractalLow <<==--------   --------
  double MT4FastFractalHigh(int timeframe,int rightBars,int leftBars)
@@ -9999,11 +9999,11 @@ double RandomizedJitter()
 //DetectBrokerGmtOffset <<==--------   --------
  bool IsAmericanDst()
  {
-  int       local_2_int;
-  datetime  local_3_datetime;
-  datetime  local_4_datetime;
-  int       local_5_int;
-  int       local_6_int;
+  int       dstYear;
+  datetime  dstStart;
+  datetime  dstEnd;
+  int       dstStartDay;
+  int       dstEndDay;
 //----- -----
 
  datetime temp_now=TimeCurrent();
@@ -10012,35 +10012,35 @@ double RandomizedJitter()
  {
    return(g_us_dst_cache_value);
  }
- local_2_int = TimeYear(temp_now) ;
- local_3_datetime = 0 ;
- local_4_datetime = 0 ;
- if ( local_2_int <  1987 )
+ dstYear = TimeYear(temp_now) ;
+ dstStart = 0 ;
+ dstEnd = 0 ;
+ if ( dstYear <  1987 )
  {
    Print("AmericanDST(): Invalid year."); 
    return(false); 
  }
- local_5_int = 0 ;
- local_6_int = 0 ;
- if ( local_2_int >= 1987 && local_2_int <= 2006 )
+ dstStartDay = 0 ;
+ dstEndDay = 0 ;
+ if ( dstYear >= 1987 && dstYear <= 2006 )
  {
-   local_5_int = (int)(MathMod(local_2_int * 6 + 2 - local_2_int / 4,7.0) + 1.0) ;
-   local_6_int = (int)(31.0 - (MathMod(local_2_int * 5 / 4 + 1,7.0))) ;
-   local_3_datetime=StringToTime(((string)local_2_int+".04.01")) + (local_5_int - 1) * 86400 + 0x1C20;
-   local_4_datetime=StringToTime(((string)local_2_int+".10.01")) + (local_6_int - 1) * 86400 + 0x1C20;
+   dstStartDay = (int)(MathMod(dstYear * 6 + 2 - dstYear / 4,7.0) + 1.0) ;
+   dstEndDay = (int)(31.0 - (MathMod(dstYear * 5 / 4 + 1,7.0))) ;
+   dstStart=StringToTime(((string)dstYear+".04.01")) + (dstStartDay - 1) * 86400 + 0x1C20;
+   dstEnd=StringToTime(((string)dstYear+".10.01")) + (dstEndDay - 1) * 86400 + 0x1C20;
  }
  else
  {
-   if ( local_2_int >= 2007 )
+   if ( dstYear >= 2007 )
    {
-     local_5_int = (int)(14.0 - (MathMod(local_2_int * 5 / 4 + 1,7.0))) ;
-     local_6_int = (int)(7.0 - (MathMod(local_2_int * 5 / 4 + 1,7.0))) ;
-     local_3_datetime=StringToTime(((string)local_2_int+".03.01")) + (local_5_int - 1) * 86400 + 0x1C20;
-     local_4_datetime=StringToTime(((string)local_2_int+".11.01")) + (local_6_int - 1) * 86400 + 0x1C20;
+     dstStartDay = (int)(14.0 - (MathMod(dstYear * 5 / 4 + 1,7.0))) ;
+     dstEndDay = (int)(7.0 - (MathMod(dstYear * 5 / 4 + 1,7.0))) ;
+     dstStart=StringToTime(((string)dstYear+".03.01")) + (dstStartDay - 1) * 86400 + 0x1C20;
+     dstEnd=StringToTime(((string)dstYear+".11.01")) + (dstEndDay - 1) * 86400 + 0x1C20;
    }
  }
- g_us_dst_cache_value=(TimeDayOfYear(temp_now)>TimeDayOfYear(local_3_datetime) &&
-                       TimeDayOfYear(temp_now)<TimeDayOfYear(local_4_datetime));
+ g_us_dst_cache_value=(TimeDayOfYear(temp_now)>TimeDayOfYear(dstStart) &&
+                       TimeDayOfYear(temp_now)<TimeDayOfYear(dstEnd));
  g_us_dst_cache_day=temp_day;
  g_us_dst_cache_valid=true;
  return(g_us_dst_cache_value); 

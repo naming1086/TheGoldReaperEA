@@ -1814,7 +1814,12 @@ double    g_winTradeCount[30];
 double    g_lossTradeCount[30];
 double    g_totalPLbyStrategy[30];
 int       g_currentStrategyIndex = 0;
-uint      g_panelTextColor = DarkBlue;
+uint      g_panelTextColor = C'244,248,252';   // 深色面板主题下的正文色（原 DarkBlue，仅适配浅色底）
+uint      g_panelAccentColor = C'66,153,225';
+uint      g_panelMutedColor = C'150,164,181';
+uint      g_panelOkColor = C'88,199,135';
+uint      g_panelWarnColor = C'255,183,77';
+uint      g_panelBadColor = C'239,100,97';
 string    g_orderComment;
 string    g_chartSymbol;
 double    g_symbolPoint = 0.0;
@@ -7828,7 +7833,7 @@ void CreateInfoPanel()
     panelCorner = 0;
     panelX = 5;
     panelY = 20;
-    panelBgColor = LightSteelBlue;
+    panelBgColor = C'15,20,27';          // 深色主题底（麒麟King 风格，原 LightSteelBlue）
     extraHeightAllSymbols = 0;
     if (g_manageAllSymbols)
     {
@@ -7840,15 +7845,38 @@ void CreateInfoPanel()
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_XSIZE, long(panelWidth * InfoPanelSizeAdjust));
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_YSIZE, long(panelBaseHeight * InfoPanelSizeAdjust + extraHeightAllSymbols));
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_CORNER, 0);
-    ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_COLOR, 0xFF0000);
+    ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_COLOR, C'45,58,74');
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_BGCOLOR, panelBgColor);
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_BACK, 0);
-    ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_BORDER_COLOR, 0xFF0000);
-    ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_COLOR, 0xFF0000);
+    ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_BORDER_COLOR, C'45,58,74');
+    ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_COLOR, C'45,58,74');
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_BORDER_TYPE, 0);
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_STYLE, 0);
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_WIDTH, 0x2);
     ObjectSetInteger(0, "infopanel_rectangle", OBJPROP_SELECTABLE, 0);
+    // [深色主题] 头部条 + 左侧强调竖条（麒麟King 风格）
+    ObjectCreate(0, "infopanel_header", OBJ_RECTANGLE_LABEL, 0, 0, 0.0);
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_XDISTANCE, panelX);
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_YDISTANCE, panelY);
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_XSIZE, long(panelWidth * InfoPanelSizeAdjust));
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_YSIZE, long(48 * InfoPanelSizeAdjust));
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_CORNER, 0);
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_BGCOLOR, C'20,29,40');
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_BORDER_COLOR, C'45,58,74');
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_BORDER_TYPE, 0);
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_BACK, 0);
+    ObjectSetInteger(0, "infopanel_header", OBJPROP_SELECTABLE, 0);
+    ObjectCreate(0, "infopanel_accent", OBJ_RECTANGLE_LABEL, 0, 0, 0.0);
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_XDISTANCE, panelX);
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_YDISTANCE, panelY);
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_XSIZE, long(4 * InfoPanelSizeAdjust));
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_YSIZE, long(48 * InfoPanelSizeAdjust));
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_CORNER, 0);
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_BGCOLOR, g_panelAccentColor);
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_BORDER_COLOR, g_panelAccentColor);
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_BORDER_TYPE, 0);
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_BACK, 0);
+    ObjectSetInteger(0, "infopanel_accent", OBJPROP_SELECTABLE, 0);
     ObjectCreate(0, "line1", OBJ_LABEL, 0, 0, 0.0);
     ObjectSetInteger(0, "line1", OBJPROP_CORNER, panelCorner);
     ObjectSetInteger(0, "line1", OBJPROP_YDISTANCE, panelY + textOffsetY);
@@ -8105,6 +8133,8 @@ void DeleteInfoPanel()
         }
     }
     ObjectDelete(0, "infopanel_rectangle");
+    ObjectDelete(0, "infopanel_header");
+    ObjectDelete(0, "infopanel_accent");
     for (headingObjIdx = 0; headingObjIdx < 10; headingObjIdx++)
     {
         ObjectDelete(0, "tabel_heading" + IntegerToString(headingObjIdx, 0, 32));
@@ -8249,7 +8279,10 @@ void UpdateAccountPanel()
         openPLDisplay = openPLSum;
     }
     ObjectSetString(0, "lineopl" + IntegerToString(0, 0, 32), OBJPROP_TEXT, "Open P/L: " + DoubleToString(openPLDisplay, 2));
+    ObjectSetInteger(0, "lineopl" + IntegerToString(0, 0, 32), OBJPROP_COLOR,
+                     (openPLDisplay > 0.0) ? g_panelOkColor : ((openPLDisplay < 0.0) ? g_panelBadColor : g_panelTextColor));
     ObjectSetString(0, "linehb" + IntegerToString(0, 0, 32), OBJPROP_TEXT, "Higher Balance: " + DoubleToString(g_highestBalance, 2));
+    ObjectSetInteger(0, "linehb" + IntegerToString(0, 0, 32), OBJPROP_COLOR, g_panelMutedColor);
     ObjectSetString(0, "linea" + IntegerToString(0, 0, 32), OBJPROP_TEXT, "Account Balance: " + DoubleToString(AccountBalance(), 2));
     if (g_tradeFrequencyMode == 1)
     {

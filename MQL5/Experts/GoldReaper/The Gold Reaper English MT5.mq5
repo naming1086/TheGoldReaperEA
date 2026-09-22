@@ -3367,7 +3367,7 @@ void OnTick()
 // ============================================================================
 
 // ProcessStrategy —— 单个策略的主处理函数（过滤器、挂单/持仓状态机），
-//                    arg_0_int 为策略索引（0..8）
+//                    strategyIdx 为策略索引（0..8）
  int ProcessStrategy( int strategyIdx)
  {
   bool      managementActionPerformed;

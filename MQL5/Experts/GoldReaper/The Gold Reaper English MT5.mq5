@@ -1364,7 +1364,7 @@ input double MaxAllowedDD = 30;    //Max Allowed TOTAL Drawdown
 input bool UseWeightedLots = true;    //Weighted Lotsize
 input double MaxRiskPerStrategy_ = 1;    //Max Risk Per Strat
 input double PropFirmMaxDailyDD = 0;    //Set Max DAILY Drawdown (Prop Firms)
-input double PropFirmDailyLossUSD = 0;  //Set Max DAILY Loss in account currency (0 = use % above)
+input double PropFirmDailyLossUSD = 200;  //Set Max DAILY Loss in account currency (0 = use % above)
 input bool   PropFirmDailyLossStatic = false;  //% mode: lock baseline to day-start equity (no trailing up)
 input bool OnlyUp = true;
 input bool ResetHighestBalance = false;
@@ -9355,6 +9355,59 @@ double ConvertAccountCurrencyToUsd(double accountAmount)
 //       把 V4.6 内置的每策略参数写入 §5 的全局变量表；由 TradeFrequency
 //       （自动/手动 RunStratN）决定装载哪些策略并交给 ProcessStrategy 执行。
 //       函数体均直接恢复自 JIT 常量表，数值不可随意改动。
+// ----------------------------------------------------------------------------
+//  【九套策略的挂单节奏总表】
+//    · 挂单（进场）只在「信号周期出现新 K 线」时评估一次，不是每个 tick 都挂单。
+//      判定见 ProcessStrategy：iBars(信号周期) 变化才进入 ProcessStrategyEntries，
+//      随后循环尝试 g_maxPendingOrders 次（多数尝试因条件不满足而放弃）。
+//    · 挂单还必须同时满足：找到分形 / 距现价 ≥ entryBreakoutPips / 不低于-不高于
+//      入场周期区间极值 / MA 方向正确 / 不与已有挂单重复 / 挂单数未满 / 点差正常 /
+//      时段开放 / 非周五收工 / 非 NFP 窗口 / 保证金充足。
+//    · 日志里频繁的"撤了再挂"并非新信号，而是：手数变化重建（余额变动 >5%）、
+//      挂单到期、点差过大暂存后补回、NFP 窗口撤单后重挂。
+//
+//    策略   magic   入场TF   信号周期   评估频率    每次最多尝试   挂单上限   过期
+//    S1     +1      D1       M15       每 15 分钟      5            5        35h
+//    S2     +5      D1       H1        每 1 小时       1            1        480h
+//    S3     +8      D1       H1        每 1 小时       1            1        432h
+//    S4     +2      H4       H1        每 1 小时       2            2        192h
+//    S5     +12     H1       M15       每 15 分钟      3            3        30h
+//    S6     +9      H1       M5        每 5 分钟       5            5        20h
+//    S7     +14     H1       M15       每 15 分钟      5            5        60h
+//    S8     +15     H1       M15       每 15 分钟      5            5        55h
+//    S9     +13     H1       M15       每 15 分钟      3            3        15h
+//
+//  【九套策略的核心调参（pips）】
+//    XAUUSD 两位/三位小数时 g_pipSize = 0.01，即 1 pip ≈ 0.01 美元（= 1 point）。
+//    （g_pipSize 见 OnInit：默认 = SYMBOL_POINT；3/5 位小数时 ×10；
+//      SymbolInfoInteger(...,17)==1 时 ÷10。）
+//
+//    策略   突破距离   买偏移    卖偏移    名义SL     TP      保本触发   追踪启动
+//    S1     45        -275      -160      6100      1450     930       1800
+//    S2     550       -170      -70       1000      4100     500       1400
+//    S3     250       -130      -120      600       3300     400       400
+//    S4     1050      -40       -100      700       4900     500       1450
+//    S5     160       -120      -110      5300      900      260       400
+//    S6     120       -115      -145      10100     800      330       1200
+//    S7     10        -10       -145      2250      1450     340       900
+//    S8     80        -140      -170      1900      1200     270       650
+//    S9     40        -150      -145      3900      1350     160       355
+//
+//    折合美元/盎司（1 pip = 0.01 美元，未计 variableRatio 缩放）：
+//    策略   名义SL      TP       保本      追踪
+//    S1     61         14.5     9.3       18
+//    S2     10         41       5         14
+//    S3     6          33       4         4
+//    S4     7          49       5         14.5
+//    S5     53         9        2.6       4
+//    S6     101        8        3.3       12
+//    S7     22.5       14.5     3.4       9
+//    S8     19         12       2.7       6.5
+//    S9     39         13.5     1.6       3.55
+//
+//    → 盈亏比（TP/SL）只有 S2 / S3 / S4 大于 1；其余六套 TP 小于 SL，
+//      实际出场主要依赖「保本触发（1.6~9.3 美元）」与「利润追踪（3.55~18 美元）」，
+//      名义 SL 多数属于灾难性止损（不会轻易触发）。
 // ============================================================================
 
 // Uniform +/- Randomization jitter applied to preset baseline values.

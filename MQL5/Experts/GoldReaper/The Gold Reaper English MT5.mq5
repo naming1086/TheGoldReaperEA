@@ -1352,6 +1352,14 @@ input double StartLots = 0.01;
 double g_startLots_rw = 0.0;
 bool g_initialLegacyRiskLotPending = true;
 input double MaxAllowedDD = 30;    //Max Allowed TOTAL Drawdown
+//  ★ 重要澄清（非强平、非监控）：
+//    MaxAllowedDD 与实际回撤、与"从最高权益跌了多少"毫无关系，代码里从不拿它
+//    与任何实际回撤比较，也不会在触线时平仓或停手。它只是一个"回撤预算"输入，
+//    EA 拿它反推手数并参与档位判定（详见 ApplyTradeFrequencyTiers 上方说明）。
+//    生效范围（两者都要满足才参与档位；手数部分只与 Risk 有关）：
+//      · 手数：仅在 Risk = 9999 / 1234 时作为分子参与（Risk = 0 时完全无效）
+//      · 档位：仅在 TradeFrequency == 5 (Auto) 且 Risk == 1234 时参与
+//    → 用 Risk = 0（固定手数）或 TradeFrequency 选固定档时，本参数不参与计算。
 input bool UseWeightedLots = true;    //Weighted Lotsize
 input double MaxRiskPerStrategy_ = 1;    //Max Risk Per Strat
 input double PropFirmMaxDailyDD = 0;    //Set Max DAILY Drawdown (Prop Firms)
@@ -2996,8 +3004,47 @@ void EnforceManualHistoricalDDCompat()
     }
 }
 
-// ApplyTradeFrequencyTiers —— 交易频率档位选择；Risk==1234 时按账户 USD 折算
-// MaxAllowedDD 分层自适应档位；随后将档位映射为策略开关与风险系数
+// ApplyTradeFrequencyTiers —— 交易频率档位选择；随后将档位映射为策略开关与风险系数
+// ----------------------------------------------------------------------------
+//  【档位的两种来源】
+//    A. 仅当 TradeFrequency == 5 (Auto) 且 Risk == 1234 时：
+//         档位由「账户余额」与「MaxAllowedDD」共同算出：
+//           tierUsdBalance = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE))
+//           tierMaxDDUsd   = MaxAllowedDD / 100.0 * tierUsdBalance
+//         再将 tierMaxDDUsd 与下面四个「绝对 USD 阈值」比较，得到档位 0~3：
+//           > 810 → 档位 3 ；> 560 → 档位 2 ；> 330 → 档位 1 ；否则 → 档位 0
+//       · 用的是当前账户 BALANCE（已实现资金，不含浮动盈亏），不是某一天的余额，
+//         也不是 equity；每个 tick 都在本函数里重算。
+//       · tierMaxDDUsd 是一个"预算金额"（我声明能承受多少美元回撤），
+//         与实际发生的盈亏无关。
+//
+//    B. 其余所有情况（TradeFrequency 不为 Auto，或 Risk 不为 1234）：
+//         直接执行 g_tradeFrequencyMode = TradeFrequency;
+//       → 档位完全由 TradeFrequency 直接指定，
+//         MaxAllowedDD 与账户余额都不再参与任何档位计算。
+//
+//  【档位 → 策略开关与风险系数】（UseVariableValues = true 时）
+//    档位 0 : 策略 1,2,3                      riskFactor 3.0
+//    档位 1 : + 4,5                           riskFactor 4.0
+//    档位 2 : + 6,7                           riskFactor 5.0
+//    档位 3 : + 8                             riskFactor 5.6
+//    档位 4 : + 9                             riskFactor 6.0（仅手动档可选）
+//    （UseVariableValues = false 时对应 2.4 / 3.4 / 4.1 / 4.8 / 5.1）
+//
+//  【升档的两个后果（同时发生）】
+//    1) 启用更多策略 → 并行单子变多
+//    2) riskFactor 变大 → 它在手数公式里是分母（g_ddLotFactor = MaxAllowedDD / riskFactor）
+//       → 单策略手数反而变小（防止总暴露随余额爆炸）
+//
+//  【实操建议】
+//    · Auto 模式会随余额增长自动改「策略集合 + 手数系数」，导致：
+//      同参数在不同余额下结果不可比、回测不可复现、中途可能悄悄升档。
+//    · Prop Firm / 固定本金场景建议用固定档（如 Conservative_Frequency = 1），
+//      档位与手数完全可预测；此时 MaxAllowedDD 对档位不起作用。
+//    · 注意口径不一致：档位判定硬编码用 ACCOUNT_BALANCE（不受 UseEquity 影响），
+//      而手数基准 g_effectiveBalance 在 UseEquity = true 时会改用 equity。
+//      建议保持 UseEquity = false 使两者口径统一。
+// ============================================================================
 void ApplyTradeFrequencyTiers()
 {
     double   tierUsdBalance;

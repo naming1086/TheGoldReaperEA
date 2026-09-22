@@ -10361,7 +10361,9 @@ bool IsAmericanDst()
 //   NFP_ClosePendingOrders    [true]   NFP 窗口内撤挂单                           → true
 //   NFP_MinutesBefore         [100]    事前窗口（分钟）                           → 120
 //   NFP_MinutesAfter          [60]     事后窗口（分钟）                           → 90
-//   MaxSpread                 [500]    点差上限（超限时撤挂单暂存，恢复后补回）    → 按券商收紧
+//   MaxSpread                 [60]     点差上限（撤单阈值=MaxSpread×variableRatio×pipSize；
+//                                       XAUUSD 下 60 ≈ 0.60 美元。恢复阈值更小，构成滞回，
+//                                       避免点差抖动时反复撤挂。500 会导致该功能永不触发）→ 保持 60
 //   FakeOutFilter             [2]      假突破过滤档                               → 保持
 //   Randomization             [0]      入场/出场随机抖动（pips）                  → 0（保证可复现）
 //

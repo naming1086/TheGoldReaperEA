@@ -3161,7 +3161,7 @@ void OnTick()
 // LoadStrategyRuntimeSettings —— 每次激活策略时重建该策略的 iATR 就绪门并
 //                                刷新运行时参数（原 V4.6 每次激活都重建句柄）
 // Original V4.6 dump has no custom OnTradeTransaction withdrawal adjustment.
- void LoadStrategyRuntimeSettings( int arg_0_int)
+ void LoadStrategyRuntimeSettings( int strategyIdx)
  {
  // -----------------------------------------------------------------
  // Recovered from the original MetaTester64 full-memory dump/JIT.
@@ -3170,7 +3170,7 @@ void OnTick()
  // This is a history/indicator-readiness gate; the ATR value itself is
  // not used in the trading arithmetic that follows.
  // -----------------------------------------------------------------
- int temp_atr_index=arg_0_int;
+ int temp_atr_index=strategyIdx;
  if(temp_atr_index<0 || temp_atr_index>8) temp_atr_index=0;
  ENUM_TIMEFRAMES temp_atr_tf=MT4Period(g_atrTimeframe);
  if(g_atr_handles[temp_atr_index]<=0 ||
@@ -3239,7 +3239,7 @@ void OnTick()
  }
 
 
- g_currentStrategyIndex = arg_0_int ;
+ g_currentStrategyIndex = strategyIdx ;
 
  // The original explicitly checks that a current tick is available.
  // Failure is logged, but execution continues exactly as in the dump.
@@ -9657,28 +9657,28 @@ double RandomizedJitter()
 
  void EnforcePropFirmDailyDrawdown()
  {
-  double    local_1_double;
-  int       local_2_int;
-  double    local_3_double;
-  double    local_4_double;
-  double    local_5_double;
+  double    closedTodayProfit;
+  int       historyScanIdx;
+  double    dealNetProfit;
+  double    floatingDelta;
+  double    totalDailyResult;
 //----- -----
- double     temp_double_1;
- long       temp_long_2;
- int        temp_int_3;
+ double     currentEquity;
+ long       orderCloseTime;
+ int        pendingScanIdx;
 
- temp_double_1 = AccountEquity();
- if ( temp_double_1==AccountBalance() )   return;
- local_1_double = 0.0 ;
+ currentEquity = AccountEquity();
+ if ( currentEquity==AccountBalance() )   return;
+ closedTodayProfit = 0.0 ;
  if ( AccountEquity()>g_propfirmDailyPeakEquity )
  {
    g_propfirmDailyPeakEquity = AccountEquity() ;
  }
- for (local_2_int = HistoryTotal() ; local_2_int >= 0 ; local_2_int --)
+ for (historyScanIdx = HistoryTotal() ; historyScanIdx >= 0 ; historyScanIdx --)
  {
-   if ( OrderSelect(local_2_int,0,1) != true )   continue;
-   temp_long_2 = OrderCloseTime();
-   if ( temp_long_2 < iTime(g_chartSymbol,MT4Period(PERIOD_D1),0) )   continue;
+   if ( OrderSelect(historyScanIdx,0,1) != true )   continue;
+   orderCloseTime = OrderCloseTime();
+   if ( orderCloseTime < iTime(g_chartSymbol,MT4Period(PERIOD_D1),0) )   continue;
    // The original EX5 daily-DD path accounts for the commission attached to
    // the closing history deal.  The generic MT4 history view also carries a
    // proportional entry commission, which made the reconstructed threshold
@@ -9689,13 +9689,13 @@ double RandomizedJitter()
    {
      temp_daily_close_commission = HistoryDealGetDouble((ulong)g_hist_ticket[g_sel_hist_index],DEAL_COMMISSION);
    }
-   local_3_double = OrderProfit() + OrderSwap() + temp_daily_close_commission ;
-   local_1_double = local_3_double + local_1_double ;
+   dealNetProfit = OrderProfit() + OrderSwap() + temp_daily_close_commission ;
+   closedTodayProfit = dealNetProfit + closedTodayProfit ;
    
  }
- local_4_double = AccountEquity() - AccountBalance() ;
- local_5_double = local_4_double + local_1_double ;
- if ( !( -(local_5_double)>g_propfirmDailyPeakEquity * PropFirmMaxDailyDD / 100.0) )   return;
+ floatingDelta = AccountEquity() - AccountBalance() ;
+ totalDailyResult = floatingDelta + closedTodayProfit ;
+ if ( !( -(totalDailyResult)>g_propfirmDailyPeakEquity * PropFirmMaxDailyDD / 100.0) )   return;
  
  if ( !(g_propfirmDailyDDHit) )
  {
@@ -9705,9 +9705,9 @@ double RandomizedJitter()
  // BUY positions before SELL positions and visits newest tickets first within
  // each side. Pending orders remain a separate second pass below.
  CloseDailyDDPositionsInOriginalOrder();
- for (temp_int_3 = MT4OrdersTotal() ; temp_int_3 >= 0 ; temp_int_3=temp_int_3 - 1)
+ for (pendingScanIdx = MT4OrdersTotal() ; pendingScanIdx >= 0 ; pendingScanIdx=pendingScanIdx - 1)
  {
-   if ( OrderSelect(temp_int_3,0,0) != true || OrderSymbol() != g_chartSymbol ) continue;
+   if ( OrderSelect(pendingScanIdx,0,0) != true || OrderSymbol() != g_chartSymbol ) continue;
    int temp_daily_magic=OrderMagicNumber();
    if(temp_daily_magic<ST1_MagicNumber+1 || temp_daily_magic>ST1_MagicNumber+15) continue;
    if(OrderType()!=4 && OrderType()!=5) continue;
@@ -9929,72 +9929,72 @@ double RandomizedJitter()
 
  int DetectBrokerGmtOffset()
  {
-  string    local_2_string;
-  long      local_5_long;
-  int       local_6_int;
-  char      local_7_char_ko[];
-  char      local_8_char_ko[];
+  string    wtsResponseBody;
+  long      gmtTimeLong;
+  int       gmtOffsetHours;
+  char      webRequestData[];
+  char      webResponseData[];
 //----- -----
- string     temp_string_1;
- string     temp_string_2;
- datetime   temp_datetime_3 = 0;
- int        temp_int_4;
+ string     httpResultHeaders;
+ string     responseText;
+ datetime   gmtTimeParsed = 0;
+ int        requestStatus;
 
  ResetLastError();
- temp_int_4 = WebRequest("GET","https://www.worldtimeserver.com/time-zones/utc/",NULL,NULL,10000,local_7_char_ko,0,local_8_char_ko,temp_string_1);
- if ( temp_int_4 == -1 )
+ requestStatus = WebRequest("GET","https://www.worldtimeserver.com/time-zones/utc/",NULL,NULL,10000,webRequestData,0,webResponseData,httpResultHeaders);
+ if ( requestStatus == -1 )
  {
    Print("Error when reading GMT URL. Error code  =",GetLastError());
    MessageBox("Add the address \'https://www.worldtimeserver.com/\' in the list of allowed URLs on tab \'Expert Advisors\'","Error",64);
-   temp_string_2 = "999";
+   responseText = "999";
  }
  else
  {
    // MQL5: count=-1 means read the whole WebRequest response array.
-   temp_string_2 = CharArrayToString(local_8_char_ko,0,-1,CP_UTF8);
+   responseText = CharArrayToString(webResponseData,0,-1,CP_UTF8);
  }
- local_2_string = temp_string_2 ;
- if ( local_2_string == "999" )
+ wtsResponseBody = responseText ;
+ if ( wtsResponseBody == "999" )
  {
    return(999);
  }
 
  // Prefer WorldTimeServer's HTTP Date header. It is standardized and does
  // not change when the site's visual HTML layout changes.
- bool parse_succeeded_bool = WTS_ParseHttpDate(temp_string_1,temp_datetime_3);
+ bool parse_succeeded_bool = WTS_ParseHttpDate(httpResultHeaders,gmtTimeParsed);
  if(!parse_succeeded_bool)
-    parse_succeeded_bool = WTS_ParseHtmlTime(local_2_string,temp_datetime_3);
+    parse_succeeded_bool = WTS_ParseHtmlTime(wtsResponseBody,gmtTimeParsed);
 
- if(!parse_succeeded_bool || temp_datetime_3 <= 0)
+ if(!parse_succeeded_bool || gmtTimeParsed <= 0)
  {
    Print("Error in detecting GMT time with WorldTimeServer response");
    return(999);
  }
 
- local_5_long = (long)temp_datetime_3;
- Print("GMT time = ",local_5_long);
+ gmtTimeLong = (long)gmtTimeParsed;
+ Print("GMT time = ",gmtTimeLong);
  Print("Broker time = ",TimeCurrent());
- local_6_int=TimeHour(TimeCurrent()) - TimeHour((datetime)local_5_long);
- if ( local_6_int <  -12 )
+ gmtOffsetHours=TimeHour(TimeCurrent()) - TimeHour((datetime)gmtTimeLong);
+ if ( gmtOffsetHours <  -12 )
  {
-   local_6_int +=24;
+   gmtOffsetHours +=24;
  }
- if ( local_6_int >  12 )
+ if ( gmtOffsetHours >  12 )
  {
-   local_6_int -=24;
+   gmtOffsetHours -=24;
  }
- Print("GMT_Offset detected: " + string(local_6_int));
- if ( ( local_6_int < -12 || local_6_int >  12 ) )
+ Print("GMT_Offset detected: " + string(gmtOffsetHours));
+ if ( ( gmtOffsetHours < -12 || gmtOffsetHours >  12 ) )
  {
    Print("Error in detecting GMT offset with URL");
    return(999);
  }
- if ( local_5_long <  TimeCurrent() - 0x15180 )
+ if ( gmtTimeLong <  TimeCurrent() - 0x15180 )
  {
    Print("Error in detecting GMT time with URL");
    return(999);
  }
- return(local_6_int);
+ return(gmtOffsetHours);
  }
 //DetectBrokerGmtOffset <<==--------   --------
  bool IsAmericanDst()

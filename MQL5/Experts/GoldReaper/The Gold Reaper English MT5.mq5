@@ -12,6 +12,7 @@
 //          验证仍需在 MetaTrader 5 中进行。
 // ----------------------------------------------------------------------------
 //  文件结构目录（按出现顺序，可搜索节号 "[§N]" 快速定位）：
+//    §0  手工做单逻辑说明（人工可读的架构总览，纯注释）
 //    §1  属性声明与 ATR 缓存全局变量
 //    §2  MQL4Compat —— MQL4 -> MQL5 兼容层（原独立 .mqh 已并入本文件）
 //    §3  输入参数枚举定义
@@ -30,6 +31,93 @@
 //    §16 各策略参数装载（LoadStrategy1~9Settings）
 //    §17 PropFirm 日内回撤与 GMT/夏令时检测（EnforcePropFirmDailyDrawdown、
 //        WTS_*、DetectBrokerGmtOffset、IsAmericanDst）
+// ============================================================================
+
+// ============================================================================
+// [§0] 手工做单逻辑说明 —— 把这套 EA 翻译成"人手工做单"的完整步骤
+// ----------------------------------------------------------------------------
+//  说明：本节为纯注释，不参与编译；目的是让不熟悉代码的人（以及后续维护者）
+//        能用"手工交易员的日常操作"来理解整个架构。
+//        行号会随后续编辑漂移，故本节一律用「函数名」定位，不使用行号。
+// ----------------------------------------------------------------------------
+//  【一句话定位】
+//    只做黄金的「多策略分形预埋单」系统：9 套打法并行，各自独立 magic / 手数 /
+//    止损参数，靠挂单埋伏进场、自动管仓出场。
+//    账户必须是 HEDGING（对冲）模式：netting 会把同品种多空单合并成一个净持仓，
+//    彻底破坏本 EA 的逐单管理逻辑。
+//
+//  【一、盘前准备：每个 tick 都走一遍的前置流水线（见 OnTick）】
+//    1. 限速     DumpBacktestSpeedAllowTick        —— 回测加速时跳过部分 tick
+//    2. 记账     UpdateEffectiveBalanceTracking    —— 本金 / 历史最高余额
+//    3. 过滤档   ApplyFakeoutFilterMode            —— 假突破过滤强度
+//    4. 对表     UpdateGmtDstDetection             —— 券商 GMT 偏移 + 夏令时
+//    5. 翻日历   RefreshNfpCalendarCache           —— 查本月非农（NFP）时间
+//    6. 打几套   ApplyTradeFrequencyTiers          —— 档位 0~4 逐级解锁策略 4→9
+//    7. 过闸门   CheckDailyRolloverAndPropFirmGate —— 换日结算 + 日内回撤熔断
+//               （命中即 return，当天不再开新仓）
+//    8. 等新棒   DetectNewH1Bar                    —— H1 收出新 K 线才重评估信号
+//    9. 跑策略   RunAllStrategies                  —— 按固定次序调用 9 个槽位
+//
+//    槽位次序是写死的：1 → 4 → 2 → 3 → 6 → 5 → 9 → 7 → 8。
+//    它决定同一 tick 内谁先占用保证金、谁先撞上挂单上限，重构时必须原样保留。
+//    品种不是黄金（Symbol 含 XAUUSD / GOLD / GLD）时，只跑策略 1。
+//
+//  【二、单套打法：看盘 → 挂单的四个动作（见 ProcessStrategy）】
+//    动作 1 找位置（找"分形"）：FindBuyEntryHigh / FindSellEntryLow
+//          · 左右 fractalLeftBars / fractalRightBars 根 K 线内无更高（更低）点
+//          · 该极值必须高出（低于）当前价至少 entryBreakoutPips
+//          · 且不低于（不高于）入场周期区间极值
+//          · 且不与本策略已有挂单重复（容差 pendingDupTolerancePips）
+//          注意：iATR 句柄只作为"就绪门"，不参与任何价位计算。
+//    动作 2 定方向：MA 快慢线过滤 —— 多需 fast > slow，空需 fast < slow
+//    动作 3 埋单（最关键、最反直觉的一步）：
+//          Buy  Stop 价 = 分形高点 + buyEntryOffsetPips  （偏移为负 → 高点下方）
+//          Sell Stop 价 = 分形低点 - sellEntryOffsetPips （偏移为负 → 低点上方）
+//          即：多单埋在前高下方、空单埋在前低上方 —— 这是「埋在水平位内侧、
+//          未破先入」的预埋单，不是追突破。最后再叠加 Randomization 随机抖动。
+//    动作 4 设止损止盈与控量：
+//          SL = 挂单价 - (stopLossPips + stopExtraPips)
+//          TP = 挂单价 + takeProfitPips
+//          校验保证金、最小/最大手数与手数步长；挂单上限 maxPendingOrders
+//          点差过大 → RemovePendingOrdersDuringHighSpread 撤单暂存
+//          点差恢复 → RestoreStoredPendingOrders 补回
+//          Virtual_expiration = true 时不设真实到期，改为虚拟到期删单
+//
+//  【三、手数：按止损距离折算（见 CalculateStrategyLotSize）】
+//    lots = (Risk/1000 × 有效余额) / (TickValue × 止损点数) × lotScalePercent/100
+//      · Risk = 0           → 固定 StartLots
+//      · OnlyUp = true      → 用历史最高余额 g_highestBalance（只增不减的复利）
+//      · ManualBalance > 0  → 强制使用指定本金
+//      · Risk = 9999 / 1234 → 走 g_ddTierDivisor 档位除数，回撤越大手数越小
+//      · 余额变动后挂单手数会重建（RefreshPendingOrderLotSizes）
+//    无马丁格尔；仅 ZR 对冲乘数。
+//
+//  【四、持仓管理：人盯盘做的那些事（ManageBuyPositions / ManageSellPositions）】
+//    虚拟止损 → 时间追踪 → 利润追踪（> trailActivationPips 且 < profitTrailCapPips）
+//    → TP 追踪 → 滑点追踪 → HL 分形追踪（UseHL_TrailingSL）
+//    → 保本（盈利超过 beTriggerPips 后，SL 移到 开仓价 + beExtraPips）
+//    → 分批平仓（g_partialClosePct，当前 9 套策略均为 0，等于关闭）
+//    → 网格锚点推进
+//
+//  【五、日程纪律】
+//    交易时段  IsTradingScheduleOpen（星期 + 小时）
+//    周五收工  FridayStopHour 强平 + 撤挂单，周一恢复
+//    点差门    MaxSpread
+//    NFP 回避  前后 N 分钟撤挂单并平仓（GetNextNFPFromCalendar /
+//              CloseNfpOpenTradesInOriginalOrder）
+//    日内熔断  EnforcePropFirmDailyDrawdown —— 本系统唯一的强制停手：
+//              日内亏损 = (equity - balance) + 当日已平盈亏，
+//              超过 峰值权益 × PropFirmMaxDailyDD% → 平仓 + 撤挂单 + 当日停手
+//
+//    重要：MaxAllowedDD（"Max Allowed TOTAL Drawdown"）并不是强平线，
+//          它只驱动手数档位除数与策略启用档位（逐级解锁策略 4→9），别被名字误导。
+//
+//  【六、9 套策略的差异】
+//    同一套「分形埋单 + 追踪止损」骨架的参数变体：
+//    入场周期 D1 / H4 / H1、信号周期 M15 / H1 / M5、分形左右棒、
+//    entryBreakoutPips（10 ~ 1050）、SL / TP、挂单上限（1 ~ 5）、
+//    单侧最大持仓（5 / 20 / 99）、手数权重（30 ~ 968）。
+//    靠 9 个 magic 号（ST1_MagicNumber + 1/5/8/2/12/9/14/15/13）隔离管理。
 // ============================================================================
 
 // ============================================================================

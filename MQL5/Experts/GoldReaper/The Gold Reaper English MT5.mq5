@@ -48,6 +48,8 @@
 //
 //  【一、盘前准备：每个 tick 都走一遍的前置流水线（见 OnTick）】
 //    1. 限速     DumpBacktestSpeedAllowTick        —— 回测加速时跳过部分 tick
+//               （仅回测生效；三档结果不等价，正式验证必须用 speed_normal，
+//                 详见该函数上方的专项说明）
 //    2. 记账     UpdateEffectiveBalanceTracking    —— 本金 / 历史最高余额
 //    3. 过滤档   ApplyFakeoutFilterMode            —— 假突破过滤强度
 //    4. 对表     UpdateGmtDstDetection             —— 券商 GMT 偏移 + 夏令时
@@ -2682,6 +2684,46 @@ g_initialLegacyRiskLotPending=true;
  return(0); 
  }
 //init <<==--------   --------
+// ============================================================================
+// DumpBacktestSpeedAllowTick —— 专项说明（纯注释，供维护者与回测者阅读）
+// ----------------------------------------------------------------------------
+//  【启用条件】仅在 OnInit 中当 MQLInfoInteger(MQL_TESTER)==1 时启用，
+//              即只在策略测试器生效，实盘不节流。
+//              注意：可视化回测的 MQL_TESTER 同样为 1，因此可视化时也会跳 tick，
+//              容易误判为"EA 漏单"。
+//
+//  【三档语义】
+//    speed_normal : g_backtestSpeedEnabled=false → 恒返回 true，每个 tick 全跑
+//    speed_fast   : 秒级节流 —— TimeCurrent() 距上次放行超过 1 秒才放行；
+//                   且出现新的已收 M1 棒（iTime(M1,1) 变化）时无条件放行
+//    speed_super  : 分钟级节流 —— 60 秒探针窗口内直接 return false；
+//                   窗口到期后仅当出现新的已收 M1 棒才放行
+//
+//    本函数是 OnTick 的第一道门：一旦 return false，后续模块全部不执行，
+//    包括 UpdateEffectiveBalanceTracking、UpdateGmtDstDetection、
+//    RefreshNfpCalendarCache、ApplyTradeFrequencyTiers、
+//    CheckDailyRolloverAndPropFirmGate、DetectNewH1Bar、
+//    RunAllStrategies（含挂单管理与 ManageBuyPositions / ManageSellPositions）。
+//
+//  【已知问题（已核验；行为与 V4.6 原版一致，当前未修改）】
+//    1) 三档结果不等价：被跳过的不仅是"找信号"，还有虚拟止损、利润/时间/TP/
+//       滑点/分形追踪、保本、点差撤补挂单、周五强平、NFP 平仓。
+//       → 正式差分回测必须使用 speed_normal。
+//    2) speed_super 可能整分钟漏处理：每分钟探针的提前 return 位于 M1 棒检查
+//       之前，若分钟开始时 iTime(M1,1) 尚未翻到新棒（数据缺口、节假日后、
+//       tick 时间戳与 bar 时间错位），该分钟内其余 tick 会被全部吞掉，
+//       只能等到下一分钟的探针窗口才恢复。
+//    3) speed_fast 的"每秒一次"并不严格：新 M1 棒的放行分支不刷新
+//       g_backtestSpeedLastTime，导致放行后紧邻的 tick 可能再次放行，
+//       实际放行率高于 1 次/秒。
+//    4) 跳过的 H1 新棒会丢：DetectNewH1Bar 为"比较并覆盖"式实现，
+//       节流窗口内若跨过多根 H1 棒，只会补触发一次新棒信号，中间评估机会丢失。
+//
+//  【建议改法（尚未实施；实施前请确认是否需要与原版保持逐 tick 一致）】
+//    · speed_super：把 M1 新棒判断提到分钟探针的提前 return 之前
+//    · speed_fast：新棒放行分支同步刷新 g_backtestSpeedLastTime
+//    · 两者都会改变回测结果，需与 V4.6 原版对照后再决定是否采纳
+// ============================================================================
 // DumpBacktestSpeedAllowTick —— 回测加速节流：fast=每秒最多 1 个 tick，
 //                               super=每根已收 M1 K 线最多处理一次
  bool DumpBacktestSpeedAllowTick()

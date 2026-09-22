@@ -1783,39 +1783,39 @@ input bool RunStrat9=true  ;    //Run Strategy 9 (high risk)
 
  datetime GetNextNFPFromCalendar()
  {
-  datetime temp_now = TimeTradeServer();
-  MqlCalendarEvent temp_events[];
-  int temp_evTotal = CalendarEventByCurrency("USD",temp_events);
-  if ( temp_evTotal <= 0 )   return(0);
+  datetime now = TimeTradeServer();
+  MqlCalendarEvent usdEvents[];
+  int usdEventCount = CalendarEventByCurrency("USD",usdEvents);
+  if ( usdEventCount <= 0 )   return(0);
 
-  ulong temp_nfpId = 0;
-  bool temp_found = false;
-  for (int temp_i=0; temp_i<temp_evTotal; temp_i++)
+  ulong nfpEventId = 0;
+  bool nfpFound = false;
+  for (int evIdx=0; evIdx<usdEventCount; evIdx++)
   {
-    if ( StringFind(temp_events[temp_i].name,"Nonfarm Payrolls") >= 0 )
+    if ( StringFind(usdEvents[evIdx].name,"Nonfarm Payrolls") >= 0 )
     {
-      temp_nfpId = temp_events[temp_i].id;
-      temp_found = true;
+      nfpEventId = usdEvents[evIdx].id;
+      nfpFound = true;
       break;
     }
   }
-  if ( !(temp_found) )   return(0);
+  if ( !(nfpFound) )   return(0);
 
-  MqlCalendarValue temp_values[];
-  datetime temp_from = temp_now - 86400;
-  datetime temp_to   = temp_now + 2592000;
-  int temp_n = CalendarValueHistoryByEvent(temp_nfpId,temp_values,temp_from,temp_to);
-  if ( temp_n <= 0 )   return(0);
+  MqlCalendarValue nfpValues[];
+  datetime rangeFrom = now - 86400;
+  datetime rangeTo   = now + 2592000;
+  int valueCount = CalendarValueHistoryByEvent(nfpEventId,nfpValues,rangeFrom,rangeTo);
+  if ( valueCount <= 0 )   return(0);
 
-  datetime temp_best = 0;
-  for (int temp_i=0; temp_i<temp_n; temp_i++)
+  datetime nextNfpTime = 0;
+  for (int valIdx=0; valIdx<valueCount; valIdx++)
   {
-    datetime temp_t = temp_values[temp_i].time;
+    datetime eventTime = nfpValues[valIdx].time;
     // JIT compares against the lower query bound (now-1 day), not strictly now.
-    if ( temp_t <= temp_from )   continue;
-    if ( temp_best == 0 || temp_t < temp_best )   temp_best = temp_t;
+    if ( eventTime <= rangeFrom )   continue;
+    if ( nextNfpTime == 0 || eventTime < nextNfpTime )   nextNfpTime = eventTime;
   }
-  return(temp_best);
+  return(nextNfpTime);
  }
 //GetNextNFPFromCalendar <<==--------   --------
 
@@ -1956,11 +1956,11 @@ g_initialLegacyRiskLotPending=true;
    GlobalVariableSet("HighestBalance",0.0) ;
    Sleep(5000) ;
  }
- double temp_storedHighest = GlobalVariableGet("HighestBalance") ;
- if ( temp_storedHighest>g_effectiveBalance )
+ double storedHighest = GlobalVariableGet("HighestBalance") ;
+ if ( storedHighest>g_effectiveBalance )
  {
-   Print("HighestBalance value found: ",temp_storedHighest) ;
-   g_highestBalance = temp_storedHighest ;
+   Print("HighestBalance value found: ",storedHighest) ;
+   g_highestBalance = storedHighest ;
  }
  else
  {
@@ -2600,18 +2600,18 @@ g_initialLegacyRiskLotPending=true;
  {
   if ( !(g_backtestSpeedEnabled) )   return(true);
 
-  bool temp_skip = false;
+  bool skipTick = false;
   if ( g_backtestSpeedFast )
   {
-    datetime temp_now = TimeCurrent();
-    if ( temp_now > g_backtestSpeedLastTime + 1 )
+    datetime now = TimeCurrent();
+    if ( now > g_backtestSpeedLastTime + 1 )
     {
-      g_backtestSpeedLastTime = temp_now;
-      temp_skip = false;
+      g_backtestSpeedLastTime = now;
+      skipTick = false;
     }
     else
     {
-      temp_skip = true;
+      skipTick = true;
     }
   }
   else
@@ -2619,20 +2619,20 @@ g_initialLegacyRiskLotPending=true;
     // speed_super: only a new closed M1 bar is accepted.  Avoid the expensive
     // iTime() series lookup on every real tick: a closed M1 bar cannot change
     // again while TimeCurrent() is still inside the same server minute.
-    datetime temp_now = TimeCurrent();
-    if ( temp_now < g_backtestSpeedLastProbeMinute + 60 )   return(false);
-    datetime temp_minute = temp_now - (temp_now % 60);
-    g_backtestSpeedLastProbeMinute = temp_minute;
-    temp_skip = true;
+    datetime now = TimeCurrent();
+    if ( now < g_backtestSpeedLastProbeMinute + 60 )   return(false);
+    datetime minuteStart = now - (now % 60);
+    g_backtestSpeedLastProbeMinute = minuteStart;
+    skipTick = true;
   }
 
-  datetime temp_m1 = iTime(Symbol(),PERIOD_M1,1);
-  if ( temp_m1 > g_backtestSpeedLastM1 )
+  datetime m1BarTime = iTime(Symbol(),PERIOD_M1,1);
+  if ( m1BarTime > g_backtestSpeedLastM1 )
   {
-    g_backtestSpeedLastM1 = temp_m1;
+    g_backtestSpeedLastM1 = m1BarTime;
     return(true);
   }
-  if ( temp_skip )   return(false);
+  if ( skipTick )   return(false);
   return(true);
  }
 //DumpBacktestSpeedAllowTick <<==--------   --------
@@ -2719,11 +2719,11 @@ void ApplyFakeoutFilterMode()
 //                         闈?AutoGMT锛堟垨鍥炴祴锛夌洿鎺ョ敤鍐?澶忛厤缃亸绉绘帹 NFP 鏃堕棿
 void UpdateGmtDstDetection()
 {
-  bool   temp_dstHandled = false ;   // 鍘?local_1_bool锛氭湰娆?tick 鏄惁宸插鐞嗚繃 DST 鍒囨崲
+  bool   dstHandled = false ;   // 鍘?local_1_bool锛氭湰娆?tick 鏄惁宸插鐞嗚繃 DST 鍒囨崲
   if ( IsAmericanDst() )
   {
     g_brokerGmtOffset = Broker_GMT_OFFSET_Summer ;
-    if ( ( !(g_isSummerTime) || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    if ( ( !(g_isSummerTime) || !(g_gmtDetectDone) ) && AutoGMT && !(dstHandled) )
     {
       g_isSummerTime = true ;
       g_euDstActive = true ;
@@ -2739,14 +2739,14 @@ void UpdateGmtDstDetection()
         Print("GMT_Offset still wrong.  Using VPS time for GMT detection!");
       }
       g_gmtDetectDone = true ;
-      temp_dstHandled = true ;
+      dstHandled = true ;
       Print("DST_US on");
     }
   }
   else
   {
     g_brokerGmtOffset = Broker_GMT_OFFSET_Winter ;
-    if ( ( g_isSummerTime || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    if ( ( g_isSummerTime || !(g_gmtDetectDone) ) && AutoGMT && !(dstHandled) )
     {
       g_isSummerTime = false ;
       g_euDstActive = false ;
@@ -2762,14 +2762,14 @@ void UpdateGmtDstDetection()
         Print("GMT_Offset still wrong.  Using VPS time for GMT detection!");
       }
       g_gmtDetectDone = true ;
-      temp_dstHandled = true ;
+      dstHandled = true ;
       Print("DST_US off");
     }
   }
-  bool temp_isEuDst = MT4EuropeanDST();
-  if ( temp_isEuDst )
+  bool isEuDst = MT4EuropeanDST();
+  if ( isEuDst )
   {
-    if ( ( !(g_euDstActive) || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    if ( ( !(g_euDstActive) || !(g_gmtDetectDone) ) && AutoGMT && !(dstHandled) )
     {
       g_euDstActive = true ;
       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
@@ -2784,13 +2784,13 @@ void UpdateGmtDstDetection()
         Print("GMT_Offset still wrong.  Using VPS time for GMT detection!");
       }
       g_gmtDetectDone = true ;
-      temp_dstHandled = true ;
+      dstHandled = true ;
       Print("DST_EU on");
     }
   }
   else
   {
-    if ( ( g_euDstActive || !(g_gmtDetectDone) ) && AutoGMT && !(temp_dstHandled) )
+    if ( ( g_euDstActive || !(g_gmtDetectDone) ) && AutoGMT && !(dstHandled) )
     {
       g_euDstActive = false ;
       g_detectedGmtOffset = DetectBrokerGmtOffset() ;
@@ -2805,7 +2805,7 @@ void UpdateGmtDstDetection()
         Print("GMT_Offset still wrong.  Using VPS time for GMT detection!");
       }
       g_gmtDetectDone = true ;
-      temp_dstHandled = true ;
+      dstHandled = true ;
       Print("DST_EU off");
     }
   }
@@ -2832,8 +2832,8 @@ void RefreshNfpCalendarCache()
 {
   if ( EnableNFP_Filter && UseMQL5Calendar && MQLInfoInteger(MQL_TESTER) != 1 )
   {
-    datetime temp_nfpRefreshNow = TimeTradeServer();
-    if ( temp_nfpRefreshNow > g_nfpCalendarLastRefresh + 900 || g_nextNFPCalendar == 0 )
+    datetime nfpRefreshNow = TimeTradeServer();
+    if ( nfpRefreshNow > g_nfpCalendarLastRefresh + 900 || g_nextNFPCalendar == 0 )
     {
       g_nextNFPCalendar = GetNextNFPFromCalendar();
       g_nfpCalendarLastRefresh = TimeTradeServer();
@@ -2860,25 +2860,25 @@ void EnforceManualHistoricalDDCompat()
 // MaxAllowedDD 鍒嗗眰鑷€傚簲妗ｄ綅锛涢殢鍚庡皢妗ｄ綅鏄犲皠涓虹瓥鐣ュ紑鍏充笌椋庨櫓绯绘暟
 void ApplyTradeFrequencyTiers()
 {
-  double   temp_usdBalance;
-  double   temp_maxDDUsd;
+  double   tierUsdBalance;
+  double   tierMaxDDUsd;
   if ( TradeFrequency == 5 && Risk == 1234 )
   {
-    temp_usdBalance = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE)) ;
-    temp_maxDDUsd = MaxAllowedDD / 100.0 * temp_usdBalance ;
-    if ( temp_maxDDUsd>g_ddTierThreshold4Usd )
+    tierUsdBalance = ConvertAccountCurrencyToUsd(AccountInfoDouble(ACCOUNT_BALANCE)) ;
+    tierMaxDDUsd = MaxAllowedDD / 100.0 * tierUsdBalance ;
+    if ( tierMaxDDUsd>g_ddTierThreshold4Usd )
     {
       g_tradeFrequencyMode = 3 ;
     }
     else
     {
-      if ( temp_maxDDUsd>g_ddTierThreshold3 )
+      if ( tierMaxDDUsd>g_ddTierThreshold3 )
       {
         g_tradeFrequencyMode = 2 ;
       }
       else
       {
-        if ( temp_maxDDUsd>g_ddTierThreshold2Usd )
+        if ( tierMaxDDUsd>g_ddTierThreshold2Usd )
         {
           g_tradeFrequencyMode = 1 ;
         }
@@ -3044,9 +3044,9 @@ void RunStrategySlot(const int strategyIndex,const bool newH1Bar)
   {
     if ( g_initialLegacyRiskLotPending )
     {
-      for (int temp_initialLotOrder = MT4OrdersTotal(); temp_initialLotOrder >= 0; temp_initialLotOrder--)
+      for (int legacyOrderIdx = MT4OrdersTotal(); legacyOrderIdx >= 0; legacyOrderIdx--)
       {
-        if ( OrderSelect(temp_initialLotOrder,0,0) && OrderSymbol() == g_chartSymbol &&
+        if ( OrderSelect(legacyOrderIdx,0,0) && OrderSymbol() == g_chartSymbol &&
              OrderMagicNumber() == ST1_MagicNumber + 1 )
         {
           g_initialLegacyRiskLotPending=false;
@@ -3057,14 +3057,14 @@ void RunStrategySlot(const int strategyIndex,const bool newH1Bar)
   }
   if ( newH1Bar )
   {
-    double temp_histPL = 0.0;
+    double histClosedPL = 0.0;
     if ( !( MQLInfoInteger(MQL_TESTER) == 1 && !(UpdateInfoTesting) ) )
     {
-      double temp_statsPL = 0.0;
-      MT4HistoryStats(g_chartSymbol,g_curStrategyMagic,g_closedTradeCount[g_currentStrategyIndex],temp_statsPL);
-      temp_histPL = temp_statsPL;
+      double statsClosedPL = 0.0;
+      MT4HistoryStats(g_chartSymbol,g_curStrategyMagic,g_closedTradeCount[g_currentStrategyIndex],statsClosedPL);
+      histClosedPL = statsClosedPL;
     }
-    g_histClosedPLbyStrategy[strategyIndex] = temp_histPL;
+    g_histClosedPLbyStrategy[strategyIndex] = histClosedPL;
     if ( g_histClosedPLbyStrategy[strategyIndex]!=0.0 && g_closedTradeCount[strategyIndex] >  0 )
     {
       g_avgPLperTrade[strategyIndex] = g_histClosedPLbyStrategy[strategyIndex] / g_closedTradeCount[strategyIndex];
@@ -3134,8 +3134,8 @@ void OnTick()
   ApplyTradeFrequencyTiers();
   if ( !(CheckDailyRolloverAndPropFirmGate()) )   return;
 
-  bool temp_newH1Bar = DetectNewH1Bar();
-  RunAllStrategies(temp_newH1Bar);
+  bool newH1Bar = DetectNewH1Bar();
+  RunAllStrategies(newH1Bar);
 
   UpdateAccountPanel();
   UpdatePanelsOnNewM5Bar();
@@ -3170,22 +3170,22 @@ void OnTick()
  // This is a history/indicator-readiness gate; the ATR value itself is
  // not used in the trading arithmetic that follows.
  // -----------------------------------------------------------------
- int temp_atr_index=strategyIdx;
- if(temp_atr_index<0 || temp_atr_index>8) temp_atr_index=0;
- ENUM_TIMEFRAMES temp_atr_tf=MT4Period(g_atrTimeframe);
- if(g_atr_handles[temp_atr_index]<=0 ||
-    g_atr_periods[temp_atr_index]!=g_atrPeriod ||
-    g_atr_timeframes[temp_atr_index]!=temp_atr_tf)
+ int atrIndex=strategyIdx;
+ if(atrIndex<0 || atrIndex>8) atrIndex=0;
+ ENUM_TIMEFRAMES atrTimeframe=MT4Period(g_atrTimeframe);
+ if(g_atr_handles[atrIndex]<=0 ||
+    g_atr_periods[atrIndex]!=g_atrPeriod ||
+    g_atr_timeframes[atrIndex]!=atrTimeframe)
  {
-   if(g_atr_handles[temp_atr_index]>0) IndicatorRelease(g_atr_handles[temp_atr_index]);
-   g_atr_handles[temp_atr_index]=iATR(g_chartSymbol,temp_atr_tf,g_atrPeriod);
-   g_atr_periods[temp_atr_index]=g_atrPeriod;
-   g_atr_timeframes[temp_atr_index]=temp_atr_tf;
-   g_atr_checked_bars[temp_atr_index]=0;
-   g_atr_cached_values[temp_atr_index]=0.0;
-   g_atr_ready[temp_atr_index]=false;
+   if(g_atr_handles[atrIndex]>0) IndicatorRelease(g_atr_handles[atrIndex]);
+   g_atr_handles[atrIndex]=iATR(g_chartSymbol,atrTimeframe,g_atrPeriod);
+   g_atr_periods[atrIndex]=g_atrPeriod;
+   g_atr_timeframes[atrIndex]=atrTimeframe;
+   g_atr_checked_bars[atrIndex]=0;
+   g_atr_cached_values[atrIndex]=0.0;
+   g_atr_ready[atrIndex]=false;
  }
- g_atrHandle = g_atr_handles[temp_atr_index];
+ g_atrHandle = g_atr_handles[atrIndex];
  if ( g_atrHandle < 0 )
  {
    Print("The creation of iATR has failed: Runtime error =" + IntegerToString(GetLastError()));
@@ -3194,8 +3194,8 @@ void OnTick()
  // ATR is a readiness gate only; its value is never used by the trading
  // arithmetic.  Refresh once per ATR bar and keep retrying until the buffer is
  // ready, instead of issuing several CopyBuffer calls on every market tick.
- datetime temp_atr_bar=iTime(g_chartSymbol,temp_atr_tf,0);
- if ( !(g_atr_ready[temp_atr_index]) || g_atr_checked_bars[temp_atr_index]!=temp_atr_bar )
+ datetime atrBarTime=iTime(g_chartSymbol,atrTimeframe,0);
+ if ( !(g_atr_ready[atrIndex]) || g_atr_checked_bars[atrIndex]!=atrBarTime )
  {
    if ( CopyBuffer(g_atrHandle,0,0,2,g_atrBuffer) == 0 )
    {
@@ -3203,23 +3203,23 @@ void OnTick()
    }
    ArraySetAsSeries(g_atrBuffer,true);
    // Original JIT contains the bounds check for element [1].
-   g_atr_cached_values[temp_atr_index]=g_atrBuffer[1];
-   g_atr_checked_bars[temp_atr_index]=temp_atr_bar;
-   g_atr_ready[temp_atr_index]=true;
+   g_atr_cached_values[atrIndex]=g_atrBuffer[1];
+   g_atr_checked_bars[atrIndex]=atrBarTime;
+   g_atr_ready[atrIndex]=true;
  }
 
  // Original JIT first derives the variable-value ratio, then selects
  // either that ratio or 1.0 according to UseVariableValues.  The 1000
  // threshold and the absence of NormalizeDouble() on entry offsets are
  // both visible in the dump (e.g. -170 -> -402.49625 at ratio 2.367625).
- double temp_variableRatio = 1.0 ;
+ double variableRatio = 1.0 ;
  if ( g_varValueScalePrice>=1000.0 )
  {
-   temp_variableRatio = iOpen(g_chartSymbol,MT4Period(PERIOD_D1),1) / g_varValueScalePrice ;
+   variableRatio = iOpen(g_chartSymbol,MT4Period(PERIOD_D1),1) / g_varValueScalePrice ;
  }
  if ( UseVariableValues )
  {
-   g_variableRatio = temp_variableRatio ;
+   g_variableRatio = variableRatio ;
  }
  else
  {
@@ -3243,8 +3243,8 @@ void OnTick()
 
  // The original explicitly checks that a current tick is available.
  // Failure is logged, but execution continues exactly as in the dump.
- MqlTick temp_tick;
- if ( !(SymbolInfoTick(g_chartSymbol,temp_tick)) )
+ MqlTick currentTick;
+ if ( !(SymbolInfoTick(g_chartSymbol,currentTick)) )
  {
    Print("Tick not ok");
  }
@@ -3463,10 +3463,10 @@ void OnTick()
  {
    g_entryBreakoutPips = g_entryBreakoutPct / 100.0 * MarketInfo(g_chartSymbol,MODE_ASK) * 10.0 ;
  }
- bool temp_tradeAllowedForManagement = (MarketInfo(g_chartSymbol,MODE_TRADEALLOWED)!=0.0);
+ bool tradeAllowedForManagement = (MarketInfo(g_chartSymbol,MODE_TRADEALLOWED)!=0.0);
  if ( g_entryTfMinutes == 0 )
  {
-   if ( temp_tradeAllowedForManagement )
+   if ( tradeAllowedForManagement )
    {
      if ( ManageBuyPositions() )
      {
@@ -3487,7 +3487,7 @@ void OnTick()
    // Do not consume the management-timeframe marker while the broker session
    // is still quote-only/closed.  The first trade-enabled tick must retry the
    // same bar, exactly when the original Market EA can also place pending orders.
-   if ( temp_tradeAllowedForManagement &&
+   if ( tradeAllowedForManagement &&
         g_lastEntryBarsCount[g_currentStrategyIndex] != iBars(g_chartSymbol,MT4Period(g_entryTfMinutes)) )
    {
      g_lastEntryBarsCount[g_currentStrategyIndex] = iBars(g_chartSymbol,MT4Period(g_entryTfMinutes));
@@ -3626,15 +3626,15 @@ void OnTick()
  }
  if ( EnableNFP_Filter )
  {
-   bool temp_nfpLiveCalendar = (UseMQL5Calendar && MQLInfoInteger(MQL_TESTER) != 1 && g_nextNFPCalendar != 0);
+   bool nfpLiveCalendar = (UseMQL5Calendar && MQLInfoInteger(MQL_TESTER) != 1 && g_nextNFPCalendar != 0);
    // Exact original fallback rule: if live Calendar is disabled/unavailable (timestamp=0),
    // continue into the hardcoded table; after 2026 use the first-Friday fallback.
-   if ( temp_nfpLiveCalendar || Year() <= 2026 )
+   if ( nfpLiveCalendar || Year() <= 2026 )
    {
      nfpReleaseTime = 0 ;
      nfpGmtOffsetMin = 0 ;
-     datetime temp_nfpCompareNow = TimeCurrent();
-     if ( temp_nfpLiveCalendar )
+     datetime nfpCompareNow = TimeCurrent();
+     if ( nfpLiveCalendar )
      {
        // Calendar timestamps are already in trade-server time. No GMT conversion here.
        nfpReleaseTime = g_nextNFPCalendar;
@@ -3645,9 +3645,9 @@ void OnTick()
        // Hardcoded table is GMT-based: NFP is 13:30 GMT in US winter, 12:30 in DST.
        nfpGmtOffsetMin = 60 ;
        if ( IsAmericanDst() )   nfpGmtOffsetMin = 0 ;
-       temp_nfpCompareNow = g_nfpAdjustedNow;
+       nfpCompareNow = g_nfpAdjustedNow;
      }
-     if ( temp_nfpCompareNow >= nfpReleaseTime - NFP_MinutesBefore * 60 + nfpGmtOffsetMin * 60 && temp_nfpCompareNow <= nfpReleaseTime + NFP_MinutesAfter * 60 + nfpGmtOffsetMin * 60 )
+     if ( nfpCompareNow >= nfpReleaseTime - NFP_MinutesBefore * 60 + nfpGmtOffsetMin * 60 && nfpCompareNow <= nfpReleaseTime + NFP_MinutesAfter * 60 + nfpGmtOffsetMin * 60 )
      {
        if ( NFP_ClosePendingOrders )
        {
@@ -8943,8 +8943,8 @@ void OnTick()
 //----- -----
 
  usdAmount = accountAmount ;
- string temp_account_currency=AccountInfoString(ACCOUNT_CURRENCY);
- if(temp_account_currency=="USD" || temp_account_currency=="usd")
+ string accountCurrency=AccountInfoString(ACCOUNT_CURRENCY);
+ if(accountCurrency=="USD" || accountCurrency=="usd")
  {
    return(MathRound(accountAmount));
  }
@@ -9684,12 +9684,12 @@ double RandomizedJitter()
    // proportional entry commission, which made the reconstructed threshold
    // fire one or two ticks too early.  Keep the generic history semantics for
    // panels/ranking, but use the close-deal commission in this risk guard.
-   double temp_daily_close_commission = OrderCommission();
+   double dailyCloseCommission = OrderCommission();
    if ( g_sel_hist_index>=0 )
    {
-     temp_daily_close_commission = HistoryDealGetDouble((ulong)g_hist_ticket[g_sel_hist_index],DEAL_COMMISSION);
+     dailyCloseCommission = HistoryDealGetDouble((ulong)g_hist_ticket[g_sel_hist_index],DEAL_COMMISSION);
    }
-   dealNetProfit = OrderProfit() + OrderSwap() + temp_daily_close_commission ;
+   dealNetProfit = OrderProfit() + OrderSwap() + dailyCloseCommission ;
    closedTodayProfit = dealNetProfit + closedTodayProfit ;
    
  }
@@ -9708,8 +9708,8 @@ double RandomizedJitter()
  for (pendingScanIdx = MT4OrdersTotal() ; pendingScanIdx >= 0 ; pendingScanIdx=pendingScanIdx - 1)
  {
    if ( OrderSelect(pendingScanIdx,0,0) != true || OrderSymbol() != g_chartSymbol ) continue;
-   int temp_daily_magic=OrderMagicNumber();
-   if(temp_daily_magic<ST1_MagicNumber+1 || temp_daily_magic>ST1_MagicNumber+15) continue;
+   int dailyMagic=OrderMagicNumber();
+   if(dailyMagic<ST1_MagicNumber+1 || dailyMagic>ST1_MagicNumber+15) continue;
    if(OrderType()!=4 && OrderType()!=5) continue;
    OrderDelete(OrderTicket(),Red);
  }
@@ -10006,13 +10006,13 @@ double RandomizedJitter()
   int       dstEndDay;
 //----- -----
 
- datetime temp_now=TimeCurrent();
- datetime temp_day=temp_now-(temp_now%86400);
- if ( g_us_dst_cache_valid && g_us_dst_cache_day==temp_day )
+ datetime now=TimeCurrent();
+ datetime dayStart=now-(now%86400);
+ if ( g_us_dst_cache_valid && g_us_dst_cache_day==dayStart )
  {
    return(g_us_dst_cache_value);
  }
- dstYear = TimeYear(temp_now) ;
+ dstYear = TimeYear(now) ;
  dstStart = 0 ;
  dstEnd = 0 ;
  if ( dstYear <  1987 )
@@ -10039,9 +10039,9 @@ double RandomizedJitter()
      dstEnd=StringToTime(((string)dstYear+".11.01")) + (dstEndDay - 1) * 86400 + 0x1C20;
    }
  }
- g_us_dst_cache_value=(TimeDayOfYear(temp_now)>TimeDayOfYear(dstStart) &&
-                       TimeDayOfYear(temp_now)<TimeDayOfYear(dstEnd));
- g_us_dst_cache_day=temp_day;
+ g_us_dst_cache_value=(TimeDayOfYear(now)>TimeDayOfYear(dstStart) &&
+                       TimeDayOfYear(now)<TimeDayOfYear(dstEnd));
+ g_us_dst_cache_day=dayStart;
  g_us_dst_cache_valid=true;
  return(g_us_dst_cache_value); 
  }

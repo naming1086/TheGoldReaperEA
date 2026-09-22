@@ -1316,13 +1316,13 @@ input BacktestSpeedOptions BacktestSpeed = speed_normal;
 input string spreadfilter = "------------------------------ settings ------------------------------";   //- - -
 input bool AllowBuyTrades = true;    //Allow Buy Trades
 input bool AllowSellTrades = true;    //Allow Sell Trades
-input  enum_TradeFrequency  TradeFrequency = Auto_Frequency;
-input double MaxSpread = 500;    //Maximum allowed spread
+input  enum_TradeFrequency  TradeFrequency = Extreme_Frequency;
+input double MaxSpread = 60;    //Maximum allowed spread
 input bool UseHL_TrailingSL = true;
 input int   FridayStopHour = 25;    //Friday stop hour (brokertime; close all trades)
 input bool FridayClosePending = true;
 input bool FridayCloseOpen = true;
-input bool setSL_TP_After_Entry = false;
+input bool setSL_TP_After_Entry = true;
 input bool Virtual_expiration = false;    //Use Virtual Expiration
 input double Randomization = 0;    //Randomization (entries and exit) in pips
 input  FakeoutFilters  FakeOutFilter = 2;    //Fake Breakout Filter
@@ -10296,7 +10296,7 @@ bool IsAmericanDst()
 //   AdjustBreakEven           [0]      保本偏移                                  → 0
 //
 // ---- D. 时段与新闻过滤（15 项）-----------------------------------------
-//   FridayStopHour            [25]     周五收工小时（25 = 关闭）                  → 20
+//   FridayStopHour            [25]     周五收工小时（券商时间 0-23；>=24 永不触发≈关闭，<0 才是真正关闭）→ 22
 //   FridayClosePending        [true]   周末前撤挂单                               → true
 //   FridayCloseOpen           [true]   周末前平仓                                 → true
 //   EnableNFP_Filter          [true]   非农过滤总开关                             → true

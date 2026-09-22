@@ -1355,6 +1355,8 @@ input double MaxAllowedDD = 30;    //Max Allowed TOTAL Drawdown
 input bool UseWeightedLots = true;    //Weighted Lotsize
 input double MaxRiskPerStrategy_ = 1;    //Max Risk Per Strat
 input double PropFirmMaxDailyDD = 0;    //Set Max DAILY Drawdown (Prop Firms)
+input double PropFirmDailyLossUSD = 0;  //Set Max DAILY Loss in account currency (0 = use % above)
+input bool   PropFirmDailyLossStatic = false;  //% mode: lock baseline to day-start equity (no trailing up)
 input bool OnlyUp = true;
 input bool ResetHighestBalance = false;
 input bool CheckMargin = true;    //check for free margin before setting trades
@@ -1829,6 +1831,7 @@ int       g_lotResizeTickCount = 0;
 bool      g_propfirmDailyDDHit = false;
 int       g_lastD1BarsCount = 0;
 double    g_propfirmDailyPeakEquity = 0.0;
+double    g_propfirmDailyStartEquity = 0.0;
 int       g_ddTierThreshold1 = 200;
 int       g_ddTierThreshold2Usd = 330;
 int       g_ddTierThreshold3 = 560;
@@ -2447,6 +2450,7 @@ int OnInit()
     }
     g_orderComment = ST1_Comment;
     g_propfirmDailyPeakEquity = 0.0;
+    g_propfirmDailyStartEquity = 0.0;
     g_propfirmDailyDDHit = false;
     g_lastM5BarTime = 0;
     g_propfirmDailyDDOn = true;
@@ -3137,6 +3141,7 @@ bool CheckDailyRolloverAndPropFirmGate()
         g_lastD1BarsCount = iBars(g_chartSymbol, MT4Period(PERIOD_D1));
         g_propfirmDailyDDHit = false;
         g_propfirmDailyPeakEquity = 0.0;
+        g_propfirmDailyStartEquity = AccountEquity();
     }
     if (PropFirmMaxDailyDD > 0.0)
     {
@@ -9772,6 +9777,28 @@ void LoadStrategy8Settings()
 //       DetectBrokerGmtOffset        —— AutoGMT=true 时检测服务器 GMT 偏移
 //       IsAmericanDst                —— 美国夏令时区间判定（结果按天缓存）
 // ============================================================================
+// EnforcePropFirmDailyDrawdown —— 日内回撤熔断的两种口径（新增，2026-09）
+// ----------------------------------------------------------------------------
+//  触发量：totalDailyResult = (Equity - Balance)  + 今日已平仓净盈亏(含佣金+swap)
+//
+//  口径 A（新增，推荐用于 Static 规则的 Prop Firm）
+//      PropFirmDailyLossUSD > 0  →  阈值 = PropFirmDailyLossUSD（账户币种固定金额）
+//      例：6000 账户、日限 300 → 设 300，每天都是固定 300，不随盈利上移。
+//
+//  口径 B（原版行为，默认）
+//      PropFirmDailyLossUSD = 0  →  阈值 = 基线 × PropFirmMaxDailyDD / 100
+//      基线默认取 g_propfirmDailyPeakEquity（当日内最高权益，只增不减 = trailing）
+//      PropFirmDailyLossStatic = true 时，基线改用 g_propfirmDailyStartEquity
+//      （换日瞬间的权益快照，当天内不再上移，接近 Static 口径）
+//
+//  换日重置在 CheckDailyRolloverAndPropFirmGate 中完成（D1 新 K 线）：
+//      g_propfirmDailyDDHit=false、g_propfirmDailyPeakEquity=0、
+//      g_propfirmDailyStartEquity=AccountEquity()
+//
+//  已知缺口（与新增参数无关，未修改以保持原版行为）：
+//      函数开头 "if (currentEquity == AccountBalance()) return;" 会在无持仓时
+//      直接返回 —— 若当日亏损全部来自已平仓单且此刻空仓，熔断不会触发。
+// ============================================================================
 
 void EnforcePropFirmDailyDrawdown()
 {
@@ -9813,7 +9840,25 @@ void EnforcePropFirmDailyDrawdown()
     }
     floatingDelta = AccountEquity() - AccountBalance();
     totalDailyResult = floatingDelta + closedTodayProfit;
-    if (!(-(totalDailyResult) > g_propfirmDailyPeakEquity * PropFirmMaxDailyDD / 100.0))   return;
+    double    dailyLossLimit = 0.0;
+    if (PropFirmDailyLossUSD > 0.0)
+    {
+        dailyLossLimit = PropFirmDailyLossUSD;
+    }
+    else
+    {
+        double dailyLossBaseline = g_propfirmDailyPeakEquity;
+        if (PropFirmDailyLossStatic)
+        {
+            if (g_propfirmDailyStartEquity <= 0.0)
+            {
+                g_propfirmDailyStartEquity = AccountEquity();
+            }
+            dailyLossBaseline = g_propfirmDailyStartEquity;
+        }
+        dailyLossLimit = dailyLossBaseline * PropFirmMaxDailyDD / 100.0;
+    }
+    if (!(-(totalDailyResult) > dailyLossLimit))   return;
 
     if (!(g_propfirmDailyDDHit))
     {

@@ -31,6 +31,7 @@
 //    §16 各策略参数装载（LoadStrategy1~9Settings）
 //    §17 PropFirm 日内回撤与 GMT/夏令时检测（EnforcePropFirmDailyDrawdown、
 //        WTS_*、DetectBrokerGmtOffset、IsAmericanDst）
+//    §18 参数速查表（67 个 input 分类总表，纯注释）
 // ============================================================================
 
 // ============================================================================
@@ -10256,3 +10257,99 @@ bool IsAmericanDst()
     return(g_us_dst_cache_value);
 }
 //<<==IsAmericanDst <<==
+
+// ============================================================================
+// [§18] 参数速查表（共 67 个 input，其中 8 个为纯显示分隔条）—— 纯注释
+// ----------------------------------------------------------------------------
+//  格式：参数名  [默认值]  作用一句话   → PF/实操建议
+//  建议列标注的是「6000 账户 / 日限 300 / 总回撤 600 / Static」场景下的取值。
+// ============================================================================
+//
+// ---- A. 账户与风控（9 项）· PF 核心 ------------------------------------
+//   MaxAllowedDD              [30]     回撤预算：手数分子 + Auto档位；非强平     → 10
+//   PropFirmMaxDailyDD        [0]      日限：百分比 × 当日峰值权益               → 0
+//   PropFirmDailyLossUSD      [0]      日限：固定金额（>0 时优先于百分比）        → 300
+//   PropFirmDailyLossStatic   [false]  百分比模式基线锁为"当日起始权益"           → false
+//   ManualBalance             [0]      强制手数基准；>0 会让收益率越来越小        → 0
+//   OnlyUp                    [true]   手数基准取峰值余额（只增不减）            → true
+//   ResetHighestBalance       [false]  清终端全局变量 HighestBalance             → 回测前 true 跑一次
+//   UseEquity                 [false]  手数基准用 equity 而非 balance            → false
+//   CheckMargin               [true]   下单前检查可用保证金                      → true
+//
+// ---- B. 手数与风险（6 项）----------------------------------------------
+//   Risk                      [1234]   手数模式：0固定 / 3单策略风险 / 999 / 9999 / 1234按总回撤 → 0
+//   StartLots                 [0.01]   固定手数；仅 Risk=0 生效                  → 0.01
+//   UseWeightedLots           [true]   加权手数；仅 Risk=1234 生效                → 保持
+//   MaxRiskPerStrategy_       [1]      单策略风险系数                            → 0.5
+//   UseVariableValues         [true]   影响 riskFactor 与可变比例                 → false（配 Risk=0）
+//   AdjustLotsizeToVariableValues [true] 手数随可变值调整                        → 保持
+//
+// ---- C. 策略选择与档位（18 项）-----------------------------------------
+//   TradeFrequency            [Auto(5)] 档位；非 Auto 时直接指定档位             → Conservative(1)
+//   RunStrat1 / 2 / 3         [true]   低风险三套                                → true
+//   RunStrat4 / 5 / 6 / 7     [true]   中风险四套                                → false（先关）
+//   RunStrat8 / 9             [true]   高风险两套                                → false
+//   AllowBuyTrades            [true]   允许做多                                  → true
+//   AllowSellTrades           [true]   允许做空                                  → true
+//   AdjustEntry / SL / TP     [0]      全局入场 / 止损 / 止盈偏移                 → 0
+//   AdjustTrailSL / TrailTP   [0]      追踪止损 / 止盈偏移                        → 0
+//   AdjustBreakEven           [0]      保本偏移                                  → 0
+//
+// ---- D. 时段与新闻过滤（15 项）-----------------------------------------
+//   FridayStopHour            [25]     周五收工小时（25 = 关闭）                  → 20
+//   FridayClosePending        [true]   周末前撤挂单                               → true
+//   FridayCloseOpen           [true]   周末前平仓                                 → true
+//   EnableNFP_Filter          [true]   非农过滤总开关                             → true
+//   UseMQL5Calendar           [true]   用 MT5 日历（回测取不到时回落硬编码日期）   → true
+//   AutoGMT                   [true]   自动检测券商 GMT 偏移                      → true
+//   Broker_GMT_OFFSET_Winter  [2]      冬令时偏移（AutoGMT=false 时生效）         → 保持
+//   Broker_GMT_OFFSET_Summer  [3]      夏令时偏移                                 → 保持
+//   NFP_CloseOpenTrades       [true]   NFP 窗口内平仓                             → true
+//   NFP_ClosePendingOrders    [true]   NFP 窗口内撤挂单                           → true
+//   NFP_MinutesBefore         [100]    事前窗口（分钟）                           → 120
+//   NFP_MinutesAfter          [60]     事后窗口（分钟）                           → 90
+//   MaxSpread                 [500]    点差上限（超限时撤挂单暂存，恢复后补回）    → 按券商收紧
+//   FakeOutFilter             [2]      假突破过滤档                               → 保持
+//   Randomization             [0]      入场/出场随机抖动（pips）                  → 0（保证可复现）
+//
+// ---- E. 订单与持仓管理（6 项）------------------------------------------
+//   ST1_MagicNumber           [8000]   基础 magic；九套分别为 +1/+5/+8/+2/+12/+9/+14/+15/+13 → 别动
+//   ST1_Comment               ["The Gold Reaper"] 订单注释                        → 保持
+//   RemoveCommentSuffix       [false]  去掉注释后缀                               → 保持
+//   setSL_TP_After_Entry      [false]  成交后再补设 SL/TP                         → false
+//   Virtual_expiration        [false]  虚拟到期（不设真实到期时间）                → false
+//   UseHL_TrailingSL          [true]   分形高低点追踪止损                          → true
+//
+// ---- F. 面板与显示（4 项）----------------------------------------------
+//   ShowInfoPanel             [true]   信息面板                                   → 回测 false（提速）
+//   UpdateInfoTesting         [false]  回测中刷新面板                             → false
+//   InfoPanelSizeAdjust       [1]      面板缩放                                   → 保持
+//   SetFontSize               [0]      字号（0 = 自动）                           → 保持
+//
+// ---- G. 回测（1 项）----------------------------------------------------
+//   BacktestSpeed             [speed_normal] 回测加速节流                        → 粗筛 fast / 定稿 normal
+//
+// ---- H. 纯显示分隔条（8 项，无逻辑作用）--------------------------------
+//   lijntje / BacktestSpeed_string / spreadfilter / NFP_FILTER /
+//   propfirmsettings / LotSizeSettings / ManualStratSelect / ManStratWarn
+//   —— 仅为参数面板的分组标题，改动不影响任何行为。
+//
+// ---- 资金链路：哪些参数真正影响你的钱 ----------------------------------
+//   账户余额
+//     → [档位] TradeFrequency（固定档）或 Auto + MaxAllowedDD + 余额
+//          └ 决定：跑哪几套策略 + riskFactor（手数分母）
+//     → [手数] Risk=0 时取 StartLots；Risk=1234 时取 MaxAllowedDD/riskFactor × 余额
+//          └ 再过三道闸：0.01 步长取整 → 最小手数 → 保证金检查
+//     → [下单] 分形信号 + MA 方向过滤 + 点差/时段/周五/NFP 过滤
+//     → [管仓] 追踪止损 / 保本 / 虚拟止损
+//     → [熔断] PropFirmDailyLossUSD（日限）—— 目前唯一的真实保护
+//              ※ 总回撤强平：本 EA 未实现
+//
+// ---- 四条务必记住 ------------------------------------------------------
+//   1. 只有 PropFirmDailyLossUSD 是真保护；其余风控参数都只是"影响手数"。
+//   2. TradeFrequency 别用 Auto —— 余额一变，策略集合与手数系数会悄悄变，
+//      导致回测不可复现、不同初始金额之间不可比。
+//   3. ManualBalance 实盘必须为 0 —— 否则手数锁死，盈利百分比越来越小。
+//   4. MaxAllowedDD 不保护你 —— 它只是"声明我打算承受多大回撤"，EA 据此
+//      放大或缩小手数；触线时不会平仓、不会停手。
+// ============================================================================

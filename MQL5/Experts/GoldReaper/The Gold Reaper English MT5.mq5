@@ -2638,23 +2638,23 @@ g_initialLegacyRiskLotPending=true;
 //DumpBacktestSpeedAllowTick <<==--------   --------
 
 // =====================================================================
-// OnTick 璇箟妯″潡鎷嗗垎锛堟壒娆?锛?026-09锛?
-// 鍘熷弽缂栬瘧 OnTick 涓?~600 琛屽钩閾鸿繃绋嬨€備互涓嬫ā鍧楁寜鍘熻鍙ラ『搴?1:1 鎶藉彇锛?
-// 璇彞鏈綋淇濇寔鍘熸牱锛堟湭鏀瑰啓銆佹湭閲嶆帓锛夛紝浠呮秷闄?9 涓瓥鐣ヨ皟搴﹀潡鐨勫瓧闈㈤噸澶嶏細
-//   UpdateEffectiveBalanceTracking      鏈夋晥浣欓/OnlyUp 楂樻按浣?ManualBalance 瑕嗙洊
-//   ApplyFakeoutFilterMode              FakeOutFilter -> M1/M15/H1 浣胯兘鏄犲皠
-//   UpdateGmtDstDetection               US/EU 澶忎护鏃剁姸鎬佹満 + GMT 鍋忕Щ鎺㈡祴
-//   RefreshNfpCalendarCache             NFP 鏃ュ巻缂撳瓨锛?00 绉掑埛鏂帮紱鍥炴祴鐢ㄧ‖缂栫爜鏃ユ湡锛?
-//   EnforceManualHistoricalDDCompat     鍘熺増闈炴硶杈撳叆缁勫悎鍏煎锛堥浂闄よ涓哄鐜帮級
-//   ApplyTradeFrequencyTiers            浜ゆ槗棰戠巼妗ｄ綅 -> 绛栫暐寮€鍏?椋庨櫓绯绘暟
-//   CheckDailyRolloverAndPropFirmGate   D1 鎹㈡棩閲嶇疆 + PropFirm 鏃ュ唴鍥炴挙闂搁棬
-//   DetectNewH1Bar                      H1 鏀剁洏 K 绾垮彉鍖栨娴?
-//   RunAllStrategies / RunStrategySlot   9 绛栫暐妲戒綅璋冨害锛堥『搴忎繚鎸佸師鐗?1,4,2,3,6,5,9,7,8锛?
-//   UpdatePanelsOnNewM5Bar              M5 鏂?K 绾?-> 绛栫暐/鍘嗗彶闈㈡澘鍒锋柊
-//   FinishTickLotResizeThrottle         姣?2 tick 鐨勪綑棰濆揩鐓ф墜鏁板啀骞宠　
+// OnTick 语义模块拆分（批次：2026-09）
+// 原反编译 OnTick 约~600 行平铺过程。以下模块按原语句顺序 1:1 抽取。
+// 语句本体保持原样（未改写、未重排），仅消除 9 个策略调度块的字面重复：
+//   UpdateEffectiveBalanceTracking      有效余额/OnlyUp 高水位 + ManualBalance 覆盖
+//   ApplyFakeoutFilterMode              FakeOutFilter -> M1/M15/H1 使能映射
+//   UpdateGmtDstDetection               US/EU 夏令时状态机 + GMT 偏移探测
+//   RefreshNfpCalendarCache             NFP 日历缓存：900 秒刷新；回测用硬编码日期。
+//   EnforceManualHistoricalDDCompat     原版非法输入组合兼容（零除行为复现）
+//   ApplyTradeFrequencyTiers            交易频率档位 -> 策略开关/风险系数
+//   CheckDailyRolloverAndPropFirmGate   D1 换日重置 + PropFirm 日内回撤闸门
+//   DetectNewH1Bar                      H1 收盘 K 线变化检测
+//   RunAllStrategies / RunStrategySlot   9 策略槽位调度（顺序保持原版 1,4,2,3,6,5,9,7,8）
+//   UpdatePanelsOnNewM5Bar              M5 新 K 线 -> 策略/历史面板刷新
+//   FinishTickLotResizeThrottle         每 2 tick 的余额快照手数再平衡
 // =====================================================================
 
-// UpdateEffectiveBalanceTracking 鈥斺€?鏈夋晥浣欓锛圤nlyUp 楂樻按浣?+ ManualBalance 瑕嗙洊锛?
+// UpdateEffectiveBalanceTracking —— 有效余额（OnlyUp 高水位 + ManualBalance 覆盖）
 void UpdateEffectiveBalanceTracking()
 {
   g_effectiveBalance = AccountInfoDouble(ACCOUNT_BALANCE) ;
@@ -2677,7 +2677,7 @@ void UpdateEffectiveBalanceTracking()
   }
 }
 
-// ApplyFakeoutFilterMode 鈥斺€?FakeOutFilter 杈撳叆 -> M1/M15/H1 鍋囩獊鐮磋繃婊ゅ櫒浣胯兘
+// ApplyFakeoutFilterMode —— FakeOutFilter 输入 -> M1/M15/H1 假突破过滤器使能
 void ApplyFakeoutFilterMode()
 {
   if ( FakeOutFilter == 0 )
@@ -2715,11 +2715,11 @@ void ApplyFakeoutFilterMode()
   }
 }
 
-// UpdateGmtDstDetection 鈥斺€?US/EU 澶忎护鏃剁姸鎬佹満锛氬亸绉诲垏鎹㈡椂閲嶆柊鎺㈡祴 GMT锛?
-//                         闈?AutoGMT锛堟垨鍥炴祴锛夌洿鎺ョ敤鍐?澶忛厤缃亸绉绘帹 NFP 鏃堕棿
+// UpdateGmtDstDetection —— US/EU 夏令时状态机：偏移切换时重新探测 GMT；
+//                         非 AutoGMT（或回测）直接用冬/夏配置偏移推 NFP 时间
 void UpdateGmtDstDetection()
 {
-  bool   dstHandled = false ;   // 鍘?local_1_bool锛氭湰娆?tick 鏄惁宸插鐞嗚繃 DST 鍒囨崲
+  bool   dstHandled = false ;   // 原 local_1_bool：本次 tick 是否已处理过 DST 切换
   if ( IsAmericanDst() )
   {
     g_brokerGmtOffset = Broker_GMT_OFFSET_Summer ;
@@ -2826,8 +2826,8 @@ void UpdateGmtDstDetection()
   }
 }
 
-// RefreshNfpCalendarCache 鈥斺€?鍘熺増 V4.6 瀹炵洏鏃ュ巻缂撳瓨锛氳窛涓婃鍒锋柊 900 绉?
-// 鎴栧綋鍓嶆棤缂撳瓨浜嬩欢鏃剁珛鍗虫媺鍙栵紱鍥炴祴涓嶈蛋姝よ矾寰勶紙浣跨敤纭紪鐮?NFP 鏃ユ湡锛?
+// RefreshNfpCalendarCache —— 原版 V4.6 实盘日历缓存：距上次刷新 900 秒
+// 或当前无缓存事件时立即拉取；回测不走此路径（使用硬编码 NFP 日期）
 void RefreshNfpCalendarCache()
 {
   if ( EnableNFP_Filter && UseMQL5Calendar && MQLInfoInteger(MQL_TESTER) != 1 )
@@ -2841,8 +2841,8 @@ void RefreshNfpCalendarCache()
   }
 }
 
-// EnforceManualHistoricalDDCompat 鈥斺€?鍘熺増 Market EX5 瀵硅涓嶅吋瀹硅緭鍏ョ粍鍚堢殑琛屼负锛?
-// 鎵嬪姩棰戠巼浠庝笉鍒濆鍖栧巻鍙?DD 闄ゆ暟锛岄涓?tick 浠ラ浂闄や弗閲嶉敊璇粓姝紱姝ゅ鎸夊師鏍峰鐜?
+// EnforceManualHistoricalDDCompat —— 原版 Market EX5 对该不兼容输入组合的行为：
+// 手动频率从不初始化历史 DD 除数，首个 tick 以零除严重错误终止；此处按原样复现。
 void EnforceManualHistoricalDDCompat()
 {
   if ( TradeFrequency == Manual_Strategy_Selection && Risk == MaxHistoricalDD && UseWeightedLots &&
@@ -2856,8 +2856,8 @@ void EnforceManualHistoricalDDCompat()
   }
 }
 
-// ApplyTradeFrequencyTiers 鈥斺€?浜ゆ槗棰戠巼妗ｄ綅閫夋嫨锛汻isk==1234 鏃舵寜璐︽埛 USD 鎶樼畻鐨?
-// MaxAllowedDD 鍒嗗眰鑷€傚簲妗ｄ綅锛涢殢鍚庡皢妗ｄ綅鏄犲皠涓虹瓥鐣ュ紑鍏充笌椋庨櫓绯绘暟
+// ApplyTradeFrequencyTiers —— 交易频率档位选择；Risk==1234 时按账户 USD 折算
+// MaxAllowedDD 分层自适应档位；随后将档位映射为策略开关与风险系数
 void ApplyTradeFrequencyTiers()
 {
   double   tierUsdBalance;
@@ -2992,8 +2992,8 @@ void ApplyTradeFrequencyTiers()
   }
 }
 
-// CheckDailyRolloverAndPropFirmGate 鈥斺€?D1 鎹㈡棩鏃堕噸缃棩鍐呭洖鎾ゅ熀鍑嗭紱鎵ц PropFirm
-// 鏃ュ唴鍥炴挙寮哄钩锛涜繑鍥?false 琛ㄧず鏈?tick 搴旂珛鍗宠繑鍥烇紙鍘熺増鍐呰仈 return锛?
+// CheckDailyRolloverAndPropFirmGate —— D1 换日时重置日内回撤基准；执行 PropFirm
+// 日内回撤强平；返回 false 表示本 tick 应立即返回（原版内联 return）
 bool CheckDailyRolloverAndPropFirmGate()
 {
   if ( iBars(g_chartSymbol,MT4Period(PERIOD_D1)) != g_lastD1BarsCount )
@@ -3010,7 +3010,7 @@ bool CheckDailyRolloverAndPropFirmGate()
   return(true);
 }
 
-// DetectNewH1Bar 鈥斺€?H1 鏀剁洏 K 绾垮彉鍖栨娴嬶紙鍘?local_4_bool锛?
+// DetectNewH1Bar —— H1 收盘 K 线变化检测（原 local_4_bool）
 bool DetectNewH1Bar()
 {
   if ( g_lastH1BarTime != iTime(g_chartSymbol,MT4Period(PERIOD_H1),1) )
@@ -3021,9 +3021,9 @@ bool DetectNewH1Bar()
   return(false);
 }
 
-// RunStrategySlot 鈥斺€?鍗曠瓥鐣ユЫ浣嶏細鍔犺浇绛栫暐璁剧疆 -> 杩愯鏃惰缃?-> 澶勭悊锛?
-// 妲戒綅 0 棰濆妫€娴嬪垵濮嬫棫鐗堥闄╂墜鏁版寕鍗曪紱H1 鏂?K 绾挎椂鍒锋柊璇ョ瓥鐣ュ巻鍙插钩浠撶泩浜忕粺璁?
-// 锛堢粺璁¤鏁版部鐢ㄥ師鐗堬細浣跨敤 g_currentStrategyIndex 鑰岄潪妲戒綅鍙凤級
+// RunStrategySlot —— 单策略槽位：加载策略设置 -> 运行时设置 -> 处理策略。
+// 槽位 0 额外检测初始旧版风险手数挂单；H1 新 K 线时刷新该策略历史平仓盈亏统计
+// （统计读数沿用原版：使用 g_currentStrategyIndex 而非槽位号）
 void RunStrategySlot(const int strategyIndex,const bool newH1Bar)
 {
   switch(strategyIndex)
@@ -3072,8 +3072,8 @@ void RunStrategySlot(const int strategyIndex,const bool newH1Bar)
   }
 }
 
-// RunAllStrategies 鈥斺€?鍝佺涓洪粍閲戠被鏃舵寜鍘熺増鍥哄畾椤哄簭璋冨害绛栫暐妲戒綅锛?,4,2,3,6,5,9,7,8锛夛紱
-//                     闈為粍閲戝搧绉嶄粎浠ユЫ浣?0 杩愯锛堝師鐗堣涓猴級
+// RunAllStrategies —— 品种为黄金类时按原版固定顺序调度策略槽位（1,4,2,3,6,5,9,7,8）；
+//                     非黄金品种仅以槽位 0 运行（原版行为）
 void RunAllStrategies(const bool newH1Bar)
 {
   if ( ( StringFind(Symbol(),"XAUUSD",0) >= 0 || StringFind(Symbol(),"xauusd",0) >= 0 || StringFind(Symbol(),"GOLD",0) >= 0 || StringFind(Symbol(),"GLD",0) >= 0 || StringFind(Symbol(),"gold",0) >= 0 || StringFind(Symbol(),"Gold",0) >= 0 ) )
@@ -3096,7 +3096,7 @@ void RunAllStrategies(const bool newH1Bar)
   }
 }
 
-// UpdatePanelsOnNewM5Bar 鈥斺€?M5 鏀剁洏 K 绾垮彉鍖栨椂鍒锋柊绛栫暐/鍘嗗彶闈㈡澘琛?
+// UpdatePanelsOnNewM5Bar —— M5 收盘 K 线变化时刷新策略/历史面板
 void UpdatePanelsOnNewM5Bar()
 {
   if ( iTime(Symbol(),PERIOD_M5,1) != g_lastM5BarTime )
@@ -3107,7 +3107,7 @@ void UpdatePanelsOnNewM5Bar()
   }
 }
 
-// FinishTickLotResizeThrottle 鈥斺€?2-tick 鑺傛祦鐨勪綑棰濆揩鐓э紙椹卞姩鎸傚崟鎵嬫暟鍐嶅钩琛★級
+// FinishTickLotResizeThrottle —— 2-tick 节流的余额快照（驱动挂单手数再平衡）
 void FinishTickLotResizeThrottle()
 {
   g_lotResizeTickCount ++;
@@ -3119,8 +3119,8 @@ void FinishTickLotResizeThrottle()
   g_lotResizeTickCount = 0 ;
 }
 
-// OnTick 鈥斺€?涓诲鐞嗗惊鐜細鍚勮繃婊ゅ櫒 -> 閫愮瓥鐣?LoadStrategyNSettings +
-//           ProcessStrategy -> 闈㈡澘鏇存柊锛堣涔夋ā鍧楀寲鍚庯紝璇彞椤哄簭涓庡師鐗堜竴鑷达級
+// OnTick —— 主处理循环：各过滤器 -> 逐策略 LoadStrategyNSettings +
+//           ProcessStrategy -> 面板更新（语义模块化后，语句顺序与原版一致）
 void OnTick()
 {
   if(!(DumpBacktestSpeedAllowTick())) return;

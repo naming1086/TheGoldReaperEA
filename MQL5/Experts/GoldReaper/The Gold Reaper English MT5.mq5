@@ -7965,6 +7965,16 @@ void CreateInfoPanel()
     ObjectSetString(0, "linehb" + IntegerToString(0, 0, 32), OBJPROP_TEXT, "Higher Balance: -");
     ObjectSetInteger(0, "linehb" + IntegerToString(0, 0, 32), OBJPROP_COLOR, g_panelTextColor);
     ObjectSetInteger(0, "linehb" + IntegerToString(0, 0, 32), OBJPROP_FONTSIZE, g_panelFontSize);
+    // [新增] linesp —— 实时点差显示：当前点差(价格单位) / 换算点数 / MaxSpread 上限
+    //         超过上限时变红并追加 HIGH 标记（与 RemovePendingOrdersDuringHighSpread
+    //         的判定口径一致：g_curSpread > MaxSpread * variableRatio * g_pipSize）。
+    ObjectCreate(0, "linesp" + IntegerToString(0, 0, 32), OBJ_LABEL, 0, 0, 0.0);
+    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_CORNER, panelCorner);
+    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_YDISTANCE, (long)(panelY + InfoPanelSizeAdjust * 124.0 + textOffsetY));
+    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_XDISTANCE, panelX + textOffsetX);
+    ObjectSetString(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_TEXT, "Spread: -");
+    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_COLOR, g_panelTextColor);
+    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_FONTSIZE, g_panelFontSize);
     ObjectCreate(0, "linea" + IntegerToString(0, 0, 32), OBJ_LABEL, 0, 0, 0.0);
     ObjectSetInteger(0, "linea" + IntegerToString(0, 0, 32), OBJPROP_CORNER, panelCorner);
     ObjectSetInteger(0, "linea" + IntegerToString(0, 0, 32), OBJPROP_YDISTANCE, (long)(panelY + InfoPanelSizeAdjust * 108.0 + textOffsetY));
@@ -8083,6 +8093,7 @@ void DeleteInfoPanel()
     {
         ObjectDelete(0, "lineopl" + IntegerToString(mainObjIdx, 0, 32));
         ObjectDelete(0, "linehb" + IntegerToString(mainObjIdx, 0, 32));
+        ObjectDelete(0, "linesp" + IntegerToString(mainObjIdx, 0, 32));
         ObjectDelete(0, "linea" + IntegerToString(mainObjIdx, 0, 32));
         ObjectDelete(0, "lineto" + IntegerToString(mainObjIdx, 0, 32));
         ObjectDelete(0, "linetp" + IntegerToString(mainObjIdx, 0, 32));
@@ -8292,6 +8303,20 @@ void UpdateAccountPanel()
             ObjectSetString(0, "linet", OBJPROP_TEXT, "Manual lotsize: " + string(g_startLots_rw) + "lots");
         }
     }
+    // [新增] 实时点差：价格单位 + 换算点数 + MaxSpread 上限；超限变红
+    double panelSpreadNow = MarketInfo(g_chartSymbol, MODE_ASK) - MarketInfo(g_chartSymbol, MODE_BID);
+    double panelSpreadUnit = (g_pipSize > 0.0) ? g_pipSize : g_symbolPoint;
+    double panelSpreadLimit = MaxSpread * panelSpreadUnit;
+    string panelSpreadText = "Spread: " + DoubleToString(panelSpreadNow, g_symbolDigits) +
+                             "  (" + DoubleToString(panelSpreadNow / panelSpreadUnit, 0) +
+                             " / " + DoubleToString(MaxSpread, 0) + ")";
+    if (panelSpreadNow > panelSpreadLimit)
+    {
+        panelSpreadText = panelSpreadText + "  HIGH!";
+    }
+    ObjectSetString(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_TEXT, panelSpreadText);
+    ObjectSetInteger(0, "linesp" + IntegerToString(0, 0, 32), OBJPROP_COLOR,
+                     (panelSpreadNow > panelSpreadLimit) ? clrRed : g_panelTextColor);
 }
 //UpdateAccountPanel <<==--------   --------
 void UpdateStrategyPanelRows()
